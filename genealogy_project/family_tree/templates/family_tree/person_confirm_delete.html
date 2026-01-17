@@ -1,0 +1,277 @@
+{% extends 'family_tree/base.html' %}
+{% load static %}
+
+{% block title %}Supprimer {{ person.full_name }}{% endblock %}
+
+{% block content %}
+<div class="delete-container">
+    <div class="delete-card">
+        <div class="delete-icon">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+        </div>
+        
+        <h1>Confirmer la suppression</h1>
+        
+        <div class="delete-warning">
+            <p>Êtes-vous sûr de vouloir supprimer <strong>{{ person.full_name }}</strong> ?</p>
+            
+            {% if person.get_children.count > 0 %}
+                <div class="warning-box error">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    <div>
+                        <strong>Attention !</strong>
+                        <p>Cette personne a {{ person.get_children.count }} enfant{{ person.get_children.count|pluralize }} enregistré{{ person.get_children.count|pluralize }}. Leur lien de parenté sera supprimé.</p>
+                    </div>
+                </div>
+            {% endif %}
+            
+            {% if person.spouse_of %}
+                <div class="warning-box info">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                    <div>
+                        <strong>Information</strong>
+                        <p>Cette personne est le/la conjoint(e) de {{ person.spouse_of.full_name }}.</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="person-summary">
+            <div class="summary-photo">
+                {% if person.photo %}
+                    <img src="{{ person.photo.url }}" alt="{{ person.full_name }}">
+                {% else %}
+                    <div class="photo-placeholder-large {{ person.gender|lower }}">
+                        {{ person.first_name.0 }}{{ person.last_name.0 }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="summary-info">
+                <h3>{{ person.full_name }}</h3>
+                {% if person.birth_date %}
+                    <p>
+                        <strong>Naissance :</strong> {{ person.birth_date|date:"d F Y" }}
+                        {% if person.birth_place %} à {{ person.birth_place }}{% endif %}
+                    </p>
+                {% endif %}
+                {% if person.death_date %}
+                    <p>
+                        <strong>Décès :</strong> {{ person.death_date|date:"d F Y" }}
+                        {% if person.death_place %} à {{ person.death_place }}{% endif %}
+                    </p>
+                {% endif %}
+                {% if person.profession %}
+                    <p><strong>Profession :</strong> {{ person.profession }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <form method="post" class="delete-form">
+            {% csrf_token %}
+            <p class="final-warning">Cette action est irréversible !</p>
+            
+            <div class="delete-actions">
+                <a href="{% url 'person_detail' person.id %}" class="btn-secondary">Annuler</a>
+                <button type="submit" class="btn-danger">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    Confirmer la suppression
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.delete-container {
+    max-width: 700px;
+    margin: 3rem auto;
+    padding: 2rem;
+}
+
+.delete-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 3rem;
+    box-shadow: 0 10px 40px var(--shadow);
+    text-align: center;
+    animation: fadeInUp 0.6s ease;
+}
+
+.delete-icon {
+    margin: 0 auto 2rem;
+    width: 80px;
+    height: 80px;
+}
+
+.delete-icon svg {
+    color: #e74c3c;
+}
+
+.delete-card h1 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: var(--primary);
+}
+
+.delete-warning {
+    text-align: left;
+    margin: 2rem 0;
+}
+
+.delete-warning > p {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.warning-box {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    text-align: left;
+}
+
+.warning-box svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.warning-box.error {
+    background: #fee;
+    border-left: 4px solid #e74c3c;
+}
+
+.warning-box.error svg {
+    color: #e74c3c;
+}
+
+.warning-box.info {
+    background: #e8f4fd;
+    border-left: 4px solid #3498db;
+}
+
+.warning-box.info svg {
+    color: #3498db;
+}
+
+.warning-box strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 1rem;
+}
+
+.warning-box p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.person-summary {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    padding: 2rem;
+    background: var(--background);
+    border-radius: 15px;
+    margin: 2rem 0;
+    text-align: left;
+}
+
+.summary-photo {
+    flex-shrink: 0;
+}
+
+.summary-photo img,
+.summary-photo .photo-placeholder-large {
+    width: 120px;
+    height: 120px;
+    border-radius: 15px;
+    object-fit: cover;
+    box-shadow: 0 5px 15px var(--shadow);
+}
+
+.summary-photo .photo-placeholder-large {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--white);
+}
+
+.summary-photo .photo-placeholder-large.m {
+    background: linear-gradient(135deg, var(--male), #2980b9);
+}
+
+.summary-photo .photo-placeholder-large.f {
+    background: linear-gradient(135deg, var(--female), #c0392b);
+}
+
+.summary-info {
+    flex: 1;
+}
+
+.summary-info h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--primary);
+}
+
+.summary-info p {
+    margin-bottom: 0.5rem;
+    color: var(--text);
+}
+
+.final-warning {
+    color: #e74c3c;
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin: 2rem 0 1.5rem;
+}
+
+.delete-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.delete-actions .btn-danger {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.delete-form {
+    margin-top: 2rem;
+}
+
+@media (max-width: 768px) {
+    .person-summary {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .summary-info {
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}

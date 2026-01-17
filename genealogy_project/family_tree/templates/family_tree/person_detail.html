@@ -1,0 +1,299 @@
+{% extends 'family_tree/base.html' %}
+{% load static %}
+
+{% block title %}{{ person.full_name }} - Détails{% endblock %}
+
+{% block content %}
+<div class="person-detail-container">
+    <div class="detail-header">
+        <a href="{% url 'tree' %}" class="back-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Retour à l'arbre
+        </a>
+        <div class="header-actions">
+            <a href="{% url 'person_edit' person.id %}" class="btn-secondary">Modifier</a>
+            <a href="{% url 'person_delete' person.id %}" class="btn-danger">Supprimer</a>
+        </div>
+    </div>
+
+    <div class="person-profile">
+        <div class="profile-photo">
+            {% if person.photo %}
+                <img src="{{ person.photo.url }}" alt="{{ person.full_name }}">
+            {% else %}
+                <div class="photo-placeholder-large {{ person.gender|lower }}">
+                    {{ person.first_name.0 }}{{ person.last_name.0 }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="profile-info">
+            <h1>{{ person.full_name }}</h1>
+            
+            <div class="info-grid">
+                {% if person.birth_date or person.birth_place %}
+                <div class="info-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <div>
+                        <strong>Naissance</strong>
+                        <p>
+                            {% if person.birth_date %}{{ person.birth_date|date:"d F Y" }}{% endif %}
+                            {% if person.birth_place %}<br>{{ person.birth_place }}{% endif %}
+                        </p>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if person.death_date or person.death_place %}
+                <div class="info-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                    </svg>
+                    <div>
+                        <strong>Décès</strong>
+                        <p>
+                            {% if person.death_date %}{{ person.death_date|date:"d F Y" }}{% endif %}
+                            {% if person.death_place %}<br>{{ person.death_place }}{% endif %}
+                        </p>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if person.age %}
+                <div class="info-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <div>
+                        <strong>Âge</strong>
+                        <p>{{ person.age }} ans{% if not person.is_alive %} (au décès){% endif %}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if person.profession %}
+                <div class="info-item">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                    </svg>
+                    <div>
+                        <strong>Profession</strong>
+                        <p>{{ person.profession }}</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-sections">
+        {% if person.biography %}
+        <div class="detail-section">
+            <h2>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+                Biographie
+            </h2>
+            <p class="biography-text">{{ person.biography|linebreaks }}</p>
+        </div>
+        {% endif %}
+
+        {% if person.accomplishments %}
+        <div class="detail-section">
+            <h2>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                    <path d="M4 22h16"></path>
+                    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path>
+                </svg>
+                Accomplissements
+            </h2>
+            <p class="accomplishments-text">{{ person.accomplishments|linebreaks }}</p>
+        </div>
+        {% endif %}
+
+        {% if person.education %}
+        <div class="detail-section">
+            <h2>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                    <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                </svg>
+                Formation & Éducation
+            </h2>
+            <p class="education-text">{{ person.education|linebreaks }}</p>
+        </div>
+        {% endif %}
+
+        <div class="family-section">
+            <h2>Relations Familiales</h2>
+            
+            <div class="family-grid">
+                {% if person.father or person.mother %}
+                <div class="family-group">
+                    <h3>Parents</h3>
+                    <div class="family-members">
+                        {% if person.father %}
+                        <a href="{% url 'person_detail' person.father.id %}" class="family-card">
+                            <div class="family-card-photo">
+                                {% if person.father.photo %}
+                                    <img src="{{ person.father.photo.url }}" alt="{{ person.father.full_name }}">
+                                {% else %}
+                                    <div class="mini-placeholder m">{{ person.father.first_name.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="family-card-info">
+                                <strong>{{ person.father.full_name }}</strong>
+                                <span>Père</span>
+                            </div>
+                        </a>
+                        {% endif %}
+                        
+                        {% if person.mother %}
+                        <a href="{% url 'person_detail' person.mother.id %}" class="family-card">
+                            <div class="family-card-photo">
+                                {% if person.mother.photo %}
+                                    <img src="{{ person.mother.photo.url }}" alt="{{ person.mother.full_name }}">
+                                {% else %}
+                                    <div class="mini-placeholder f">{{ person.mother.first_name.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="family-card-info">
+                                <strong>{{ person.mother.full_name }}</strong>
+                                <span>Mère</span>
+                            </div>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if siblings %}
+                <div class="family-group">
+                    <h3>Frères et Sœurs</h3>
+                    <div class="family-members">
+                        {% for sibling in siblings %}
+                        <a href="{% url 'person_detail' sibling.id %}" class="family-card">
+                            <div class="family-card-photo">
+                                {% if sibling.photo %}
+                                    <img src="{{ sibling.photo.url }}" alt="{{ sibling.full_name }}">
+                                {% else %}
+                                    <div class="mini-placeholder {{ sibling.gender|lower }}">{{ sibling.first_name.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="family-card-info">
+                                <strong>{{ sibling.full_name }}</strong>
+                                <span>{% if sibling.gender == 'M' %}Frère{% else %}Sœur{% endif %}</span>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if spouses %}
+                <div class="family-group">
+                    <h3>Conjoint(s)</h3>
+                    <div class="family-members">
+                        {% for spouse in spouses %}
+                        <a href="{% url 'person_detail' spouse.id %}" class="family-card">
+                            <div class="family-card-photo">
+                                {% if spouse.photo %}
+                                    <img src="{{ spouse.photo.url }}" alt="{{ spouse.full_name }}">
+                                {% else %}
+                                    <div class="mini-placeholder {{ spouse.gender|lower }}">{{ spouse.first_name.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="family-card-info">
+                                <strong>{{ spouse.full_name }}</strong>
+                                <span>Conjoint(e)</span>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if children_by_spouse %}
+                <div class="family-group">
+                    <h3>Enfants</h3>
+
+                    {% for group in children_by_spouse %}
+                        <div class="spouse-children-group">
+                            {% if group.spouse %}
+                                <div class="spouse-header">
+                                    <span class="spouse-label">Avec</span>
+                                    <a href="{% url 'person_detail' group.spouse.id %}" class="spouse-name">
+                                        <div class="spouse-mini-photo">
+                                            {% if group.spouse.photo %}
+                                                <img src="{{ group.spouse.photo.url }}" alt="{{ group.spouse.full_name }}">
+                                            {% else %}
+                                                <div class="mini-placeholder {{ group.spouse.gender|lower }}">
+                                                    {{ group.spouse.first_name.0 }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        {{ group.spouse.full_name }}
+                                    </a>
+                                </div>
+                            {% else %}
+                                <div class="spouse-header">
+                                    <span class="spouse-label">Conjoint(e) non identifié(e)</span>
+                                </div>
+                            {% endif %}
+
+                            <div class="family-members">
+                                {% for child in group.children %}
+                                <a href="{% url 'person_detail' child.id %}" class="family-card">
+                                    <div class="family-card-photo">
+                                        {% if child.photo %}
+                                            <img src="{{ child.photo.url }}" alt="{{ child.full_name }}">
+                                        {% else %}
+                                            <div class="mini-placeholder {{ child.gender|lower }}">{{ child.first_name.0 }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="family-card-info">
+                                        <strong>{{ child.full_name }}</strong>
+                                        <span>
+                                            {% if child.gender == 'M' %}Fils{% else %}Fille{% endif %}
+                                            {% if child.birth_date %} • {{ child.birth_date.year }}{% endif %}
+                                        </span>
+                                    </div>
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    <a href="{% url 'person_add' %}?parent_id={{ person.id }}&parent_gender={{ person.gender }}" class="btn-add-child">
+                        + Ajouter un enfant
+                    </a>
+                </div>
+                {% else %}
+                <div class="family-group">
+                    <h3>Enfants</h3>
+                    <p class="no-children">Aucun enfant enregistré</p>
+                    <a href="{% url 'person_add' %}?parent_id={{ person.id }}&parent_gender={{ person.gender }}" class="btn-add-child">
+                        + Ajouter un enfant
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

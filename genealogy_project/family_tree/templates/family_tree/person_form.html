@@ -1,0 +1,199 @@
+{% extends 'family_tree/base.html' %}
+{% load static %}
+
+{% block title %}{{ action }} une personne{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <a href="{% url 'tree' %}" class="back-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Retour
+        </a>
+        <h1>{{ action }} une personne</h1>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="person-form">
+        {% csrf_token %}
+        
+        <div class="form-sections">
+            <div class="form-section">
+                <h2>Informations Personnelles</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }} *</label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}
+                            <span class="error">{{ form.first_name.errors }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }} *</label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
+                            <span class="error">{{ form.last_name.errors }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.maiden_name.id_for_label }}">{{ form.maiden_name.label }}</label>
+                        {{ form.maiden_name }}
+                        {% if form.maiden_name.errors %}
+                            <span class="error">{{ form.maiden_name.errors }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.gender.id_for_label }}">{{ form.gender.label }} *</label>
+                        {{ form.gender }}
+                        {% if form.gender.errors %}
+                            <span class="error">{{ form.gender.errors }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.photo.id_for_label }}">{{ form.photo.label }}</label>
+                    {{ form.photo }}
+                    {% if form.photo.errors %}
+                        <span class="error">{{ form.photo.errors }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Dates et Lieux</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.birth_date.id_for_label }}">{{ form.birth_date.label }}</label>
+                        {{ form.birth_date }}
+                        {% if form.birth_date.errors %}
+                            <span class="error">{{ form.birth_date.errors }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.birth_place.id_for_label }}">{{ form.birth_place.label }}</label>
+                        {{ form.birth_place }}
+                        {% if form.birth_place.errors %}
+                            <span class="error">{{ form.birth_place.errors }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.death_date.id_for_label }}">{{ form.death_date.label }}</label>
+                        {{ form.death_date }}
+                        {% if form.death_date.errors %}
+                            <span class="error">{{ form.death_date.errors }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.death_place.id_for_label }}">{{ form.death_place.label }}</label>
+                        {{ form.death_place }}
+                        {% if form.death_place.errors %}
+                            <span class="error">{{ form.death_place.errors }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Famille</h2>
+
+                <div class="form-info-box">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                    <p><strong>Important :</strong> Remplissez soit "Père et Mère" (pour les membres de la famille de sang), soit "Conjoint(e) de" (pour les personnes qui ont épousé un membre de la famille).</p>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.father.id_for_label }}">{{ form.father.label }}</label>
+                        {{ form.father }}
+                        <small>Pour les membres de la lignée sanguine</small>
+                        {% if form.father.errors %}
+                            <span class="error">{{ form.father.errors }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.mother.id_for_label }}">{{ form.mother.label }}</label>
+                        {{ form.mother }}
+                        <small>Pour les membres de la lignée sanguine</small>
+                        {% if form.mother.errors %}
+                            <span class="error">{{ form.mother.errors }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-divider">
+                    <span>OU</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.spouse_of.id_for_label }}">{{ form.spouse_of.label }}</label>
+                    {{ form.spouse_of }}
+                    <small>Pour les conjoints qui ont épousé un membre de la famille (femmes/maris venus de l'extérieur)</small>
+                    {% if form.spouse_of.errors %}
+                        <span class="error">{{ form.spouse_of.errors }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Parcours de Vie</h2>
+                
+                <div class="form-group">
+                    <label for="{{ form.profession.id_for_label }}">{{ form.profession.label }}</label>
+                    {{ form.profession }}
+                    {% if form.profession.errors %}
+                        <span class="error">{{ form.profession.errors }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.education.id_for_label }}">{{ form.education.label }}</label>
+                    {{ form.education }}
+                    {% if form.education.errors %}
+                        <span class="error">{{ form.education.errors }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.biography.id_for_label }}">{{ form.biography.label }}</label>
+                    {{ form.biography }}
+                    <small>Racontez l'histoire de vie, les anecdotes, les moments importants...</small>
+                    {% if form.biography.errors %}
+                        <span class="error">{{ form.biography.errors }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.accomplishments.id_for_label }}">{{ form.accomplishments.label }}</label>
+                    {{ form.accomplishments }}
+                    <small>Décrivez les réalisations, les succès, les contributions...</small>
+                    {% if form.accomplishments.errors %}
+                        <span class="error">{{ form.accomplishments.errors }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url 'tree' %}" class="btn-secondary">Annuler</a>
+            <button type="submit" class="btn-primary">{{ action }}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
