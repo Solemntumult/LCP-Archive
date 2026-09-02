@@ -1,0 +1,241 @@
+'use client';
+
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  MapPin,
+  ArrowRight,
+  BookOpen,
+  Camera,
+  Play,
+  Pause,
+  Clock,
+} from 'lucide-react';
+import { FamilyEvent, EventCategory } from '@/types';
+
+export default function UpcomingEventCarousel({
+  events,
+}: {
+  events: FamilyEvent[];
+}) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAutoPlay, setIsAutoPlay] = useState(true);
+
+  // Upcoming events only
+  const upcomingEvents = useMemo(() => {
+    const upcoming = events.filter((e) => !e.is_past);
+    return [...upcoming].sort(
+      (a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime()
+    );
+  }, [events]);
+
+  const nextSlide = useCallback(() => {
+    if (upcomingEvents.length === 0) return;
+    setCurrentIndex((prev) => (prev + 1) % upcomingEvents.length);
+  }, [upcomingEvents.length]);
+
+  const prevSlide = useCallback(() => {
+    if (upcomingEvents.length === 0) return;
+    setCurrentIndex((prev) => (prev - 1 + upcomingEvents.length) % upcomingEvents.length);
+  }, [upcomingEvents.length]);
+
+  useEffect(() => {
+    if (!isAutoPlay || upcomingEvents.length <= 1) return;
+    const timer = setInterval(() => {
+      nextSlide();
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [isAutoPlay, upcomingEvents.length, nextSlide]);
+
+  if (upcomingEvents.length === 0) {
+    return (
+      <div className="w-full py-14 sm:py-16 bg-white rounded-3xl border border-[#eae1da] text-center p-6 sm:p-8 space-y-3">
+        <Calendar className="w-10 h-10 text-[#727973] mx-auto opacity-40" />
+        <h3 className="font-serif font-bold text-lg text-[#1f1b17]">
+          Aucun événement à venir pour le moment
+        </h3>
+        <p className="text-xs text-[#727973]">
+          Les prochains rassemblements et célébrations s&apos;afficheront ici.
+        </p>
+      </div>
+    );
+  }
+
+  const current = upcomingEvents[currentIndex];
+  const photoUrl = current.photo || (current.photos && current.photos.length > 0 ? current.photos[0] : null);
+
+  const formattedDate = new Date(current.event_date).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
+  const getCategoryLabel = (cat: EventCategory) => {
+    switch (cat) {
+      case 'reunion':
+        return 'Rassemblement';
+      case 'commemoration':
+        return 'Commémoration';
+      case 'celebration':
+        return 'Célébration';
+      case 'birth':
+        return 'Naissance & Anniversaire';
+      case 'wedding':
+        return 'Mariage';
+      case 'cultural':
+        return 'Pèlerinage';
+      default:
+        return 'Événement à venir';
+    }
+  };
+
+  return (
+    <div
+      className="relative w-full rounded-3xl overflow-hidden bg-[#111111] text-white shadow-2xl border border-[#eae1da] group select-none"
+      onMouseEnter={() => setIsAutoPlay(false)}
+      onMouseLeave={() => setIsAutoPlay(true)}
+    >
+      {/* Background Image: 100% PURE image without tint */}
+      <div className="relative w-full h-[420px] sm:h-[480px] lg:h-[540px] overflow-hidden bg-[#111111]">
+        {photoUrl ? (
+          <Image
+            src={photoUrl}
+            alt={current.title}
+            fill
+            priority
+            className="object-cover object-center"
+            sizes="(max-width: 768px) 100vw, 1200px"
+          />
+        ) : (
+          <div className="w-full h-full bg-[#1c1917]" />
+        )}
+
+        {/* Minimal neutral dark gradient strictly at bottom for text readability */}
+        <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/95 via-black/45 to-transparent pointer-events-none" />
+
+        {/* Foreground Content */}
+        <div
+          key={current.id}
+          className="absolute inset-0 p-5 sm:p-8 lg:p-12 flex flex-col justify-end max-w-3xl z-10 space-y-2.5 sm:space-y-3.5 animate-fade-in"
+        >
+          {/* Metadata Badges */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-white text-[#1f1b17] shadow-sm">
+              {getCategoryLabel(current.category)}
+            </span>
+
+            {/* Countdown Badge */}
+            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-[#173124] text-white border border-white/20 shadow-xs">
+              <Clock className="w-3.5 h-3.5 text-[#98b5a3]" />
+              <span>
+                {current.days_until === 0
+                  ? "Aujourd'hui !"
+                  : current.days_until !== undefined && current.days_until > 0
+                  ? `Dans ${current.days_until} jours`
+                  : 'Prochainement'}
+              </span>
+            </span>
+
+            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] sm:text-xs font-medium bg-black/60 backdrop-blur-md text-white border border-white/20">
+              <Calendar className="w-3.5 h-3.5 text-[#eae1da]" />
+              <span>{formattedDate}</span>
+            </span>
+
+            {current.location && (
+              <span className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-black/50 backdrop-blur-md text-[#eae1da] border border-white/10">
+                <MapPin className="w-3.5 h-3.5 text-[#eae1da]" />
+                <span>{current.location}</span>
+              </span>
+            )}
+
+            {current.photos && current.photos.length > 1 && (
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-medium bg-black/60 backdrop-blur-md text-white border border-white/10">
+                <Camera className="w-3.5 h-3.5" />
+                <span>{current.photos.length} photos</span>
+              </span>
+            )}
+          </div>
+
+          {/* Title */}
+          <h3 className="font-serif text-xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight leading-tight line-clamp-2">
+            {current.title}
+          </h3>
+
+          {/* Descriptive text snippet */}
+          <p className="text-xs sm:text-sm text-[#f0f0f0] leading-relaxed line-clamp-2 sm:line-clamp-3 max-w-2xl font-normal drop-shadow-xs">
+            {current.description}
+          </p>
+
+          {/* Direct CTA link */}
+          <div className="pt-1 flex items-center gap-3">
+            <Link
+              href={`/events/${current.id}`}
+              className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-white text-[#1f1b17] hover:bg-[#f5ece5] text-xs sm:text-sm font-bold shadow-lg transition-all flex items-center gap-2 active:scale-95 group/btn"
+            >
+              <BookOpen className="w-4 h-4 text-[#7a5739]" />
+              <span>Voir le programme & la galerie</span>
+              <ArrowRight className="w-4 h-4 text-[#7a5739] group-hover/btn:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Carousel Navigation Arrows */}
+        {upcomingEvents.length > 1 && (
+          <>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                prevSlide();
+              }}
+              className="absolute left-2.5 sm:left-5 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all shadow-lg hover:scale-105 active:scale-95 z-20"
+              aria-label="Événement précédent"
+            >
+              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                nextSlide();
+              }}
+              className="absolute right-2.5 sm:right-5 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all shadow-lg hover:scale-105 active:scale-95 z-20"
+              aria-label="Événement suivant"
+            >
+              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+          </>
+        )}
+
+        {/* Bottom Slide Indicators */}
+        {upcomingEvents.length > 1 && (
+          <div className="absolute bottom-3 right-4 sm:bottom-5 sm:right-8 z-20 flex items-center gap-2 bg-black/50 backdrop-blur-md px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-2xl border border-white/10">
+            <button
+              onClick={() => setIsAutoPlay(!isAutoPlay)}
+              className="text-white/80 hover:text-white transition-colors mr-1"
+              title={isAutoPlay ? 'Mettre en pause' : 'Défilement automatique'}
+            >
+              {isAutoPlay ? <Pause className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> : <Play className="w-3 h-3 sm:w-3.5 sm:h-3.5" />}
+            </button>
+
+            {upcomingEvents.map((_, idx) => (
+              <button
+                key={`dot-upcoming-${idx}`}
+                onClick={() => setCurrentIndex(idx)}
+                className={`transition-all rounded-full ${
+                  currentIndex === idx
+                    ? 'w-5 sm:w-6 h-1.5 sm:h-2 bg-white'
+                    : 'w-1.5 sm:w-2 h-1.5 sm:h-2 bg-white/40 hover:bg-white/70'
+                }`}
+                aria-label={`Aller à l'événement ${idx + 1}`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="16" fill="#173124"/>
+  <!-- Root trunk & patriarch base node -->
+  <circle cx="32" cy="49" r="5" fill="#c69214"/>
+  <path d="M 32 44 L 32 30" stroke="#98b5a3" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Left branch -->
+  <path d="M 32 30 C 32 23 19 25 19 19 L 19 16" stroke="#98b5a3" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="19" cy="14" r="4.5" fill="#fdcea9"/>
+  <!-- Right branch -->
+  <path d="M 32 30 C 32 23 45 25 45 19 L 45 16" stroke="#98b5a3" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="45" cy="14" r="4.5" fill="#fdcea9"/>
+  <!-- Center top node -->
+  <path d="M 32 30 L 32 15" stroke="#98b5a3" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="32" cy="13" r="5" fill="#ffffff"/>
+</svg>

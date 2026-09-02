@@ -1,0 +1,193 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-serif: "Literata", Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
+    --font-sans: "Work Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    /* Heritage Modern Color Tokens */
+    --surface: #fff8f4;
+    --surface-dim: #e1d8d2;
+    --surface-bright: #fff8f4;
+    --surface-container-lowest: #ffffff;
+    --surface-container-low: #fbf2eb;
+    --surface-container: #f5ece5;
+    --surface-container-high: #f0e7df;
+    --surface-container-highest: #eae1da;
+    
+    --on-surface: #1f1b17;
+    --on-surface-variant: #424844;
+    --inverse-surface: #34302b;
+    --inverse-on-surface: #f8efe8;
+    
+    --outline: #727973;
+    --outline-variant: #c2c8c2;
+    --surface-tint: #496455;
+    
+    --primary: #173124;
+    --on-primary: #ffffff;
+    --primary-container: #2d4739;
+    --on-primary-container: #98b5a3;
+    
+    --secondary: #7a5739;
+    --on-secondary: #ffffff;
+    --secondary-container: #fdcea9;
+    --on-secondary-container: #795638;
+    
+    --tertiary: #2c2c26;
+    --on-tertiary: #ffffff;
+    
+    --error: #ba1a1a;
+    --error-container: #ffdad6;
+    --on-error-container: #93000a;
+
+    --gold: #c69214;
+    --gold-light: #f5e7c8;
+
+    --male: #2980b9;
+    --male-light: #ebf5fb;
+    --female: #c0392b;
+    --female-light: #fdedec;
+  }
+
+  body {
+    background-color: var(--surface);
+    color: var(--on-surface);
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3, h4, .font-serif {
+    font-family: var(--font-serif);
+  }
+}
+
+/* Custom Components & Vintage Archive Styles */
+.parchment-texture {
+  background-color: #fff8f4;
+}
+
+.vintage-shadow {
+  box-shadow: 0 4px 20px -2px rgba(74, 69, 64, 0.08), 0 2px 6px -1px rgba(74, 69, 64, 0.06);
+}
+
+.vintage-shadow-lg {
+  box-shadow: 0 10px 30px -4px rgba(74, 69, 64, 0.12), 0 4px 10px -2px rgba(74, 69, 64, 0.08);
+}
+
+.vintage-photo-frame {
+  border: 4px solid #ffffff;
+  box-shadow: 0 4px 15px rgba(122, 87, 57, 0.15), inset 0 0 0 1px rgba(122, 87, 57, 0.2);
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.vintage-photo-frame:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(122, 87, 57, 0.22), inset 0 0 0 1px rgba(122, 87, 57, 0.3);
+}
+
+/* Drop-cap for biographical literature */
+.drop-cap::first-letter {
+  font-family: var(--font-serif);
+  float: left;
+  font-size: 4rem;
+  line-height: 0.8;
+  padding-top: 4px;
+  padding-right: 12px;
+  padding-bottom: 2px;
+  color: #173124;
+  font-weight: 700;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f5ece5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c2c8c2;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #727973;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(198, 146, 20, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(198, 146, 20, 0); }
+}
+
+.search-highlight {
+  animation: pulseGlow 2s infinite;
+  border-color: #c69214 !important;
+}
+
+/* ==========================================
+   Foyer Explorer Transitions & Styles
+   ========================================== */
+
+@keyframes foyerSlideIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes foyerSlideOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(-15px) scale(0.98); }
+}
+
+.foyer-enter {
+  animation: foyerSlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.foyer-exit {
+  animation: foyerSlideOut 0.25s ease-in forwards;
+}
+
+/* Deploy button shimmer */
+@keyframes deployShimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.deploy-btn-shimmer:hover {
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,0.15) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: deployShimmer 1.5s ease-in-out infinite;
+}
+
+/* Union dashed connector */
+.union-line {
+  border-top: 2px dashed var(--gold);
+}
+
+/* Filiation solid connector */
+.filiation-line {
+  border-left: 2px solid var(--secondary);
+}
+
+/* Breadcrumb separator */
+.breadcrumb-sep {
+  color: var(--outline-variant);
+}
