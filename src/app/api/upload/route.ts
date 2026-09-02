@@ -20,8 +20,14 @@ export async function POST(req: NextRequest) {
     }
 
     const uploadsDir = path.join(process.cwd(), 'public', 'media', 'photos');
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
+    let canWriteToDisk = true;
+
+    try {
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+    } catch {
+      canWriteToDisk = false;
     }
 
     const results: { url: string; filename: string }[] = [];
@@ -32,11 +38,26 @@ export async function POST(req: NextRequest) {
       const timestamp = Date.now() + Math.floor(Math.random() * 1000);
       const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
       const filename = `photo_${timestamp}_${sanitizedName}`;
-      const filePath = path.join(uploadsDir, filename);
 
-      fs.writeFileSync(filePath, buffer);
+      if (canWriteToDisk) {
+        try {
+          const filePath = path.join(uploadsDir, filename);
+          fs.writeFileSync(filePath, buffer);
+          results.push({
+            url: `/media/photos/${filename}`,
+            filename,
+          });
+          continue;
+        } catch {
+          canWriteToDisk = false;
+        }
+      }
+
+      // Fallback for Vercel / serverless: Data URL format
+      const mimeType = file.type || 'image/jpeg';
+      const base64Data = `data:${mimeType};base64,${buffer.toString('base64')}`;
       results.push({
-        url: `/media/photos/${filename}`,
+        url: base64Data,
         filename,
       });
     }

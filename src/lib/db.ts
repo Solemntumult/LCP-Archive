@@ -3,29 +3,9 @@ import path from 'path';
 import fs from 'fs';
 import { Person, PersonFormData, Marriage, ActivityEvent, FamilyEvent, FamilyEventFormData } from '@/types';
 
-function findDbPath(): string {
-  const possibleDirs = [
-    path.join(process.cwd(), 'data'),
-    path.join(process.cwd(), 'heritage_app', 'data'),
-    path.join(__dirname, '..', '..', 'data'),
-  ];
-  for (const dir of possibleDirs) {
-    const candidate = path.join(dir, 'family_tree.db');
-    if (fs.existsSync(candidate) && fs.statSync(candidate).size > 0) {
-      return candidate;
-    }
-  }
-  const defaultDir = path.join(process.cwd(), 'data');
-  if (!fs.existsSync(defaultDir)) {
-    fs.mkdirSync(defaultDir, { recursive: true });
-  }
-  return path.join(defaultDir, 'family_tree.db');
-}
-
 function findSeedFile(): string | null {
   const possibleFiles = [
     path.join(process.cwd(), 'data', 'initial_seed.json'),
-    path.join(process.cwd(), 'heritage_app', 'data', 'initial_seed.json'),
     path.join(__dirname, '..', '..', 'data', 'initial_seed.json'),
   ];
   for (const file of possibleFiles) {
@@ -34,15 +14,80 @@ function findSeedFile(): string | null {
   return null;
 }
 
+function findDbPath(): string {
+  // If running on Vercel or AWS Lambda / Serverless
+  if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NODE_ENV === 'production') {
+    const tmpDir = '/tmp';
+    const tmpDb = path.join(tmpDir, 'family_tree.db');
+    
+    // Copy existing database from data/ to /tmp/ if /tmp/ does not have it
+    if (!fs.existsSync(tmpDb) || fs.statSync(tmpDb).size === 0) {
+      const candidates = [
+        path.join(process.cwd(), 'data', 'family_tree.db'),
+        path.join(__dirname, '..', '..', 'data', 'family_tree.db'),
+      ];
+      for (const cand of candidates) {
+        if (fs.existsSync(cand) && fs.statSync(cand).size > 0) {
+          try {
+            fs.copyFileSync(cand, tmpDb);
+            break;
+          } catch (e) {
+            console.warn('Could not copy candidate DB to /tmp:', e);
+          }
+        }
+      }
+    }
+    return tmpDb;
+  }
+
+  const possibleDirs = [
+    path.join(process.cwd(), 'data'),
+    path.join(__dirname, '..', '..', 'data'),
+  ];
+  for (const dir of possibleDirs) {
+    const candidate = path.join(dir, 'family_tree.db');
+    if (fs.existsSync(candidate) && fs.statSync(candidate).size > 0) {
+      return candidate;
+    }
+  }
+
+  const defaultDir = path.join(process.cwd(), 'data');
+  if (!fs.existsSync(defaultDir)) {
+    try {
+      fs.mkdirSync(defaultDir, { recursive: true });
+    } catch {
+      return path.join('/tmp', 'family_tree.db');
+    }
+  }
+  return path.join(defaultDir, 'family_tree.db');
+}
+
 let dbInstance: Database.Database | null = null;
 
 export function getDb(): Database.Database {
   if (dbInstance) return dbInstance;
 
   const dbPath = findDbPath();
-  dbInstance = new Database(dbPath);
-  dbInstance.pragma('journal_mode = WAL');
-  dbInstance.pragma('foreign_keys = ON');
+  
+  try {
+    dbInstance = new Database(dbPath);
+  } catch (err) {
+    console.error('Failed to open database at:', dbPath, err);
+    const fallback = path.join('/tmp', 'family_tree.db');
+    dbInstance = new Database(fallback);
+  }
+
+  try {
+    dbInstance.pragma('journal_mode = DELETE');
+  } catch {
+    // Ignore journal mode issues on serverless
+  }
+
+  try {
+    dbInstance.pragma('foreign_keys = ON');
+  } catch {
+    // Ignore
+  }
 
   // Initialize schema
   dbInstance.exec(`
@@ -111,14 +156,16 @@ export function getDb(): Database.Database {
     // Column already exists
   }
 
-  // Seed persons if table is empty
-  const personsCount = (dbInstance.prepare('SELECT COUNT(*) as count FROM persons').get() as { count: number }).count;
-  if (personsCount === 0) {
-    const seedPath = findSeedFile();
-    if (seedPath) {
-      try {
+  // Seed persons & marriages if table is empty
+  try {
+    const personsCount = (dbInstance.prepare('SELECT COUNT(*) as count FROM persons').get() as { count: number }).count;
+    if (personsCount === 0) {
+      const seedPath = findSeedFile();
+      if (seedPath) {
         const seedData = JSON.parse(fs.readFileSync(seedPath, 'utf-8'));
         const seedPersons = seedData.persons || [];
+        const seedMarriages = seedData.marriages || [];
+
         const insertPerson = dbInstance.prepare(`
           INSERT INTO persons (
             id, first_name, last_name, maiden_name, gender, birth_date, birth_place,
@@ -131,7 +178,12 @@ export function getDb(): Database.Database {
           )
         `);
 
-        const insertAllPersons = dbInstance.transaction((personsList: any[]) => {
+        const insertMarriage = dbInstance.prepare(`
+          INSERT INTO marriages (spouse1_id, spouse2_id, marriage_date, marriage_place, divorce_date, notes)
+          VALUES (@spouse1_id, @spouse2_id, @marriage_date, @marriage_place, @divorce_date, @notes)
+        `);
+
+        const insertAll = dbInstance.transaction((personsList: any[], marriagesList: any[]) => {
           for (const p of personsList) {
             let photo = p.photo || null;
             if (photo && !photo.startsWith('/') && !photo.startsWith('http') && !photo.startsWith('data:')) {
@@ -157,13 +209,24 @@ export function getDb(): Database.Database {
               photo,
             });
           }
+
+          for (const m of marriagesList) {
+            insertMarriage.run({
+              spouse1_id: m.spouse1_id,
+              spouse2_id: m.spouse2_id,
+              marriage_date: m.marriage_date || null,
+              marriage_place: m.marriage_place || null,
+              divorce_date: m.divorce_date || null,
+              notes: m.notes || null,
+            });
+          }
         });
 
-        insertAllPersons(seedPersons);
-      } catch (err) {
-        console.error('Error auto-seeding persons:', err);
+        insertAll(seedPersons, seedMarriages);
       }
     }
+  } catch (err) {
+    console.error('Error auto-seeding DB:', err);
   }
 
   return dbInstance;
@@ -220,9 +283,15 @@ export function createPerson(data: PersonFormData): Person {
   );
 
   const newId = Number(info.lastInsertRowid);
-  const fullName = `${data.first_name} ${data.last_name}`;
 
-  logActivity('addition', `Ajout de ${fullName} à l'arbre généalogique`, newId, fullName);
+  if (data.spouse_of_id) {
+    createMarriage({
+      spouse1_id: newId,
+      spouse2_id: data.spouse_of_id,
+    });
+  }
+
+  logActivity('CREATE', `Ajout de ${data.first_name} ${data.last_name} à l'arbre`, newId, `${data.first_name} ${data.last_name}`);
 
   return getPersonById(newId)!;
 }
@@ -239,10 +308,10 @@ export function updatePerson(id: number, data: Partial<PersonFormData>): Person 
 
   const stmt = db.prepare(`
     UPDATE persons SET
-      first_name = ?,
-      last_name = ?,
+      first_name = COALESCE(?, first_name),
+      last_name = COALESCE(?, last_name),
       maiden_name = ?,
-      gender = ?,
+      gender = COALESCE(?, gender),
       birth_date = ?,
       birth_place = ?,
       death_date = ?,
@@ -262,29 +331,27 @@ export function updatePerson(id: number, data: Partial<PersonFormData>): Person 
   stmt.run(
     data.first_name ?? existing.first_name,
     data.last_name ?? existing.last_name,
-    data.maiden_name !== undefined ? (data.maiden_name || null) : existing.maiden_name,
+    data.maiden_name !== undefined ? data.maiden_name : existing.maiden_name,
     data.gender ?? existing.gender,
-    data.birth_date !== undefined ? (data.birth_date || null) : existing.birth_date,
-    data.birth_place !== undefined ? (data.birth_place || null) : existing.birth_place,
-    data.death_date !== undefined ? (data.death_date || null) : existing.death_date,
-    data.death_place !== undefined ? (data.death_place || null) : existing.death_place,
-    data.father_id !== undefined ? (data.father_id || null) : existing.father_id,
-    data.mother_id !== undefined ? (data.mother_id || null) : existing.mother_id,
-    data.spouse_of_id !== undefined ? (data.spouse_of_id || null) : existing.spouse_of_id,
-    data.biography !== undefined ? (data.biography || null) : existing.biography,
-    data.accomplishments !== undefined ? (data.accomplishments || null) : existing.accomplishments,
-    data.profession !== undefined ? (data.profession || null) : existing.profession,
-    data.education !== undefined ? (data.education || null) : existing.education,
-    photo || null,
+    data.birth_date !== undefined ? data.birth_date : existing.birth_date,
+    data.birth_place !== undefined ? data.birth_place : existing.birth_place,
+    data.death_date !== undefined ? data.death_date : existing.death_date,
+    data.death_place !== undefined ? data.death_place : existing.death_place,
+    data.father_id !== undefined ? data.father_id : existing.father_id,
+    data.mother_id !== undefined ? data.mother_id : existing.mother_id,
+    data.spouse_of_id !== undefined ? data.spouse_of_id : existing.spouse_of_id,
+    data.biography !== undefined ? data.biography : existing.biography,
+    data.accomplishments !== undefined ? data.accomplishments : existing.accomplishments,
+    data.profession !== undefined ? data.profession : existing.profession,
+    data.education !== undefined ? data.education : existing.education,
+    photo,
     id
   );
 
-  const updated = getPersonById(id)!;
-  const fullName = `${updated.first_name} ${updated.last_name}`;
+  const updatedName = `${data.first_name || existing.first_name} ${data.last_name || existing.last_name}`;
+  logActivity('UPDATE', `Mise à jour des informations de ${updatedName}`, id, updatedName);
 
-  logActivity('edit', `Mise à jour des informations de ${fullName}`, id, fullName);
-
-  return updated;
+  return getPersonById(id);
 }
 
 export function deletePerson(id: number): boolean {
@@ -292,20 +359,75 @@ export function deletePerson(id: number): boolean {
   const person = getPersonById(id);
   if (!person) return false;
 
-  const fullName = `${person.first_name} ${person.last_name}`;
+  const name = `${person.first_name} ${person.last_name}`;
+
   db.prepare('DELETE FROM persons WHERE id = ?').run(id);
 
-  logActivity('edit', `Suppression de ${fullName} de l'arbre`, undefined, fullName);
+  logActivity('DELETE', `Suppression de ${name} de l'arbre`, undefined, name);
+
   return true;
 }
 
-export function searchPersons(query: string, limit = 20): Person[] {
+// Marriage Queries
+export function getAllMarriages(): Marriage[] {
   const db = getDb();
-  if (!query || query.trim().length === 0) {
-    return db.prepare('SELECT * FROM persons ORDER BY birth_date ASC LIMIT ?').all(limit) as Person[];
-  }
+  return db.prepare('SELECT * FROM marriages').all() as Marriage[];
+}
 
-  const searchTerm = `%${query.trim()}%`;
+export function getMarriagesForPerson(personId: number): Marriage[] {
+  const db = getDb();
+  return db.prepare('SELECT * FROM marriages WHERE spouse1_id = ? OR spouse2_id = ?').all(personId, personId) as Marriage[];
+}
+
+export function createMarriage(data: { spouse1_id: number; spouse2_id: number; marriage_date?: string; marriage_place?: string; notes?: string }): Marriage {
+  const db = getDb();
+
+  const existing = db.prepare(`
+    SELECT * FROM marriages
+    WHERE (spouse1_id = ? AND spouse2_id = ?) OR (spouse1_id = ? AND spouse2_id = ?)
+  `).get(data.spouse1_id, data.spouse2_id, data.spouse2_id, data.spouse1_id) as Marriage | undefined;
+
+  if (existing) return existing;
+
+  const stmt = db.prepare(`
+    INSERT INTO marriages (spouse1_id, spouse2_id, marriage_date, marriage_place, notes)
+    VALUES (?, ?, ?, ?, ?)
+  `);
+
+  const info = stmt.run(
+    data.spouse1_id,
+    data.spouse2_id,
+    data.marriage_date || null,
+    data.marriage_place || null,
+    data.notes || null
+  );
+
+  return db.prepare('SELECT * FROM marriages WHERE id = ?').get(info.lastInsertRowid) as Marriage;
+}
+
+// Activity Log Queries
+export function getActivityLogs(limit = 10): ActivityEvent[] {
+  const db = getDb();
+  return db.prepare('SELECT * FROM activity_logs ORDER BY timestamp DESC LIMIT ?').all(limit) as ActivityEvent[];
+}
+
+export function logActivity(type: 'CREATE' | 'UPDATE' | 'DELETE' | 'VIEW', description: string, personId?: number, personName?: string) {
+  try {
+    const db = getDb();
+    const id = `act_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    db.prepare(`
+      INSERT INTO activity_logs (id, type, description, user, person_id, person_name, timestamp)
+      VALUES (?, ?, ?, 'Admin', ?, ?, datetime('now'))
+    `).run(id, type, description, personId || null, personName || null);
+  } catch (err) {
+    console.error('Error logging activity:', err);
+  }
+}
+
+// Search
+export function searchPersons(query: string, limit: number = 50): Person[] {
+  const db = getDb();
+  const q = `%${query}%`;
   return db.prepare(`
     SELECT * FROM persons
     WHERE first_name LIKE ?
@@ -313,29 +435,15 @@ export function searchPersons(query: string, limit = 20): Person[] {
        OR maiden_name LIKE ?
        OR profession LIKE ?
        OR birth_place LIKE ?
-    ORDER BY birth_date ASC
+       OR death_place LIKE ?
+       OR accomplishments LIKE ?
+       OR biography LIKE ?
+    ORDER BY birth_date ASC, last_name ASC
     LIMIT ?
-  `).all(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, limit) as Person[];
+  `).all(q, q, q, q, q, q, q, q, limit) as Person[];
 }
 
-export function getActivityLogs(limit = 15): ActivityEvent[] {
-  const db = getDb();
-  return db.prepare('SELECT * FROM activity_logs ORDER BY timestamp DESC LIMIT ?').all(limit) as ActivityEvent[];
-}
-
-export function logActivity(type: ActivityEvent['type'], description: string, personId?: number, personName?: string, user = 'Admin') {
-  const db = getDb();
-  const id = `act-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-  db.prepare(`
-    INSERT INTO activity_logs (id, type, description, user, person_id, person_name, timestamp)
-    VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
-  `).run(id, type, description, user, personId || null, personName || null);
-}
-
-// ==========================================
-// Family Events Queries with Multi-Photo Gallery Support
-// ==========================================
-
+// Events Queries
 function formatEventRow(row: any): FamilyEvent {
   let relatedIds: number[] = [];
   if (row.related_person_ids) {
@@ -398,40 +506,27 @@ export function createEvent(data: FamilyEventFormData): FamilyEvent {
     photosList = [data.photo];
   }
 
-  // Normalize photo paths
-  photosList = photosList.map((p) => {
-    if (p && !p.startsWith('/') && !p.startsWith('http') && !p.startsWith('data:')) {
-      return `/media/${p}`;
-    }
-    return p;
-  });
-
-  const mainPhoto = photosList.length > 0 ? photosList[0] : null;
-
-  const relatedJson = data.related_person_ids && data.related_person_ids.length > 0
-    ? JSON.stringify(data.related_person_ids)
-    : null;
-
-  const photosJson = photosList.length > 0 ? JSON.stringify(photosList) : null;
-
   const stmt = db.prepare(`
-    INSERT INTO family_events (title, description, event_date, category, location, photo, photos, related_person_ids, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+    INSERT INTO family_events (
+      title, description, event_date, category, location, photo, photos, related_person_ids
+    ) VALUES (
+      ?, ?, ?, ?, ?, ?, ?, ?
+    )
   `);
 
   const info = stmt.run(
     data.title,
     data.description,
     data.event_date,
-    data.category || 'reunion',
+    data.category,
     data.location || null,
-    mainPhoto,
-    photosJson,
-    relatedJson
+    data.photo || (photosList.length > 0 ? photosList[0] : null),
+    JSON.stringify(photosList),
+    JSON.stringify(data.related_person_ids || [])
   );
 
   const newId = Number(info.lastInsertRowid);
-  logActivity('addition', `Création de l'événement familial : ${data.title}`);
+  logActivity('CREATE', `Création de l'événement familial "${data.title}"`, undefined, data.title);
 
   return getEventById(newId)!;
 }
@@ -441,32 +536,18 @@ export function updateEvent(id: number, data: Partial<FamilyEventFormData>): Fam
   const existing = getEventById(id);
   if (!existing) return null;
 
-  let photosList = data.photos !== undefined ? data.photos : (existing.photos || []);
-  if (photosList.length === 0 && data.photo) {
-    photosList = [data.photo];
+  let photosList = data.photos !== undefined ? data.photos : existing.photos;
+  let photo = data.photo !== undefined ? data.photo : existing.photo;
+  if (!photo && photosList && photosList.length > 0) {
+    photo = photosList[0];
   }
-
-  photosList = photosList.map((p) => {
-    if (p && !p.startsWith('/') && !p.startsWith('http') && !p.startsWith('data:')) {
-      return `/media/${p}`;
-    }
-    return p;
-  });
-
-  const mainPhoto = photosList.length > 0 ? photosList[0] : (data.photo !== undefined ? data.photo : existing.photo);
-
-  const relatedJson = data.related_person_ids !== undefined
-    ? (data.related_person_ids.length > 0 ? JSON.stringify(data.related_person_ids) : null)
-    : (existing.related_person_ids && existing.related_person_ids.length > 0 ? JSON.stringify(existing.related_person_ids) : null);
-
-  const photosJson = photosList.length > 0 ? JSON.stringify(photosList) : null;
 
   const stmt = db.prepare(`
     UPDATE family_events SET
-      title = ?,
-      description = ?,
-      event_date = ?,
-      category = ?,
+      title = COALESCE(?, title),
+      description = COALESCE(?, description),
+      event_date = COALESCE(?, event_date),
+      category = COALESCE(?, category),
       location = ?,
       photo = ?,
       photos = ?,
@@ -480,14 +561,15 @@ export function updateEvent(id: number, data: Partial<FamilyEventFormData>): Fam
     data.description ?? existing.description,
     data.event_date ?? existing.event_date,
     data.category ?? existing.category,
-    data.location !== undefined ? (data.location || null) : existing.location,
-    mainPhoto || null,
-    photosJson,
-    relatedJson,
+    data.location !== undefined ? data.location : existing.location,
+    photo,
+    JSON.stringify(photosList || []),
+    JSON.stringify(data.related_person_ids !== undefined ? data.related_person_ids : existing.related_person_ids),
     id
   );
 
-  logActivity('edit', `Mise à jour de l'événement : ${data.title ?? existing.title}`);
+  logActivity('UPDATE', `Mise à jour de l'événement "${data.title || existing.title}"`, undefined, data.title || existing.title);
+
   return getEventById(id);
 }
 
@@ -497,6 +579,7 @@ export function deleteEvent(id: number): boolean {
   if (!existing) return false;
 
   db.prepare('DELETE FROM family_events WHERE id = ?').run(id);
-  logActivity('edit', `Suppression de l'événement : ${existing.title}`);
+  logActivity('DELETE', `Suppression de l'événement "${existing.title}"`, undefined, existing.title);
+
   return true;
 }
