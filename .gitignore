@@ -1,21 +1,26 @@
-# Dependencies
-node_modules/
-*/node_modules/
-.pnp
-.pnp.js
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Testing
-coverage/
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
-# Next.js build output
-.next/
-*/.next/
-out/
-*/out/
-build/
-*/build/
+# testing
+/coverage
 
-# Misc
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
 .DS_Store
 *.pem
 *.log
@@ -33,6 +38,3 @@ next-env.d.ts
 # IDE & Editor
 .idea/
 .vscode/
-
-# Duplicate temporary folders
-heritage_app/Nouveau dossier/
