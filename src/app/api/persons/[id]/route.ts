@@ -3,6 +3,8 @@ import { getPersonById, updatePerson, deletePerson, getAllPersons } from '@/lib/
 import { getPersonDetail } from '@/lib/genealogy';
 import { PersonFormData } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -14,7 +16,7 @@ export async function GET(
       return NextResponse.json({ error: 'ID invalide' }, { status: 400 });
     }
 
-    const allPersons = getAllPersons();
+    const allPersons = await getAllPersons();
     const detail = getPersonDetail(id, allPersons);
     if (!detail) {
       return NextResponse.json({ error: 'Personne non trouvée' }, { status: 404 });
@@ -39,7 +41,7 @@ export async function PUT(
     }
 
     const body = (await req.json()) as Partial<PersonFormData>;
-    const updated = updatePerson(id, body);
+    const updated = await updatePerson(id, body);
     if (!updated) {
       return NextResponse.json({ error: 'Personne non trouvée' }, { status: 404 });
     }
@@ -62,7 +64,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'ID invalide' }, { status: 400 });
     }
 
-    const success = deletePerson(id);
+    const success = await deletePerson(id);
     if (!success) {
       return NextResponse.json({ error: 'Personne non trouvée' }, { status: 404 });
     }

@@ -54,12 +54,21 @@ export default function RecentGallery({ events }: { events: FamilyEvent[] }) {
               className="group flex flex-col items-center text-center"
             >
               {/* Photo Frame with Vintage styling */}
-              <div className="relative w-full aspect-4/3 rounded-xl overflow-hidden bg-[#eae1da] vintage-photo-frame mb-2.5 group-hover:scale-105 transition-all">
+              <div className="relative w-full aspect-4/3 rounded-xl overflow-hidden bg-[#0e0e0e] vintage-photo-frame mb-2.5 group-hover:scale-105 transition-all">
+                {/* Ambient blur */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <Image
+                    src={item.url}
+                    alt=""
+                    fill
+                    className="object-cover object-center blur-md scale-110 opacity-40 brightness-75"
+                  />
+                </div>
                 <Image
                   src={item.url}
                   alt={item.title}
                   fill
-                  className="object-cover transition-all duration-300 group-hover:contrast-105"
+                  className="object-contain sm:object-cover transition-all duration-300 group-hover:contrast-105"
                   sizes="(max-width: 768px) 50vw, 25vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center p-2">

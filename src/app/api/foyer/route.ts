@@ -9,12 +9,14 @@ import {
 } from '@/lib/genealogy';
 import { FoyerData, FoyerSpouseData, FoyerChildData, FoyerChildrenGroup } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const personIdStr = searchParams.get('personId');
 
-    const allPersonsRaw = getAllPersons();
+    const allPersonsRaw = await getAllPersons();
     const allTreeNodes = getTreeDataFormatted(allPersonsRaw);
 
     // If no personId, find the patriarch (root person)
@@ -48,6 +50,7 @@ export async function GET(request: NextRequest) {
       gender: sp.gender,
       birth_date: sp.birth_date,
       death_date: sp.death_date,
+      photo: sp.photo || null,
       photo_url: sp.photo || null,
       profession: sp.profession || null,
     }));
@@ -70,6 +73,7 @@ export async function GET(request: NextRequest) {
               gender: group.spouse.gender,
               birth_date: group.spouse.birth_date,
               death_date: group.spouse.death_date,
+              photo: group.spouse.photo || null,
               photo_url: group.spouse.photo || null,
               profession: group.spouse.profession || null,
             }
@@ -94,6 +98,7 @@ export async function GET(request: NextRequest) {
             gender: child.gender,
             birth_date: child.birth_date,
             death_date: child.death_date,
+            photo: child.photo || null,
             photo_url: child.photo || null,
             profession: child.profession || null,
             hasDescendants,

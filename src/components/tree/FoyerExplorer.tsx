@@ -18,6 +18,8 @@ import ContextualAddMemberModal from './ContextualAddMemberModal';
 interface FoyerExplorerProps {
   allPersons: TreeNodeData[];
   onDataRefresh?: () => void;
+  initialFoyerId?: number;
+  highlightPersonId?: number;
 }
 
 /**
@@ -26,7 +28,12 @@ interface FoyerExplorerProps {
  * Renders each household as a true genealogical graph with SVG branches.
  * Navigating to an offspring deploys their individual family tree graph.
  */
-export default function FoyerExplorer({ allPersons, onDataRefresh }: FoyerExplorerProps) {
+export default function FoyerExplorer({
+  allPersons,
+  onDataRefresh,
+  initialFoyerId,
+  highlightPersonId,
+}: FoyerExplorerProps) {
   // Find the patriarch (root person)
   const patriarchId = useMemo(() => {
     const patriarch = allPersons.find(
@@ -35,7 +42,11 @@ export default function FoyerExplorer({ allPersons, onDataRefresh }: FoyerExplor
     return patriarch?.id ?? allPersons[0]?.id ?? 0;
   }, [allPersons]);
 
-  const [activePersonId, setActivePersonId] = useState<number>(patriarchId);
+  const [activePersonId, setActivePersonId] = useState<number>(
+    initialFoyerId && allPersons.some((p) => p.id === initialFoyerId)
+      ? initialFoyerId
+      : patriarchId
+  );
   const [navigationHistory, setNavigationHistory] = useState<number[]>([]);
   const [foyerData, setFoyerData] = useState<FoyerData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -336,6 +347,7 @@ export default function FoyerExplorer({ allPersons, onDataRefresh }: FoyerExplor
           canGoBack={canGoBack}
           onGoBack={goBack}
           previousPersonName={previousPersonName}
+          highlightPersonId={highlightPersonId}
         />
       </div>
 

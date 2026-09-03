@@ -27,9 +27,9 @@ export default function FamilyRelationships({ person }: { person: PersonDetail }
         className="flex items-center gap-3 p-3 rounded-2xl bg-[#fff8f4] border border-[#eae1da] hover:border-[#7a5739]/40 hover:bg-[#fbf2eb] transition-all group"
       >
         <div className="relative w-11 h-11 rounded-full overflow-hidden shrink-0 border-2 border-white ring-2 ring-[#173124]/10">
-          {member.photo ? (
+          {member.photo || (member as any).photo_url ? (
             <Image
-              src={member.photo}
+              src={(member.photo || (member as any).photo_url)!}
               alt={name}
               fill
               className="object-cover"

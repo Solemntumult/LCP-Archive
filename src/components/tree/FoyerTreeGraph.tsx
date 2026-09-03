@@ -24,6 +24,7 @@ interface FoyerTreeGraphProps {
   canGoBack?: boolean;
   onGoBack?: () => void;
   previousPersonName?: string;
+  highlightPersonId?: number;
 }
 
 interface NodeLayout {
@@ -86,6 +87,7 @@ export default function FoyerTreeGraph({
   canGoBack,
   onGoBack,
   previousPersonName,
+  highlightPersonId,
 }: FoyerTreeGraphProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -991,6 +993,7 @@ export default function FoyerTreeGraph({
                 const p = node.person;
                 const isMale = p.gender === 'M';
                 const initials = `${p.first_name?.[0] || ''}${p.last_name?.[0] || ''}`.toUpperCase();
+                const isHighlighted = highlightPersonId === p.id;
 
                 return (
                   <div
@@ -1011,17 +1014,23 @@ export default function FoyerTreeGraph({
                         isMale
                           ? 'border-[#2980b9] bg-[#2980b9]'
                           : 'border-[#c0392b] bg-[#c0392b]'
-                      } ring-3 ring-[#173124]/20 group-hover:ring-[#173124]/50 transition-all`}
+                      } ${
+                        isHighlighted
+                          ? 'ring-4 ring-[#c69214] ring-offset-2 scale-110 shadow-xl animate-pulse'
+                          : 'ring-3 ring-[#173124]/20 group-hover:ring-[#173124]/50'
+                      } transition-all`}
                     >
-                      {p.photo_url ? (
-                        <Image src={p.photo_url} alt={p.name} fill className="object-cover" sizes="52px" />
+                      {p.photo_url || p.photo ? (
+                        <Image src={(p.photo_url || p.photo)!} alt={p.name} fill className="object-cover" sizes="52px" />
                       ) : (
                         initials || <User className="w-6 h-6 text-white/80" />
                       )}
                     </div>
 
                     {/* Small Name Frame */}
-                    <div className="mt-1.5 px-3 py-0.5 bg-white rounded-xl border-2 border-[#173124] shadow-xs text-center max-w-[124px] truncate">
+                    <div className={`mt-1.5 px-3 py-0.5 bg-white rounded-xl border-2 shadow-xs text-center max-w-[124px] truncate ${
+                      isHighlighted ? 'border-[#c69214] font-black text-[#7a5739]' : 'border-[#173124]'
+                    }`}>
                       <span className="font-serif font-bold text-xs text-[#173124] block truncate">
                         {getFirstGivenName(p.first_name, p.name)}
                       </span>
@@ -1035,6 +1044,7 @@ export default function FoyerTreeGraph({
                 const sp = node.spouse;
                 const isMale = sp.gender === 'M';
                 const initials = `${sp.first_name?.[0] || ''}${sp.last_name?.[0] || ''}`.toUpperCase();
+                const isHighlighted = highlightPersonId === sp.id;
 
                 return (
                   <div
@@ -1055,17 +1065,23 @@ export default function FoyerTreeGraph({
                         isMale
                           ? 'border-[#2980b9] bg-[#2980b9]'
                           : 'border-[#c0392b] bg-[#c0392b]'
-                      } ring-2 ring-[#c69214]/40 group-hover:ring-[#c69214] transition-all`}
+                      } ${
+                        isHighlighted
+                          ? 'ring-4 ring-[#c69214] ring-offset-2 scale-110 shadow-xl animate-pulse'
+                          : 'ring-2 ring-[#c69214]/40 group-hover:ring-[#c69214]'
+                      } transition-all`}
                     >
-                      {sp.photo_url ? (
-                        <Image src={sp.photo_url} alt={sp.name} fill className="object-cover" sizes="48px" />
+                      {sp.photo_url || sp.photo ? (
+                        <Image src={(sp.photo_url || sp.photo)!} alt={sp.name} fill className="object-cover" sizes="48px" />
                       ) : (
                         initials || <User className="w-4 h-4 text-white/80" />
                       )}
                     </div>
 
                     {/* Small Name Frame */}
-                    <div className="mt-1 px-2.5 py-0.5 bg-[#fff8f4] rounded-xl border border-[#c69214] shadow-xs text-center max-w-[120px] truncate">
+                    <div className={`mt-1 px-2.5 py-0.5 bg-[#fff8f4] rounded-xl border shadow-xs text-center max-w-[120px] truncate ${
+                      isHighlighted ? 'border-[#c69214] border-2 font-black' : 'border-[#c69214]'
+                    }`}>
                       <span className="font-serif font-bold text-xs text-[#7a5739] block truncate">
                         {getFirstGivenName(sp.first_name, sp.name)}
                       </span>
@@ -1079,6 +1095,7 @@ export default function FoyerTreeGraph({
                 const child = node.child;
                 const isMale = child.gender === 'M';
                 const initials = `${child.first_name?.[0] || ''}${child.last_name?.[0] || ''}`.toUpperCase();
+                const isHighlighted = highlightPersonId === child.id;
 
                 return (
                   <div
@@ -1102,17 +1119,23 @@ export default function FoyerTreeGraph({
                           isMale
                             ? 'border-[#2980b9] bg-[#2980b9]'
                             : 'border-[#c0392b] bg-[#c0392b]'
-                        } group-hover:ring-2 group-hover:ring-[#173124]/40 transition-all`}
+                        } ${
+                          isHighlighted
+                            ? 'ring-4 ring-[#c69214] ring-offset-2 scale-110 shadow-xl animate-pulse'
+                            : 'group-hover:ring-2 group-hover:ring-[#173124]/40'
+                        } transition-all`}
                       >
-                        {child.photo_url ? (
-                          <Image src={child.photo_url} alt={child.name} fill className="object-cover" sizes="44px" />
+                        {child.photo_url || child.photo ? (
+                          <Image src={(child.photo_url || child.photo)!} alt={child.name} fill className="object-cover" sizes="44px" />
                         ) : (
                           initials || <User className="w-4 h-4 text-white/80" />
                         )}
                       </div>
 
                       {/* Small Name Frame */}
-                      <div className="mt-1 px-2.5 py-0.5 bg-white rounded-xl border border-[#eae1da] shadow-2xs text-center max-w-[115px] truncate group-hover:border-[#173124]">
+                      <div className={`mt-1 px-2.5 py-0.5 bg-white rounded-xl border shadow-2xs text-center max-w-[115px] truncate ${
+                        isHighlighted ? 'border-[#c69214] border-2 font-black' : 'border-[#eae1da] group-hover:border-[#173124]'
+                      }`}>
                         <span className="font-serif font-bold text-xs text-[#1f1b17] block truncate">
                           {getFirstGivenName(child.first_name, child.name)}
                         </span>

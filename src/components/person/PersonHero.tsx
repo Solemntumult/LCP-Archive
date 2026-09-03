@@ -45,9 +45,9 @@ export default function PersonHero({
         {/* Person Avatar Profile */}
         <div className="shrink-0 flex flex-col items-center">
           <div className="relative w-36 h-36 sm:w-40 sm:h-40 rounded-full overflow-hidden shadow-md border-4 border-white ring-4 ring-[#173124]/10">
-            {person.photo ? (
+            {person.photo || (person as any).photo_url ? (
               <Image
-                src={person.photo}
+                src={(person.photo || (person as any).photo_url)!}
                 alt={person.full_name}
                 fill
                 className="object-cover"
@@ -165,7 +165,13 @@ export default function PersonHero({
           {/* Quick Actions Toolbar */}
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-2.5 pt-3">
             <Link
-              href={`/tree`}
+              href={
+                person.father_id || person.mother_id
+                  ? `/tree?foyer=${person.father_id || person.mother_id}&highlight=${person.id}`
+                  : person.spouse_of_id
+                  ? `/tree?foyer=${person.spouse_of_id}&highlight=${person.id}`
+                  : `/tree?foyer=${person.id}&highlight=${person.id}`
+              }
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[#173124] text-white hover:bg-[#2d4739] shadow-xs transition-all"
             >
               <GitFork className="w-3.5 h-3.5 text-[#98b5a3]" />

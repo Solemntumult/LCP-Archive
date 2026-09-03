@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Calendar,
   PlusCircle,
@@ -11,6 +11,7 @@ import { FamilyEvent } from '@/types';
 import EventCarousel from './EventCarousel';
 import UpcomingEventCarousel from './UpcomingEventCarousel';
 import EventFormModal from './EventFormModal';
+import { syncClientAndServerEvents } from '@/lib/eventStorage';
 
 export default function EventsClientView({
   initialEvents,
@@ -20,12 +21,19 @@ export default function EventsClientView({
   const [events, setEvents] = useState<FamilyEvent[]>(initialEvents);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  useEffect(() => {
+    syncClientAndServerEvents(initialEvents).then((synced) => {
+      setEvents(synced);
+    });
+  }, [initialEvents]);
+
   const refreshEvents = async () => {
     try {
       const res = await fetch('/api/events');
       if (res.ok) {
         const data = await res.json();
-        setEvents(data);
+        const synced = await syncClientAndServerEvents(data);
+        setEvents(synced);
       }
     } catch (err) {
       console.error('Failed to refresh events:', err);

@@ -19,11 +19,11 @@ import RecentGallery from '@/components/dashboard/RecentGallery';
 
 export const dynamic = 'force-dynamic';
 
-export default function DashboardPage() {
-  const allPersons = getAllPersons();
+export default async function DashboardPage() {
+  const allPersons = await getAllPersons();
   const stats = getDashboardStats(allPersons);
-  const activities = getActivityLogs(8);
-  const events = getAllEvents();
+  const activities = await getActivityLogs(8);
+  const events = await getAllEvents();
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in">

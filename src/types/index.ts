@@ -128,6 +128,7 @@ export interface TreeNodeData {
   profession?: string | null;
   biography?: string | null;
   accomplishments?: string | null;
+  photo?: string | null;
   photo_url?: string | null;
   father_id?: number | null;
   mother_id?: number | null;
@@ -139,6 +140,7 @@ export interface TreeNodeData {
     spouse: {
       id: number;
       name: string;
+      photo?: string | null;
       photo_url?: string | null;
       gender: Gender;
     } | null;
@@ -148,6 +150,7 @@ export interface TreeNodeData {
       gender: Gender;
       birth_date?: string | null;
       death_date?: string | null;
+      photo?: string | null;
       photo_url?: string | null;
     }[];
   }[];
@@ -201,6 +204,7 @@ export interface FoyerChildData {
   gender: Gender;
   birth_date?: string | null;
   death_date?: string | null;
+  photo?: string | null;
   photo_url?: string | null;
   profession?: string | null;
   hasDescendants: boolean;
@@ -216,6 +220,7 @@ export interface FoyerSpouseData {
   gender: Gender;
   birth_date?: string | null;
   death_date?: string | null;
+  photo?: string | null;
   photo_url?: string | null;
   profession?: string | null;
 }

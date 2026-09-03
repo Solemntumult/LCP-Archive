@@ -1,11 +1,19 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { GitFork } from 'lucide-react';
 import FoyerExplorer from '@/components/tree/FoyerExplorer';
 import { TreeNodeData } from '@/types';
 
-export default function TreePage() {
+function TreeContent() {
+  const searchParams = useSearchParams();
+  const foyerParam = searchParams.get('foyer') || searchParams.get('center');
+  const highlightParam = searchParams.get('highlight');
+
+  const initialFoyerId = foyerParam ? parseInt(foyerParam, 10) : undefined;
+  const highlightPersonId = highlightParam ? parseInt(highlightParam, 10) : undefined;
+
   const [treeData, setTreeData] = useState<TreeNodeData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,6 +34,38 @@ export default function TreePage() {
     loadData();
   }, [loadData]);
 
+  if (loading) {
+    return (
+      <div className="w-full h-[550px] rounded-3xl bg-white border border-[#eae1da] flex flex-col items-center justify-center text-[#727973]">
+        <div className="animate-spin rounded-full h-10 w-10 border-4 border-[#173124] border-t-transparent mb-3" />
+        <p className="font-serif text-base text-[#1f1b17]">Construction de l&apos;arbre généalogique...</p>
+      </div>
+    );
+  }
+
+  if (treeData.length === 0) {
+    return (
+      <div className="p-12 text-center bg-white rounded-3xl border border-[#eae1da] space-y-3">
+        <GitFork className="w-14 h-14 mx-auto text-[#c2c8c2]" />
+        <h2 className="font-serif text-2xl font-bold text-[#1f1b17]">Commencez votre arbre</h2>
+        <p className="text-sm text-[#727973] max-w-md mx-auto">
+          Aucun membre n&apos;est enregistré dans la base de données. Ajoutez vos premiers ancêtres pour commencer.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <FoyerExplorer
+      allPersons={treeData}
+      onDataRefresh={loadData}
+      initialFoyerId={initialFoyerId}
+      highlightPersonId={highlightPersonId}
+    />
+  );
+}
+
+export default function TreePage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5 animate-fade-in">
       {/* Heritage Header */}
@@ -45,23 +85,16 @@ export default function TreePage() {
         </div>
       </div>
 
-      {/* Main Foyer Explorer */}
-      {loading ? (
-        <div className="w-full h-[550px] rounded-3xl bg-white border border-[#eae1da] flex flex-col items-center justify-center text-[#727973]">
-          <div className="animate-spin rounded-full h-10 w-10 border-4 border-[#173124] border-t-transparent mb-3" />
-          <p className="font-serif text-base text-[#1f1b17]">Construction de l&apos;arbre généalogique...</p>
-        </div>
-      ) : treeData.length === 0 ? (
-        <div className="p-12 text-center bg-white rounded-3xl border border-[#eae1da] space-y-3">
-          <GitFork className="w-14 h-14 mx-auto text-[#c2c8c2]" />
-          <h2 className="font-serif text-2xl font-bold text-[#1f1b17]">Commencez votre arbre</h2>
-          <p className="text-sm text-[#727973] max-w-md mx-auto">
-            Aucun membre n&apos;est enregistré dans la base de données. Ajoutez vos premiers ancêtres pour commencer.
-          </p>
-        </div>
-      ) : (
-        <FoyerExplorer allPersons={treeData} onDataRefresh={loadData} />
-      )}
+      <Suspense
+        fallback={
+          <div className="w-full h-[550px] rounded-3xl bg-white border border-[#eae1da] flex flex-col items-center justify-center text-[#727973]">
+            <div className="animate-spin rounded-full h-10 w-10 border-4 border-[#173124] border-t-transparent mb-3" />
+            <p className="font-serif text-base text-[#1f1b17]">Chargement de l&apos;arbre...</p>
+          </div>
+        }
+      >
+        <TreeContent />
+      </Suspense>
     </div>
   );
 }

@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAllPersons, createPerson } from '@/lib/db';
 import { PersonFormData } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
-    const persons = getAllPersons();
+    const persons = await getAllPersons();
     return NextResponse.json(persons);
   } catch (error) {
     console.error('Error fetching persons:', error);
@@ -23,7 +25,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const created = createPerson(body);
+    const created = await createPerson(body);
     return NextResponse.json(created, { status: 201 });
   } catch (error) {
     console.error('Error creating person:', error);

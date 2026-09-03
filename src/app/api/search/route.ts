@@ -2,13 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { searchPersons } from '@/lib/db';
 import { getFullName } from '@/lib/genealogy';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams;
     const query = searchParams.get('q') || '';
     const limit = parseInt(searchParams.get('limit') || '20', 10);
 
-    const persons = searchPersons(query, limit);
+    const persons = await searchPersons(query, limit);
     const formatted = persons.map(p => ({
       id: p.id,
       name: getFullName(p),

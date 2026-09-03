@@ -20,7 +20,7 @@ export default async function PersonDetailPage({
   const id = parseInt(resolvedParams.id, 10);
   if (isNaN(id)) notFound();
 
-  const allPersons = getAllPersons();
+  const allPersons = await getAllPersons();
   const person = getPersonDetail(id, allPersons);
   if (!person) notFound();
 

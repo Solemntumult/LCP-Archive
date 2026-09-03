@@ -159,12 +159,21 @@ export default function EventCard({
 
         {/* Photo if attached */}
         {event.photo && (
-          <div className="relative w-full h-48 sm:h-56 rounded-2xl overflow-hidden bg-[#eae1da] border border-[#eae1da] vintage-photo-frame my-3">
+          <div className="relative w-full h-48 sm:h-56 rounded-2xl overflow-hidden bg-[#0e0e0e] border border-[#eae1da] vintage-photo-frame my-3 group/img">
+            {/* Ambient background */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <Image
+                src={event.photo}
+                alt=""
+                fill
+                className="object-cover object-center blur-lg scale-110 opacity-40 brightness-75"
+              />
+            </div>
             <Image
               src={event.photo}
               alt={event.title}
               fill
-              className="object-cover"
+              className="object-contain sm:object-cover object-center transition-transform duration-500 group-hover/img:scale-105"
               sizes="(max-width: 768px) 100vw, 50vw"
             />
           </div>

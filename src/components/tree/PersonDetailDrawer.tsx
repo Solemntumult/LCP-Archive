@@ -95,8 +95,14 @@ export default function PersonDetailDrawer({
             isMale ? 'border-[#2980b9] bg-[#2980b9]' : 'border-[#c0392b] bg-[#c0392b]'
           }`}
         >
-          {person.photo_url ? (
-            <Image src={person.photo_url} alt={person.name} fill className="object-cover" sizes="48px" />
+          {person.photo_url || person.photo ? (
+            <Image
+              src={(person.photo_url || person.photo)!}
+              alt={person.name}
+              fill
+              className="object-cover"
+              sizes="48px"
+            />
           ) : (
             initials
           )}

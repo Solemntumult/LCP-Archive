@@ -102,17 +102,30 @@ export default function EventCarousel({
       onMouseEnter={() => setIsAutoPlay(false)}
       onMouseLeave={() => setIsAutoPlay(true)}
     >
-      {/* Background Image: 100% PURE photo without any color tint */}
-      <div className="relative w-full h-[420px] sm:h-[480px] lg:h-[540px] overflow-hidden bg-[#111111]">
+      {/* Background Image: Dual-layer ambient fill + centered pure framed image */}
+      <div className="relative w-full h-[420px] sm:h-[480px] lg:h-[540px] overflow-hidden bg-[#0e0e0e]">
         {photoUrl ? (
-          <Image
-            src={photoUrl}
-            alt={current.title}
-            fill
-            priority
-            className="object-cover object-center"
-            sizes="(max-width: 768px) 100vw, 1200px"
-          />
+          <>
+            {/* Ambient blurred backdrop to seamlessly fill any aspect-ratio */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <Image
+                src={photoUrl}
+                alt=""
+                fill
+                className="object-cover object-center blur-2xl scale-110 opacity-40 brightness-75"
+              />
+            </div>
+
+            {/* Sharp, pure photo centered without awkward cropping */}
+            <Image
+              src={photoUrl}
+              alt={current.title}
+              fill
+              priority
+              className="object-contain object-center transition-transform duration-700 group-hover:scale-[1.02]"
+              sizes="(max-width: 768px) 100vw, 1200px"
+            />
+          </>
         ) : (
           <div className="w-full h-full bg-[#1c1917]" />
         )}

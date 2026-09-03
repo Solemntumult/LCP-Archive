@@ -2,13 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAllEvents, createEvent } from '@/lib/db';
 import { FamilyEventFormData } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams;
     const filterType = searchParams.get('type'); // 'past' | 'upcoming'
     const category = searchParams.get('category');
 
-    let events = getAllEvents();
+    let events = await getAllEvents();
 
     if (filterType === 'past') {
       events = events.filter((e) => e.is_past);
@@ -38,7 +40,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const created = createEvent(body);
+    const created = await createEvent(body);
     return NextResponse.json(created, { status: 201 });
   } catch (error) {
     console.error('Error creating event:', error);

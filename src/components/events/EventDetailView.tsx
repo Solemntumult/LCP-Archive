@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { FamilyEvent, EventCategory } from '@/types';
 import EventFormModal from './EventFormModal';
+import { removeLocalStoredEvent } from '@/lib/eventStorage';
 
 export default function EventDetailView({
   initialEvent,
@@ -89,6 +90,7 @@ export default function EventDetailView({
     try {
       const res = await fetch(`/api/events/${event.id}`, { method: 'DELETE' });
       if (res.ok) {
+        removeLocalStoredEvent(event.id);
         router.push('/events');
       }
     } catch (err) {
@@ -206,13 +208,23 @@ export default function EventDetailView({
               <div
                 key={`gallery-photo-${idx}`}
                 onClick={() => setLightboxIndex(idx)}
-                className="group relative rounded-2xl overflow-hidden aspect-4/3 bg-[#eae1da] border-2 border-[#eae1da] cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 vintage-photo-frame"
+                className="group relative rounded-2xl overflow-hidden aspect-4/3 bg-[#0e0e0e] border-2 border-[#eae1da] cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 vintage-photo-frame"
               >
+                {/* Ambient backdrop */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <Image
+                    src={photoUrl}
+                    alt=""
+                    fill
+                    className="object-cover object-center blur-lg scale-110 opacity-40 brightness-75"
+                  />
+                </div>
+
                 <Image
                   src={photoUrl}
                   alt={`${event.title} - Photo ${idx + 1}`}
                   fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="object-contain sm:object-cover object-center group-hover:scale-105 transition-transform duration-500"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
 

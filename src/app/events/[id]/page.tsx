@@ -14,7 +14,7 @@ export default async function EventDetailPage({
   const id = parseInt(resolvedParams.id, 10);
   if (isNaN(id)) notFound();
 
-  const event = getEventById(id);
+  const event = await getEventById(id);
   if (!event) notFound();
 
   return (

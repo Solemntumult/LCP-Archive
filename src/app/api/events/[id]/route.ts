@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getEventById, updateEvent, deleteEvent } from '@/lib/db';
 import { FamilyEventFormData } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -13,7 +15,7 @@ export async function GET(
       return NextResponse.json({ error: 'ID invalide' }, { status: 400 });
     }
 
-    const event = getEventById(id);
+    const event = await getEventById(id);
     if (!event) {
       return NextResponse.json({ error: 'Événement non trouvé' }, { status: 404 });
     }
@@ -37,7 +39,7 @@ export async function PUT(
     }
 
     const body = (await req.json()) as Partial<FamilyEventFormData>;
-    const updated = updateEvent(id, body);
+    const updated = await updateEvent(id, body);
     if (!updated) {
       return NextResponse.json({ error: 'Événement non trouvé' }, { status: 404 });
     }
@@ -60,7 +62,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'ID invalide' }, { status: 400 });
     }
 
-    const success = deleteEvent(id);
+    const success = await deleteEvent(id);
     if (!success) {
       return NextResponse.json({ error: 'Événement non trouvé' }, { status: 404 });
     }

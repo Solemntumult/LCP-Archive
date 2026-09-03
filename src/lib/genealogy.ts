@@ -398,7 +398,8 @@ export function getTreeDataFormatted(allPersons: Person[]): TreeNodeData[] {
       profession: person.profession,
       biography: person.biography,
       accomplishments: person.accomplishments,
-      photo_url: person.photo,
+      photo: person.photo || null,
+      photo_url: person.photo || null,
       father_id: person.father_id,
       mother_id: person.mother_id,
       spouse_of_id: person.spouse_of_id,
@@ -409,7 +410,8 @@ export function getTreeDataFormatted(allPersons: Person[]): TreeNodeData[] {
         spouse: group.spouse ? {
           id: group.spouse.id,
           name: getFullName(group.spouse),
-          photo_url: group.spouse.photo,
+          photo: group.spouse.photo || null,
+          photo_url: group.spouse.photo || null,
           gender: group.spouse.gender,
         } : null,
         children: group.children.map(child => ({
@@ -418,7 +420,8 @@ export function getTreeDataFormatted(allPersons: Person[]): TreeNodeData[] {
           gender: child.gender,
           birth_date: child.birth_date,
           death_date: child.death_date,
-          photo_url: child.photo,
+          photo: child.photo || null,
+          photo_url: child.photo || null,
         })),
       })),
     };

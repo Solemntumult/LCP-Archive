@@ -16,7 +16,7 @@ export default async function EditPersonPage({
   const id = parseInt(resolvedParams.id, 10);
   if (isNaN(id)) notFound();
 
-  const person = getPersonById(id);
+  const person = await getPersonById(id);
   if (!person) notFound();
 
   return (
