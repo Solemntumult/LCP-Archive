@@ -1,21 +1,27 @@
 import fs from 'fs';
 import path from 'path';
 import { Person, PersonFormData, Marriage, ActivityEvent, FamilyEvent, FamilyEventFormData } from '@/types';
+import initialSeedData from '../../data/initial_seed.json';
 
 // ============================================================================
 // Database Strategy:
 // 1. If DATABASE_URL / POSTGRES_URL is provided -> PostgreSQL (Neon Serverless)
-// 2. Otherwise -> Local SQLite (better-sqlite3)
+// 2. Otherwise (Local dev) -> Local SQLite (better-sqlite3) with in-memory fallback
 // ============================================================================
 
-const isPostgres = Boolean(process.env.DATABASE_URL || process.env.POSTGRES_URL);
+function checkIsPostgres(): boolean {
+  return Boolean(
+    (process.env.DATABASE_URL && process.env.DATABASE_URL.trim().length > 0) ||
+    (process.env.POSTGRES_URL && process.env.POSTGRES_URL.trim().length > 0)
+  );
+}
 
 // Neon / PostgreSQL client setup
 let pgClient: any = null;
 
 function getPg() {
   if (!pgClient) {
-    const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+    const connectionString = (process.env.DATABASE_URL || process.env.POSTGRES_URL || '').trim();
     const { neon } = require('@neondatabase/serverless');
     pgClient = neon(connectionString);
   }
@@ -24,112 +30,101 @@ function getPg() {
 
 // SQLite client setup
 let sqliteDbInstance: any = null;
+let inMemoryPersonsCache: Person[] | null = null;
+let inMemoryEventsCache: FamilyEvent[] | null = null;
 
 function getSqliteDb() {
   if (sqliteDbInstance) return sqliteDbInstance;
-  const Database = require('better-sqlite3');
-  const dbDir = path.join(process.cwd(), 'data');
-  const dbPath = path.join(dbDir, 'family_tree.db');
-  if (!fs.existsSync(dbDir)) {
-    fs.mkdirSync(dbDir, { recursive: true });
+  try {
+    const Database = require('better-sqlite3');
+    const isVercel = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+    const dbDir = isVercel ? '/tmp' : path.join(process.cwd(), 'data');
+    const dbPath = path.join(dbDir, 'family_tree.db');
+    if (!fs.existsSync(dbDir)) {
+      try { fs.mkdirSync(dbDir, { recursive: true }); } catch {}
+    }
+    sqliteDbInstance = new Database(dbPath);
+    sqliteDbInstance.pragma('journal_mode = WAL');
+    sqliteDbInstance.pragma('foreign_keys = ON');
+    initSqliteSchema(sqliteDbInstance);
+    return sqliteDbInstance;
+  } catch (err) {
+    console.warn('SQLite initialization note (fallback to bundled memory dataset):', err);
+    return null;
   }
-  sqliteDbInstance = new Database(dbPath);
-  sqliteDbInstance.pragma('journal_mode = WAL');
-  sqliteDbInstance.pragma('foreign_keys = ON');
-  initSqliteSchema(sqliteDbInstance);
-  return sqliteDbInstance;
 }
 
 function initSqliteSchema(db: any) {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS persons (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      first_name TEXT NOT NULL,
-      last_name TEXT NOT NULL,
-      maiden_name TEXT,
-      gender TEXT NOT NULL,
-      birth_date TEXT,
-      birth_place TEXT,
-      death_date TEXT,
-      death_place TEXT,
-      father_id INTEGER,
-      mother_id INTEGER,
-      spouse_of_id INTEGER,
-      biography TEXT,
-      accomplishments TEXT,
-      profession TEXT,
-      education TEXT,
-      photo TEXT,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-    );
+  try {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS persons (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        first_name TEXT NOT NULL,
+        last_name TEXT NOT NULL,
+        maiden_name TEXT,
+        gender TEXT NOT NULL,
+        birth_date TEXT,
+        birth_place TEXT,
+        death_date TEXT,
+        death_place TEXT,
+        father_id INTEGER,
+        mother_id INTEGER,
+        spouse_of_id INTEGER,
+        biography TEXT,
+        accomplishments TEXT,
+        profession TEXT,
+        education TEXT,
+        photo TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+      );
 
-    CREATE TABLE IF NOT EXISTS marriages (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      spouse1_id INTEGER NOT NULL,
-      spouse2_id INTEGER NOT NULL,
-      marriage_date TEXT,
-      marriage_place TEXT,
-      divorce_date TEXT,
-      notes TEXT,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
-    );
+      CREATE TABLE IF NOT EXISTS marriages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        spouse1_id INTEGER NOT NULL,
+        spouse2_id INTEGER NOT NULL,
+        marriage_date TEXT,
+        marriage_place TEXT,
+        divorce_date TEXT,
+        notes TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      );
 
-    CREATE TABLE IF NOT EXISTS family_events (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      description TEXT NOT NULL,
-      event_date TEXT NOT NULL,
-      category TEXT NOT NULL DEFAULT 'reunion',
-      location TEXT,
-      photo TEXT,
-      photos TEXT,
-      related_person_ids TEXT,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-    );
+      CREATE TABLE IF NOT EXISTS family_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        event_date TEXT NOT NULL,
+        category TEXT NOT NULL DEFAULT 'reunion',
+        location TEXT,
+        photo TEXT,
+        photos TEXT,
+        related_person_ids TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+      );
 
-    CREATE TABLE IF NOT EXISTS activity_logs (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      type TEXT NOT NULL,
-      description TEXT NOT NULL,
-      person_id INTEGER,
-      person_name TEXT,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
+      CREATE TABLE IF NOT EXISTS activity_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        type TEXT NOT NULL,
+        description TEXT NOT NULL,
+        person_id INTEGER,
+        person_name TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
 
-  const count = db.prepare('SELECT COUNT(*) as count FROM persons').get().count;
-  if (count === 0) {
-    seedSqlite(db);
-  } else {
-    // Ensure all user data corrections are applied locally
-    try {
-      db.prepare("UPDATE persons SET profession = 'Enseignant' WHERE id = 1").run();
-      db.prepare("UPDATE persons SET profession = NULL WHERE id = 2").run();
-      db.prepare("UPDATE persons SET profession = NULL WHERE id = 3").run();
-      db.prepare("UPDATE persons SET profession = 'Ingénieur en mines', biography = NULL WHERE id = 4").run();
-      db.prepare("UPDATE persons SET profession = NULL WHERE id = 5").run();
-      db.prepare("UPDATE persons SET profession = NULL WHERE id = 6").run();
-      db.prepare("UPDATE persons SET profession = 'Enseignant' WHERE id = 9").run();
-    } catch {}
-  }
-}
-
-function getSeedData(): { persons: any[]; marriages: any[] } {
-  const seedPath = path.join(process.cwd(), 'data', 'initial_seed.json');
-  if (fs.existsSync(seedPath)) {
-    try {
-      return JSON.parse(fs.readFileSync(seedPath, 'utf-8'));
-    } catch (e) {
-      console.error('Error reading initial_seed.json:', e);
+    const count = db.prepare('SELECT COUNT(*) as count FROM persons').get().count;
+    if (count === 0) {
+      seedSqlite(db);
     }
+  } catch (e) {
+    console.error('Error initializing SQLite schema:', e);
   }
-  return { persons: [], marriages: [] };
 }
 
 function seedSqlite(db: any) {
-  const { persons, marriages } = getSeedData();
+  const { persons, marriages } = initialSeedData as any;
   const insertPerson = db.prepare(`
     INSERT INTO persons (
       id, first_name, last_name, maiden_name, gender, birth_date, birth_place,
@@ -201,123 +196,117 @@ async function ensurePgSchema() {
   if (pgInitialized) return;
   const sql = getPg();
 
-  await sql`
-    CREATE TABLE IF NOT EXISTS persons (
-      id SERIAL PRIMARY KEY,
-      first_name TEXT NOT NULL,
-      last_name TEXT NOT NULL,
-      maiden_name TEXT,
-      gender VARCHAR(10) NOT NULL,
-      birth_date TEXT,
-      birth_place TEXT,
-      death_date TEXT,
-      death_place TEXT,
-      father_id INTEGER,
-      mother_id INTEGER,
-      spouse_of_id INTEGER,
-      biography TEXT,
-      accomplishments TEXT,
-      profession TEXT,
-      education TEXT,
-      photo TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `;
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS persons (
+        id SERIAL PRIMARY KEY,
+        first_name TEXT NOT NULL,
+        last_name TEXT NOT NULL,
+        maiden_name TEXT,
+        gender VARCHAR(10) NOT NULL,
+        birth_date TEXT,
+        birth_place TEXT,
+        death_date TEXT,
+        death_place TEXT,
+        father_id INTEGER,
+        mother_id INTEGER,
+        spouse_of_id INTEGER,
+        biography TEXT,
+        accomplishments TEXT,
+        profession TEXT,
+        education TEXT,
+        photo TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
 
-  await sql`
-    CREATE TABLE IF NOT EXISTS marriages (
-      id SERIAL PRIMARY KEY,
-      spouse1_id INTEGER NOT NULL,
-      spouse2_id INTEGER NOT NULL,
-      marriage_date TEXT,
-      marriage_place TEXT,
-      divorce_date TEXT,
-      notes TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `;
+    await sql`
+      CREATE TABLE IF NOT EXISTS marriages (
+        id SERIAL PRIMARY KEY,
+        spouse1_id INTEGER NOT NULL,
+        spouse2_id INTEGER NOT NULL,
+        marriage_date TEXT,
+        marriage_place TEXT,
+        divorce_date TEXT,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
 
-  await sql`
-    CREATE TABLE IF NOT EXISTS family_events (
-      id SERIAL PRIMARY KEY,
-      title TEXT NOT NULL,
-      description TEXT NOT NULL,
-      event_date TEXT NOT NULL,
-      category TEXT NOT NULL DEFAULT 'reunion',
-      location TEXT,
-      photo TEXT,
-      photos TEXT,
-      related_person_ids TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `;
+    await sql`
+      CREATE TABLE IF NOT EXISTS family_events (
+        id SERIAL PRIMARY KEY,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        event_date TEXT NOT NULL,
+        category TEXT NOT NULL DEFAULT 'reunion',
+        location TEXT,
+        photo TEXT,
+        photos TEXT,
+        related_person_ids TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
 
-  await sql`
-    CREATE TABLE IF NOT EXISTS activity_logs (
-      id SERIAL PRIMARY KEY,
-      type VARCHAR(50) NOT NULL,
-      description TEXT NOT NULL,
-      person_id INTEGER,
-      person_name TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `;
+    await sql`
+      CREATE TABLE IF NOT EXISTS activity_logs (
+        id SERIAL PRIMARY KEY,
+        type VARCHAR(50) NOT NULL,
+        description TEXT NOT NULL,
+        person_id INTEGER,
+        person_name TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
 
-  // Check if persons table is empty in Postgres
-  const countResult = await sql`SELECT COUNT(*)::int as count FROM persons`;
-  const count = countResult[0]?.count || 0;
+    // Check if persons table is empty in Postgres
+    const countResult = await sql`SELECT COUNT(*)::int as count FROM persons`;
+    const count = Number(countResult[0]?.count || 0);
 
-  if (count === 0) {
-    const { persons, marriages } = getSeedData();
-    for (const p of persons) {
-      let photo = p.photo || p.photo_url || null;
-      if (photo && !photo.startsWith('/') && !photo.startsWith('http') && !photo.startsWith('data:')) {
-        photo = `/media/${photo}`;
+    if (count === 0) {
+      const { persons, marriages } = initialSeedData as any;
+      for (const p of persons) {
+        let photo = p.photo || p.photo_url || null;
+        if (photo && !photo.startsWith('/') && !photo.startsWith('http') && !photo.startsWith('data:')) {
+          photo = `/media/${photo}`;
+        }
+        await sql`
+          INSERT INTO persons (
+            id, first_name, last_name, maiden_name, gender, birth_date, birth_place,
+            death_date, death_place, father_id, mother_id, spouse_of_id,
+            biography, accomplishments, profession, education, photo
+          ) VALUES (
+            ${p.id}, ${p.first_name}, ${p.last_name}, ${p.maiden_name || null}, ${p.gender},
+            ${p.birth_date || null}, ${p.birth_place || null}, ${p.death_date || null}, ${p.death_place || null},
+            ${p.father_id || null}, ${p.mother_id || null}, ${p.spouse_of_id || null},
+            ${p.biography || null}, ${p.accomplishments || null}, ${p.profession || null},
+            ${p.education || null}, ${photo}
+          )
+          ON CONFLICT (id) DO NOTHING
+        `;
       }
-      const profession = p.profession || null;
-      const bio = p.biography || null;
 
-      await sql`
-        INSERT INTO persons (
-          id, first_name, last_name, maiden_name, gender, birth_date, birth_place,
-          death_date, death_place, father_id, mother_id, spouse_of_id,
-          biography, accomplishments, profession, education, photo
-        ) VALUES (
-          ${p.id}, ${p.first_name}, ${p.last_name}, ${p.maiden_name || null}, ${p.gender},
-          ${p.birth_date || null}, ${p.birth_place || null}, ${p.death_date || null}, ${p.death_place || null},
-          ${p.father_id || null}, ${p.mother_id || null}, ${p.spouse_of_id || null},
-          ${bio}, ${p.accomplishments || null}, ${profession},
-          ${p.education || null}, ${photo}
-        )
-        ON CONFLICT (id) DO NOTHING;
-      `;
+      for (const m of marriages) {
+        await sql`
+          INSERT INTO marriages (id, spouse1_id, spouse2_id, marriage_date, marriage_place, divorce_date, notes)
+          VALUES (${m.id}, ${m.spouse1_id}, ${m.spouse2_id}, ${m.marriage_date || null}, ${m.marriage_place || null}, ${m.divorce_date || null}, ${m.notes || null})
+          ON CONFLICT (id) DO NOTHING
+        `;
+      }
+
+      try {
+        await sql`SELECT setval(pg_get_serial_sequence('persons', 'id'), (SELECT COALESCE(MAX(id), 1) FROM persons))`;
+        await sql`SELECT setval(pg_get_serial_sequence('marriages', 'id'), (SELECT COALESCE(MAX(id), 1) FROM marriages))`;
+      } catch {}
     }
 
-    for (const m of marriages) {
-      await sql`
-        INSERT INTO marriages (id, spouse1_id, spouse2_id, marriage_date, marriage_place, divorce_date, notes)
-        VALUES (${m.id}, ${m.spouse1_id}, ${m.spouse2_id}, ${m.marriage_date || null}, ${m.marriage_place || null}, ${m.divorce_date || null}, ${m.notes || null})
-        ON CONFLICT (id) DO NOTHING;
-      `;
-    }
-
-    // Set auto-increment sequence to start after max id
-    await sql`SELECT setval('persons_id_seq', (SELECT COALESCE(MAX(id), 1) FROM persons));`;
-    await sql`SELECT setval('marriages_id_seq', (SELECT COALESCE(MAX(id), 1) FROM marriages));`;
-  } else {
-    // Apply user data corrections on existing rows
-    await sql`UPDATE persons SET profession = 'Enseignant' WHERE id = 1;`;
-    await sql`UPDATE persons SET profession = NULL WHERE id = 2;`;
-    await sql`UPDATE persons SET profession = NULL WHERE id = 3;`;
-    await sql`UPDATE persons SET profession = 'Ingénieur en mines', biography = NULL WHERE id = 4;`;
-    await sql`UPDATE persons SET profession = NULL WHERE id = 5;`;
-    await sql`UPDATE persons SET profession = NULL WHERE id = 6;`;
-    await sql`UPDATE persons SET profession = 'Enseignant' WHERE id = 9;`;
+    pgInitialized = true;
+  } catch (err) {
+    console.error('Error during PostgreSQL schema initialization:', err);
+    throw err;
   }
-
-  pgInitialized = true;
 }
 
 // ============================================================================
@@ -325,20 +314,26 @@ async function ensurePgSchema() {
 // ============================================================================
 
 export async function getAllPersons(): Promise<Person[]> {
-  if (isPostgres) {
+  if (checkIsPostgres()) {
     await ensurePgSchema();
     const sql = getPg();
     const rows = await sql`SELECT * FROM persons ORDER BY id ASC`;
     return rows.map(formatPersonRow);
   } else {
     const db = getSqliteDb();
+    if (!db) {
+      if (!inMemoryPersonsCache) {
+        inMemoryPersonsCache = (initialSeedData.persons as any[]).map(formatPersonRow);
+      }
+      return inMemoryPersonsCache;
+    }
     const rows = db.prepare('SELECT * FROM persons ORDER BY id ASC').all();
     return rows.map(formatPersonRow);
   }
 }
 
 export async function getPersonById(id: number): Promise<Person | null> {
-  if (isPostgres) {
+  if (checkIsPostgres()) {
     await ensurePgSchema();
     const sql = getPg();
     const rows = await sql`SELECT * FROM persons WHERE id = ${id} LIMIT 1`;
@@ -346,6 +341,10 @@ export async function getPersonById(id: number): Promise<Person | null> {
     return formatPersonRow(rows[0]);
   } else {
     const db = getSqliteDb();
+    if (!db) {
+      const all = await getAllPersons();
+      return all.find((p) => p.id === id) || null;
+    }
     const row = db.prepare('SELECT * FROM persons WHERE id = ?').get(id);
     if (!row) return null;
     return formatPersonRow(row);
@@ -358,7 +357,7 @@ export async function createPerson(data: PersonFormData): Promise<Person> {
     photo = `/media/${photo}`;
   }
 
-  if (isPostgres) {
+  if (checkIsPostgres()) {
     await ensurePgSchema();
     const sql = getPg();
     const rows = await sql`
@@ -373,7 +372,7 @@ export async function createPerson(data: PersonFormData): Promise<Person> {
         ${data.biography || null}, ${data.accomplishments || null}, ${data.profession || null},
         ${data.education || null}, ${photo}
       )
-      RETURNING *;
+      RETURNING *
     `;
     const created = formatPersonRow(rows[0]);
     if (data.spouse_of_id) {
@@ -383,6 +382,31 @@ export async function createPerson(data: PersonFormData): Promise<Person> {
     return created;
   } else {
     const db = getSqliteDb();
+    if (!db) {
+      const all = await getAllPersons();
+      const newId = (all.reduce((max, p) => Math.max(max, p.id), 0) || 0) + 1;
+      const newPerson: Person = {
+        id: newId,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        maiden_name: data.maiden_name || null,
+        gender: data.gender,
+        birth_date: data.birth_date || null,
+        birth_place: data.birth_place || null,
+        death_date: data.death_date || null,
+        death_place: data.death_place || null,
+        father_id: data.father_id || null,
+        mother_id: data.mother_id || null,
+        spouse_of_id: data.spouse_of_id || null,
+        biography: data.biography || null,
+        accomplishments: data.accomplishments || null,
+        profession: data.profession || null,
+        education: data.education || null,
+        photo,
+      };
+      inMemoryPersonsCache = [...all, newPerson];
+      return newPerson;
+    }
     const stmt = db.prepare(`
       INSERT INTO persons (
         first_name, last_name, maiden_name, gender, birth_date, birth_place,
@@ -419,7 +443,7 @@ export async function updatePerson(id: number, data: Partial<PersonFormData>): P
     photo = `/media/${photo}`;
   }
 
-  if (isPostgres) {
+  if (checkIsPostgres()) {
     await ensurePgSchema();
     const sql = getPg();
     const rows = await sql`
@@ -442,13 +466,23 @@ export async function updatePerson(id: number, data: Partial<PersonFormData>): P
         photo = ${photo},
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ${id}
-      RETURNING *;
+      RETURNING *
     `;
     const updatedName = `${data.first_name || existing.first_name} ${data.last_name || existing.last_name}`;
     await logActivity('UPDATE', `Mise à jour des informations de ${updatedName}`, id, updatedName);
     return formatPersonRow(rows[0]);
   } else {
     const db = getSqliteDb();
+    if (!db) {
+      const all = await getAllPersons();
+      const updated: Person = {
+        ...existing,
+        ...data,
+        photo,
+      };
+      inMemoryPersonsCache = all.map((p) => (p.id === id ? updated : p));
+      return updated;
+    }
     const stmt = db.prepare(`
       UPDATE persons SET
         first_name = COALESCE(?, first_name),
@@ -501,7 +535,7 @@ export async function deletePerson(id: number): Promise<boolean> {
 
   const name = `${existing.first_name} ${existing.last_name}`;
 
-  if (isPostgres) {
+  if (checkIsPostgres()) {
     await ensurePgSchema();
     const sql = getPg();
     await sql`DELETE FROM persons WHERE id = ${id}`;
@@ -511,11 +545,16 @@ export async function deletePerson(id: number): Promise<boolean> {
     await sql`UPDATE persons SET spouse_of_id = NULL WHERE spouse_of_id = ${id}`;
   } else {
     const db = getSqliteDb();
-    db.prepare('DELETE FROM persons WHERE id = ?').run(id);
-    db.prepare('DELETE FROM marriages WHERE spouse1_id = ? OR spouse2_id = ?').run(id, id);
-    db.prepare('UPDATE persons SET father_id = NULL WHERE father_id = ?').run(id);
-    db.prepare('UPDATE persons SET mother_id = NULL WHERE mother_id = ?').run(id);
-    db.prepare('UPDATE persons SET spouse_of_id = NULL WHERE spouse_of_id = ?').run(id);
+    if (!db) {
+      const all = await getAllPersons();
+      inMemoryPersonsCache = all.filter((p) => p.id !== id);
+    } else {
+      db.prepare('DELETE FROM persons WHERE id = ?').run(id);
+      db.prepare('DELETE FROM marriages WHERE spouse1_id = ? OR spouse2_id = ?').run(id, id);
+      db.prepare('UPDATE persons SET father_id = NULL WHERE father_id = ?').run(id);
+      db.prepare('UPDATE persons SET mother_id = NULL WHERE mother_id = ?').run(id);
+      db.prepare('UPDATE persons SET spouse_of_id = NULL WHERE spouse_of_id = ?').run(id);
+    }
   }
 
   await logActivity('DELETE', `Suppression de ${name} de l'arbre`, id, name);
@@ -523,17 +562,26 @@ export async function deletePerson(id: number): Promise<boolean> {
 }
 
 export async function createMarriage(data: { spouse1_id: number; spouse2_id: number; marriage_date?: string; marriage_place?: string }): Promise<Marriage> {
-  if (isPostgres) {
+  if (checkIsPostgres()) {
     await ensurePgSchema();
     const sql = getPg();
     const rows = await sql`
       INSERT INTO marriages (spouse1_id, spouse2_id, marriage_date, marriage_place)
       VALUES (${data.spouse1_id}, ${data.spouse2_id}, ${data.marriage_date || null}, ${data.marriage_place || null})
-      RETURNING *;
+      RETURNING *
     `;
     return rows[0] as Marriage;
   } else {
     const db = getSqliteDb();
+    if (!db) {
+      return {
+        id: Date.now(),
+        spouse1_id: data.spouse1_id,
+        spouse2_id: data.spouse2_id,
+        marriage_date: data.marriage_date || null,
+        marriage_place: data.marriage_place || null,
+      };
+    }
     const stmt = db.prepare(`
       INSERT INTO marriages (spouse1_id, spouse2_id, marriage_date, marriage_place)
       VALUES (?, ?, ?, ?)
@@ -546,7 +594,7 @@ export async function createMarriage(data: { spouse1_id: number; spouse2_id: num
 
 export async function searchPersons(query: string, limit = 20): Promise<Person[]> {
   const q = `%${query.trim()}%`;
-  if (isPostgres) {
+  if (checkIsPostgres()) {
     await ensurePgSchema();
     const sql = getPg();
     const rows = await sql`
@@ -562,6 +610,19 @@ export async function searchPersons(query: string, limit = 20): Promise<Person[]
     return rows.map(formatPersonRow);
   } else {
     const db = getSqliteDb();
+    if (!db) {
+      const all = await getAllPersons();
+      const lower = query.trim().toLowerCase();
+      return all
+        .filter(
+          (p) =>
+            p.first_name.toLowerCase().includes(lower) ||
+            p.last_name.toLowerCase().includes(lower) ||
+            (p.profession && p.profession.toLowerCase().includes(lower)) ||
+            (p.birth_place && p.birth_place.toLowerCase().includes(lower))
+        )
+        .slice(0, limit);
+    }
     const rows = db.prepare(`
       SELECT * FROM persons
       WHERE first_name LIKE ?
@@ -581,20 +642,23 @@ export async function searchPersons(query: string, limit = 20): Promise<Person[]
 // ============================================================================
 
 export async function getAllEvents(): Promise<FamilyEvent[]> {
-  if (isPostgres) {
+  if (checkIsPostgres()) {
     await ensurePgSchema();
     const sql = getPg();
     const rows = await sql`SELECT * FROM family_events ORDER BY event_date ASC`;
     return rows.map(formatEventRow);
   } else {
     const db = getSqliteDb();
+    if (!db) {
+      return inMemoryEventsCache || [];
+    }
     const rows = db.prepare('SELECT * FROM family_events ORDER BY event_date ASC').all();
     return rows.map(formatEventRow);
   }
 }
 
 export async function getEventById(id: number): Promise<FamilyEvent | null> {
-  if (isPostgres) {
+  if (checkIsPostgres()) {
     await ensurePgSchema();
     const sql = getPg();
     const rows = await sql`SELECT * FROM family_events WHERE id = ${id} LIMIT 1`;
@@ -602,6 +666,10 @@ export async function getEventById(id: number): Promise<FamilyEvent | null> {
     return formatEventRow(rows[0]);
   } else {
     const db = getSqliteDb();
+    if (!db) {
+      const all = await getAllEvents();
+      return all.find((e) => e.id === id) || null;
+    }
     const row = db.prepare('SELECT * FROM family_events WHERE id = ?').get(id);
     if (!row) return null;
     return formatEventRow(row);
@@ -614,7 +682,7 @@ export async function createEvent(data: FamilyEventFormData): Promise<FamilyEven
     photosList = [data.photo];
   }
 
-  if (isPostgres) {
+  if (checkIsPostgres()) {
     await ensurePgSchema();
     const sql = getPg();
     const rows = await sql`
@@ -625,13 +693,31 @@ export async function createEvent(data: FamilyEventFormData): Promise<FamilyEven
         ${data.location || null}, ${data.photo || (photosList.length > 0 ? photosList[0] : null)},
         ${JSON.stringify(photosList)}, ${JSON.stringify(data.related_person_ids || [])}
       )
-      RETURNING *;
+      RETURNING *
     `;
     const created = formatEventRow(rows[0]);
     await logActivity('CREATE', `Création de l'événement familial "${data.title}"`, undefined, data.title);
     return created;
   } else {
     const db = getSqliteDb();
+    if (!db) {
+      const all = await getAllEvents();
+      const newId = (all.reduce((max, e) => Math.max(max, e.id), 0) || 0) + 1;
+      const newEvent: FamilyEvent = {
+        id: newId,
+        title: data.title,
+        description: data.description,
+        event_date: data.event_date,
+        category: data.category || 'reunion',
+        location: data.location || null,
+        photo: data.photo || (photosList.length > 0 ? photosList[0] : null),
+        photos: photosList,
+        related_person_ids: data.related_person_ids || [],
+        is_past: new Date(data.event_date) < new Date(),
+      };
+      inMemoryEventsCache = [...all, newEvent];
+      return newEvent;
+    }
     const stmt = db.prepare(`
       INSERT INTO family_events (
         title, description, event_date, category, location, photo, photos, related_person_ids
@@ -660,7 +746,7 @@ export async function updateEvent(id: number, data: Partial<FamilyEventFormData>
     photo = photosList[0];
   }
 
-  if (isPostgres) {
+  if (checkIsPostgres()) {
     await ensurePgSchema();
     const sql = getPg();
     const rows = await sql`
@@ -675,12 +761,23 @@ export async function updateEvent(id: number, data: Partial<FamilyEventFormData>
         related_person_ids = ${JSON.stringify(data.related_person_ids !== undefined ? data.related_person_ids : existing.related_person_ids)},
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ${id}
-      RETURNING *;
+      RETURNING *
     `;
     await logActivity('UPDATE', `Mise à jour de l'événement "${data.title || existing.title}"`, undefined, data.title || existing.title);
     return formatEventRow(rows[0]);
   } else {
     const db = getSqliteDb();
+    if (!db) {
+      const all = await getAllEvents();
+      const updated: FamilyEvent = {
+        ...existing,
+        ...data,
+        photo,
+        photos: photosList,
+      };
+      inMemoryEventsCache = all.map((e) => (e.id === id ? updated : e));
+      return updated;
+    }
     const stmt = db.prepare(`
       UPDATE family_events SET
         title = COALESCE(?, title),
@@ -714,13 +811,18 @@ export async function deleteEvent(id: number): Promise<boolean> {
   const existing = await getEventById(id);
   if (!existing) return false;
 
-  if (isPostgres) {
+  if (checkIsPostgres()) {
     await ensurePgSchema();
     const sql = getPg();
     await sql`DELETE FROM family_events WHERE id = ${id}`;
   } else {
     const db = getSqliteDb();
-    db.prepare('DELETE FROM family_events WHERE id = ?').run(id);
+    if (db) {
+      db.prepare('DELETE FROM family_events WHERE id = ?').run(id);
+    } else {
+      const all = await getAllEvents();
+      inMemoryEventsCache = all.filter((e) => e.id !== id);
+    }
   }
 
   await logActivity('DELETE', `Suppression de l'événement "${existing.title}"`, undefined, existing.title);
@@ -730,7 +832,7 @@ export async function deleteEvent(id: number): Promise<boolean> {
 export async function syncEvents(eventsList: FamilyEvent[]): Promise<FamilyEvent[]> {
   if (!eventsList || eventsList.length === 0) return await getAllEvents();
 
-  if (isPostgres) {
+  if (checkIsPostgres()) {
     await ensurePgSchema();
     const sql = getPg();
     for (const ev of eventsList) {
@@ -753,34 +855,36 @@ export async function syncEvents(eventsList: FamilyEvent[]): Promise<FamilyEvent
           photo = EXCLUDED.photo,
           photos = EXCLUDED.photos,
           related_person_ids = EXCLUDED.related_person_ids,
-          updated_at = CURRENT_TIMESTAMP;
+          updated_at = CURRENT_TIMESTAMP
       `;
     }
   } else {
     const db = getSqliteDb();
-    const insertStmt = db.prepare(`
-      INSERT OR REPLACE INTO family_events (
-        id, title, description, event_date, category, location, photo, photos, related_person_ids, updated_at
-      ) VALUES (
-        @id, @title, @description, @event_date, @category, @location, @photo, @photos, @related_person_ids, datetime('now')
-      )
-    `);
-    const syncAll = db.transaction((list: FamilyEvent[]) => {
-      for (const ev of list) {
-        insertStmt.run({
-          id: ev.id,
-          title: ev.title,
-          description: ev.description,
-          event_date: ev.event_date,
-          category: ev.category || 'reunion',
-          location: ev.location || null,
-          photo: ev.photo || (ev.photos && ev.photos.length > 0 ? ev.photos[0] : null),
-          photos: JSON.stringify(ev.photos || (ev.photo ? [ev.photo] : [])),
-          related_person_ids: JSON.stringify(ev.related_person_ids || []),
-        });
-      }
-    });
-    syncAll(eventsList);
+    if (db) {
+      const insertStmt = db.prepare(`
+        INSERT OR REPLACE INTO family_events (
+          id, title, description, event_date, category, location, photo, photos, related_person_ids, updated_at
+        ) VALUES (
+          @id, @title, @description, @event_date, @category, @location, @photo, @photos, @related_person_ids, datetime('now')
+        )
+      `);
+      const syncAll = db.transaction((list: FamilyEvent[]) => {
+        for (const ev of list) {
+          insertStmt.run({
+            id: ev.id,
+            title: ev.title,
+            description: ev.description,
+            event_date: ev.event_date,
+            category: ev.category || 'reunion',
+            location: ev.location || null,
+            photo: ev.photo || (ev.photos && ev.photos.length > 0 ? ev.photos[0] : null),
+            photos: JSON.stringify(ev.photos || (ev.photo ? [ev.photo] : [])),
+            related_person_ids: JSON.stringify(ev.related_person_ids || []),
+          });
+        }
+      });
+      syncAll(eventsList);
+    }
   }
 
   return await getAllEvents();
@@ -792,7 +896,7 @@ export async function syncEvents(eventsList: FamilyEvent[]): Promise<FamilyEvent
 
 export async function logActivity(type: string, description: string, personId?: number, personName?: string) {
   try {
-    if (isPostgres) {
+    if (checkIsPostgres()) {
       await ensurePgSchema();
       const sql = getPg();
       await sql`
@@ -801,10 +905,12 @@ export async function logActivity(type: string, description: string, personId?: 
       `;
     } else {
       const db = getSqliteDb();
-      db.prepare(`
-        INSERT INTO activity_logs (type, description, person_id, person_name)
-        VALUES (?, ?, ?, ?)
-      `).run(type, description, personId || null, personName || null);
+      if (db) {
+        db.prepare(`
+          INSERT INTO activity_logs (type, description, person_id, person_name)
+          VALUES (?, ?, ?, ?)
+        `).run(type, description, personId || null, personName || null);
+      }
     }
   } catch (e) {
     console.error('Error logging activity:', e);
@@ -813,13 +919,14 @@ export async function logActivity(type: string, description: string, personId?: 
 
 export async function getActivityLogs(limit = 10): Promise<ActivityEvent[]> {
   try {
-    if (isPostgres) {
+    if (checkIsPostgres()) {
       await ensurePgSchema();
       const sql = getPg();
       const rows = await sql`SELECT * FROM activity_logs ORDER BY created_at DESC LIMIT ${limit}`;
       return rows.map(formatActivityRow);
     } else {
       const db = getSqliteDb();
+      if (!db) return [];
       const rows = db.prepare('SELECT * FROM activity_logs ORDER BY created_at DESC LIMIT ?').all(limit);
       return rows.map(formatActivityRow);
     }
