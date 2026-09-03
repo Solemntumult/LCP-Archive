@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   Check,
@@ -29,6 +30,7 @@ export default function ImageAdjusterModal({
   onClose,
   onApply,
 }: ImageAdjusterModalProps) {
+  const [mounted, setMounted] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0); // 0, 90, 180, 270
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -38,6 +40,22 @@ export default function ImageAdjusterModal({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Lock background scrolling while adjuster modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   // Reset state on open or new image
   useEffect(() => {
@@ -177,11 +195,11 @@ export default function ImageAdjusterModal({
     onClose();
   };
 
-  if (!isOpen || !imageSrc) return null;
+  if (!isOpen || !imageSrc || !mounted) return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px] animate-fade-in"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px] animate-fade-in"
       onClick={onClose}
     >
       <div
@@ -323,6 +341,7 @@ export default function ImageAdjusterModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
