@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { X, Calendar, MapPin, Sparkles, Image as ImageIcon, Upload, Trash2, Check, Loader2, Crop, AlertCircle } from 'lucide-react';
 import { FamilyEvent, FamilyEventFormData, EventCategory } from '@/types';
@@ -65,6 +66,23 @@ export default function EventFormModal({
 }) {
   const isEditing = !!initialEvent;
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Lock body scroll while modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   const [formData, setFormData] = useState<FamilyEventFormData>({
     title: '',
@@ -233,13 +251,15 @@ export default function EventFormModal({
     }
   };
 
-  return (
+  if (!isOpen || !mounted) return null;
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/40 backdrop-blur-[2px] animate-fade-in overflow-y-auto"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/25 backdrop-blur-[2px] animate-fade-in overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl sm:rounded-3xl border border-[#eae1da] shadow-2xl max-w-2xl w-full p-5 sm:p-7 space-y-5 my-auto max-h-[92vh] overflow-y-auto cursor-default"
+        className="bg-white rounded-2xl sm:rounded-3xl border border-[#eae1da] shadow-2xl max-w-2xl w-full p-5 sm:p-7 space-y-5 my-auto max-h-[92vh] overflow-y-auto cursor-default animate-scale-up"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -261,8 +281,9 @@ export default function EventFormModal({
           </div>
 
           <button
+            type="button"
             onClick={onClose}
-            className="p-2 rounded-xl text-[#727973] hover:text-[#173124] hover:bg-[#f5ece5] transition-all"
+            className="p-2 rounded-xl text-[#727973] hover:bg-[#f5ece5] transition-all"
             aria-label="Fermer"
           >
             <X className="w-5 h-5" />
@@ -270,25 +291,26 @@ export default function EventFormModal({
         </div>
 
         {error && (
-          <div className="p-4 rounded-2xl bg-[#ffdad6] border border-[#ba1a1a]/30 text-[#93000a] text-xs font-medium flex items-center gap-2.5">
-            <AlertCircle className="w-4 h-4 shrink-0 text-[#ba1a1a]" />
+          <div className="p-4 rounded-2xl bg-[#ffdad6] border border-[#ba1a1a]/30 text-[#93000a] text-xs flex items-center gap-2.5">
+            <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
+        {/* Form Fields */}
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Title */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1.5">
-              Titre de l&apos;événement *
+              Titre de l&apos;événement / Récit *
             </label>
             <input
               type="text"
               required
+              placeholder="Ex: Grande Réunion Familiale 2024, Hommage à Paul..."
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="ex: Rassemblement des Descendants LISSANON 2022"
-              className="w-full px-4 py-3 rounded-2xl border border-[#eae1da] bg-[#fff8f4] text-sm text-[#1f1b17] focus:outline-hidden focus:ring-2 focus:ring-[#173124]"
+              className="w-full px-4 py-2.5 rounded-xl border border-[#eae1da] bg-[#fff8f4] text-sm text-[#1f1b17] focus:outline-hidden focus:ring-2 focus:ring-[#173124]"
             />
           </div>
 
@@ -303,7 +325,7 @@ export default function EventFormModal({
                 required
                 value={formData.event_date}
                 onChange={(e) => setFormData({ ...formData, event_date: e.target.value })}
-                className="w-full px-4 py-3 rounded-2xl border border-[#eae1da] bg-[#fff8f4] text-sm text-[#1f1b17] focus:outline-hidden focus:ring-2 focus:ring-[#173124]"
+                className="w-full px-4 py-2.5 rounded-xl border border-[#eae1da] bg-[#fff8f4] text-sm text-[#1f1b17] focus:outline-hidden focus:ring-2 focus:ring-[#173124]"
               />
             </div>
 
@@ -314,15 +336,15 @@ export default function EventFormModal({
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value as EventCategory })}
-                className="w-full px-4 py-3 rounded-2xl border border-[#eae1da] bg-[#fff8f4] text-sm text-[#1f1b17] focus:outline-hidden focus:ring-2 focus:ring-[#173124] cursor-pointer"
+                className="w-full px-4 py-2.5 rounded-xl border border-[#eae1da] bg-[#fff8f4] text-sm text-[#1f1b17] focus:outline-hidden focus:ring-2 focus:ring-[#173124]"
               >
-                <option value="reunion">Rassemblement familial</option>
+                <option value="reunion">Rassemblement Familial</option>
                 <option value="commemoration">Commémoration & Hommage</option>
                 <option value="celebration">Célébration & Fête</option>
                 <option value="birth">Naissance & Anniversaire</option>
                 <option value="wedding">Mariage & Alliance</option>
                 <option value="cultural">Pèlerinage & Racines</option>
-                <option value="other">Autre moment marquant</option>
+                <option value="other">Autre Moment Fort</option>
               </select>
             </div>
           </div>
@@ -330,26 +352,23 @@ export default function EventFormModal({
           {/* Location */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1.5">
-              Lieu
+              Lieu (Optionnel)
             </label>
             <input
               type="text"
+              placeholder="Ex: Cotonou, Ouidah, Paris..."
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              placeholder="ex: Cotonou, Bénin"
-              className="w-full px-4 py-3 rounded-2xl border border-[#eae1da] bg-[#fff8f4] text-sm text-[#1f1b17] focus:outline-hidden focus:ring-2 focus:ring-[#173124]"
+              className="w-full px-4 py-2.5 rounded-xl border border-[#eae1da] bg-[#fff8f4] text-sm text-[#1f1b17] focus:outline-hidden focus:ring-2 focus:ring-[#173124]"
             />
           </div>
 
-          {/* Photos Management / Native Multi-selection (Up to 10 photos) */}
+          {/* Photos Management / Native Multi-selection (Up to 20 photos) */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <label className="block text-xs font-bold uppercase tracking-wider text-[#424844]">
                 Photos & Galerie de l&apos;événement ({currentPhotosCount}/{MAX_PHOTOS})
               </label>
-              <span className="text-[11px] font-medium text-[#7a5739]">
-                {remainingSlots > 0 ? `Jusqu'à ${remainingSlots} photo${remainingSlots > 1 ? 's' : ''} restante${remainingSlots > 1 ? 's' : ''}` : 'Limite atteinte'}
-              </span>
             </div>
 
             {/* Existing photos preview list */}
@@ -408,7 +427,7 @@ export default function EventFormModal({
               id="event-images-upload"
             />
 
-            {/* Native Gallery Upload Dropzone Button (Disabled when 10 photos reached) */}
+            {/* Native Gallery Upload Dropzone Button */}
             {remainingSlots > 0 ? (
               <label
                 htmlFor="event-images-upload"
@@ -454,8 +473,8 @@ export default function EventFormModal({
               rows={5}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Racontez l'histoire, la portée historique, les moments forts ou les modalités pratiques pour la famille..."
-              className="w-full px-4 py-3 rounded-2xl border border-[#eae1da] bg-[#fff8f4] text-sm text-[#1f1b17] focus:outline-hidden focus:ring-2 focus:ring-[#173124]"
+              placeholder="Racontez les moments marquants, anecdotes, personnes présentes, discours..."
+              className="w-full px-4 py-2.5 rounded-xl border border-[#eae1da] bg-[#fff8f4] text-sm text-[#1f1b17] focus:outline-hidden focus:ring-2 focus:ring-[#173124] leading-relaxed"
             />
           </div>
 
@@ -491,6 +510,7 @@ export default function EventFormModal({
         }}
         onApply={handleAdjusterApply}
       />
-    </div>
+    </div>,
+    document.body
   );
 }
