@@ -142,8 +142,7 @@ export default function PersonForm({
 
       if (res.ok) {
         const saved = await res.json();
-        router.push(`/person/${saved.id}`);
-        router.refresh();
+        window.location.href = `/person/${saved.id}`;
       } else {
         const err = await res.json();
         setErrorMsg(err.error || "Erreur lors de l'enregistrement");
