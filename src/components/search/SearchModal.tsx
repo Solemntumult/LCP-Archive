@@ -88,9 +88,12 @@ export default function SearchModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-[#1f1b17]/40 backdrop-blur-sm animate-fade-in">
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-[#1f1b17]/40 backdrop-blur-sm animate-fade-in cursor-pointer"
+      onClick={onClose}
+    >
       <div
-        className="w-full max-w-2xl bg-[#fff8f4] rounded-2xl shadow-2xl border border-[#eae1da] overflow-hidden flex flex-col max-h-[80vh]"
+        className="w-full max-w-2xl bg-[#fff8f4] rounded-2xl shadow-2xl border border-[#eae1da] overflow-hidden flex flex-col max-h-[80vh] cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}
