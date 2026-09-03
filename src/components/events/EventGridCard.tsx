@@ -84,13 +84,6 @@ export default function EventGridCard({
               <BadgeIcon className="w-3 h-3" />
               <span>{badge.label}</span>
             </span>
-
-            {event.photos && event.photos.length > 1 && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-white">
-                <Camera className="w-3 h-3" />
-                <span>{event.photos.length}</span>
-              </span>
-            )}
           </div>
 
           {/* Upcoming pill if future */}

@@ -183,19 +183,21 @@ export default function EventDetailView({
             <div className="w-10 h-10 rounded-2xl bg-[#f5ece5] flex items-center justify-center text-[#7a5739]">
               <Camera className="w-5 h-5" />
             </div>
-            <div>
-              <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#173124]">
-                Galerie de Photos & Archives
-              </h2>
-              <p className="text-xs text-[#727973]">
-                {photos.length} photographie{photos.length > 1 ? 's' : ''} associée{photos.length > 1 ? 's' : ''} à cet événement.
-              </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-serif font-bold text-2xl text-[#173124]">
+                  Galerie de photographies d&apos;archive
+                </h2>
+                <p className="text-xs text-[#727973] mt-0.5">
+                  Photographies d&apos;époque et souvenirs associés à cet événement.
+                </p>
+              </div>
             </div>
           </div>
 
           <button
             onClick={() => setIsEditModalOpen(true)}
-            className="text-xs font-semibold text-[#7a5739] hover:text-[#173124] hover:underline"
+            className="text-xs font-semibold text-[#173124] hover:underline"
           >
             + Gérer les photos
           </button>
@@ -222,7 +224,7 @@ export default function EventDetailView({
 
                 <Image
                   src={photoUrl}
-                  alt={`${event.title} - Photo ${idx + 1}`}
+                  alt={event.title}
                   fill
                   className="object-contain sm:object-cover object-center group-hover:scale-105 transition-transform duration-500"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -233,10 +235,6 @@ export default function EventDetailView({
                   <div className="w-10 h-10 rounded-full bg-black/60 flex items-center justify-center backdrop-blur-xs">
                     <Maximize2 className="w-5 h-5" />
                   </div>
-                </div>
-
-                <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-[10px] text-white font-mono">
-                  Photo #{idx + 1}
                 </div>
               </div>
             ))}
@@ -266,7 +264,7 @@ export default function EventDetailView({
           {/* Lightbox Header */}
           <div className="flex items-center justify-between text-white z-10" onClick={(e) => e.stopPropagation()}>
             <span className="text-xs sm:text-sm font-medium opacity-80">
-              {event.title} — Photo {lightboxIndex + 1} sur {photos.length}
+              {event.title}
             </span>
             <button
               onClick={() => setLightboxIndex(null)}

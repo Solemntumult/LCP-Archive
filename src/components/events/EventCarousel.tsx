@@ -155,13 +155,6 @@ export default function EventCarousel({
                 <span>{current.location}</span>
               </span>
             )}
-
-            {current.photos && current.photos.length > 1 && (
-              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-medium bg-black/60 backdrop-blur-md text-white border border-white/10">
-                <Camera className="w-3.5 h-3.5" />
-                <span>{current.photos.length} photos</span>
-              </span>
-            )}
           </div>
 
           {/* Title */}
