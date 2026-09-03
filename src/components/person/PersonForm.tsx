@@ -144,12 +144,23 @@ export default function PersonForm({
         const saved = await res.json();
         window.location.href = `/person/${saved.id}`;
       } else {
-        const err = await res.json();
-        setErrorMsg(err.error || "Erreur lors de l'enregistrement");
+        let errorMsg = "Erreur lors de l'enregistrement";
+        try {
+          const err = await res.json();
+          if (err.error) errorMsg = err.error;
+        } catch {
+          const text = await res.text();
+          if (text.includes('Request Entity Too Large') || res.status === 413) {
+            errorMsg = 'La photo sélectionnée est trop volumineuse.';
+          } else if (text) {
+            errorMsg = `Erreur serveur (${res.status})`;
+          }
+        }
+        setErrorMsg(errorMsg);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setErrorMsg('Erreur de connexion avec le serveur');
+      setErrorMsg(err.message || 'Erreur de connexion avec le serveur');
     } finally {
       setLoading(false);
     }

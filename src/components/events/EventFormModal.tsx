@@ -19,7 +19,7 @@ async function autoOptimizeImage(file: File): Promise<string> {
     reader.onload = (e) => {
       const img = new window.Image();
       img.onload = () => {
-        const maxDim = 1920;
+        const maxDim = 1000;
         let w = img.width;
         let h = img.height;
 
@@ -39,7 +39,7 @@ async function autoOptimizeImage(file: File): Promise<string> {
         const ctx = canvas.getContext('2d');
         if (ctx) {
           ctx.drawImage(img, 0, 0, w, h);
-          resolve(canvas.toDataURL('image/jpeg', 0.88));
+          resolve(canvas.toDataURL('image/jpeg', 0.78));
         } else {
           resolve(e.target?.result as string);
         }
@@ -199,11 +199,28 @@ export default function EventFormModal({
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Erreur lors de l'enregistrement de l'événement");
+        let errorMsg = "Erreur lors de l'enregistrement de l'événement";
+        try {
+          const data = await res.json();
+          if (data.error) errorMsg = data.error;
+        } catch {
+          const text = await res.text();
+          if (text.includes('Request Entity Too Large') || res.status === 413) {
+            errorMsg = 'Les photos sélectionnées sont trop volumineuses. Veuillez réduire le nombre de photos ou leur résolution.';
+          } else if (text) {
+            errorMsg = `Erreur serveur (${res.status})`;
+          }
+        }
+        throw new Error(errorMsg);
       }
 
-      const saved = await res.json();
+      let saved: any;
+      try {
+        saved = await res.json();
+      } catch {
+        saved = payload;
+      }
+
       // Persistent sync in localStorage to prevent production lambda loss
       saveLocalStoredEvent(saved);
 
@@ -217,8 +234,14 @@ export default function EventFormModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in overflow-y-auto">
-      <div className="bg-white rounded-3xl border border-[#eae1da] shadow-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 my-8">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-fade-in overflow-y-auto"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl sm:rounded-3xl border border-[#eae1da] shadow-2xl max-w-2xl w-full p-5 sm:p-7 space-y-5 my-auto max-h-[92vh] overflow-y-auto cursor-default"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#f5ece5]">
           <div className="flex items-center gap-2.5">
