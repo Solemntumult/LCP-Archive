@@ -7,7 +7,7 @@ import { FamilyEvent, FamilyEventFormData, EventCategory } from '@/types';
 import ImageAdjusterModal from '@/components/ui/ImageAdjusterModal';
 import { saveLocalStoredEvent } from '@/lib/eventStorage';
 
-const MAX_PHOTOS = 10;
+const MAX_PHOTOS = 20;
 
 /**
  * Redimensionne et optimise automatiquement une image côté client
@@ -428,7 +428,7 @@ export default function EventFormModal({
                     </div>
                     <div>
                       <p className="text-xs font-bold text-[#173124]">
-                        Sélectionner jusqu&apos;à 10 photos depuis votre galerie
+                        Sélectionner jusqu&apos;à 20 photos depuis votre galerie
                       </p>
                       <p className="text-[11px] text-[#727973] mt-0.5">
                         Sélection multiple disponible • Ajustement automatique du format
@@ -439,7 +439,7 @@ export default function EventFormModal({
               </label>
             ) : (
               <div className="p-3 text-center rounded-2xl bg-[#f5ece5] border border-[#eae1da] text-xs font-semibold text-[#7a5739]">
-                ✓ Limite maximale de 10 photos atteinte. Supprimez une photo pour en ajouter une nouvelle.
+                ✓ Limite maximale de 20 photos atteinte. Supprimez une photo pour en ajouter une nouvelle.
               </div>
             )}
           </div>
