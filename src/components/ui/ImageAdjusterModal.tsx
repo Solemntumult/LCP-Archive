@@ -181,25 +181,25 @@ export default function ImageAdjusterModal({
 
   return (
     <div
-      className="fixed inset-0 z-60 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto"
+      className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px] animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="relative bg-white rounded-2xl sm:rounded-3xl border border-[#eae1da] shadow-2xl max-w-sm sm:max-w-md w-full p-4 sm:p-5 space-y-3.5 my-auto max-h-[94vh] overflow-y-auto cursor-default"
+        className="relative bg-white rounded-2xl border border-[#eae1da] shadow-2xl max-w-sm w-full p-4 space-y-3 my-auto cursor-default animate-scale-up"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-2.5 border-b border-[#f5ece5]">
+        <div className="flex items-center justify-between pb-2 border-b border-[#f5ece5]">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#173124] text-white flex items-center justify-center shrink-0">
-              <Crop className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#98b5a3]" />
+            <div className="w-7 h-7 rounded-lg bg-[#173124] text-white flex items-center justify-center shrink-0">
+              <Crop className="w-3.5 h-3.5 text-[#98b5a3]" />
             </div>
             <div>
-              <h3 className="font-serif font-bold text-base sm:text-lg text-[#173124] leading-tight">
-                Ajuster la Photo
+              <h3 className="font-serif font-bold text-base text-[#173124] leading-none">
+                Recadrer la photo
               </h3>
-              <p className="text-[10px] sm:text-[11px] text-[#727973]">
-                Glissez, zoomez et pivotez pour cadrer
+              <p className="text-[10px] text-[#727973] mt-0.5">
+                Glissez pour centrer, zoomez au besoin
               </p>
             </div>
           </div>
