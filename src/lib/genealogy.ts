@@ -51,6 +51,89 @@ export function getAge(person: { birth_date?: string | null; death_date?: string
 }
 
 /**
+ * Ordre chronologique strict des enfants de l'union Paul Comlan LISSANON & Lucienne DEGBO :
+ * 1. Claude (id 7)
+ * 2. Valère (id 8)
+ * 3. Alexis (id 9)
+ * 4. Eric (id 10)
+ * 5. Hervé (id 11)
+ * 6. Salomon (id 12)
+ * 7. Léticia (id 13)
+ * 8. Régina (id 14)
+ */
+const PAUL_LUCIENNE_SIBLING_IDS = [7, 8, 9, 10, 11, 12, 13, 14];
+
+const PAUL_LUCIENNE_FIRST_NAMES = [
+  'claude',
+  'valere',
+  'alexis',
+  'eric',
+  'herve',
+  'salomon',
+  'leticia',
+  'regina',
+];
+
+function cleanFirstName(name: string | null | undefined): string {
+  if (!name) return '';
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .split(/\s+/)[0];
+}
+
+export function sortChildrenChronologically<
+  T extends {
+    id?: number;
+    birth_date?: string | null;
+    first_name?: string | null;
+    name?: string | null;
+  }
+>(childrenList: T[]): T[] {
+  return [...childrenList].sort((a, b) => {
+    // Check direct ID sequence for Paul & Lucienne's children
+    const idIndexA = a.id !== undefined ? PAUL_LUCIENNE_SIBLING_IDS.indexOf(a.id) : -1;
+    const idIndexB = b.id !== undefined ? PAUL_LUCIENNE_SIBLING_IDS.indexOf(b.id) : -1;
+
+    if (idIndexA !== -1 && idIndexB !== -1) {
+      return idIndexA - idIndexB;
+    }
+
+    // Check first name sequence for Paul & Lucienne's children
+    const fNameA = cleanFirstName(a.first_name || a.name);
+    const fNameB = cleanFirstName(b.first_name || b.name);
+    const nameIndexA = PAUL_LUCIENNE_FIRST_NAMES.indexOf(fNameA);
+    const nameIndexB = PAUL_LUCIENNE_FIRST_NAMES.indexOf(fNameB);
+
+    if (nameIndexA !== -1 && nameIndexB !== -1) {
+      return nameIndexA - nameIndexB;
+    }
+
+    // General case: compare valid dates
+    const dateA = a.birth_date && a.birth_date.trim() ? a.birth_date.trim() : null;
+    const dateB = b.birth_date && b.birth_date.trim() ? b.birth_date.trim() : null;
+
+    if (dateA && dateB) {
+      const cmp = dateA.localeCompare(dateB);
+      if (cmp !== 0) return cmp;
+    }
+
+    // If one is in known sequence, prioritize known sequence
+    if (idIndexA !== -1 || nameIndexA !== -1) return -1;
+    if (idIndexB !== -1 || nameIndexB !== -1) return 1;
+
+    // If one has date and other doesn't
+    if (dateA && !dateB) return -1;
+    if (!dateA && dateB) return 1;
+
+    // Stable fallback on ID
+    return (a.id ?? 0) - (b.id ?? 0);
+  });
+}
+
+/**
  * Récupère les enfants d'une personne
  */
 export function getChildren(personId: number, allPersons: Person[]): Person[] {
@@ -58,9 +141,11 @@ export function getChildren(personId: number, allPersons: Person[]): Person[] {
   if (!person) return [];
 
   if (person.gender === 'M') {
-    return allPersons.filter(p => p.father_id === personId).sort((a, b) => (a.birth_date || '').localeCompare(b.birth_date || ''));
+    const list = allPersons.filter(p => p.father_id === personId);
+    return sortChildrenChronologically(list);
   } else {
-    return allPersons.filter(p => p.mother_id === personId).sort((a, b) => (a.birth_date || '').localeCompare(b.birth_date || ''));
+    const list = allPersons.filter(p => p.mother_id === personId);
+    return sortChildrenChronologically(list);
   }
 }
 
@@ -71,12 +156,14 @@ export function getSiblings(personId: number, allPersons: Person[]): Person[] {
   const person = allPersons.find(p => p.id === personId);
   if (!person) return [];
 
-  return allPersons.filter(p => {
+  const list = allPersons.filter(p => {
     if (p.id === personId) return false;
     const sameFather = person.father_id && p.father_id === person.father_id;
     const sameMother = person.mother_id && p.mother_id === person.mother_id;
     return Boolean(sameFather || sameMother);
-  }).sort((a, b) => (a.birth_date || '').localeCompare(b.birth_date || ''));
+  });
+
+  return sortChildrenChronologically(list);
 }
 
 /**
@@ -126,9 +213,9 @@ export function getChildrenBySpouse(personId: number, allPersons: Person[]): Chi
 
     for (const motherId of motherIds) {
       const mother = allPersons.find(p => p.id === motherId) || null;
-      const spouseChildren = children
-        .filter(c => c.mother_id === motherId)
-        .sort((a, b) => (a.birth_date || '').localeCompare(b.birth_date || ''));
+      const spouseChildren = sortChildrenChronologically(
+        children.filter(c => c.mother_id === motherId)
+      );
 
       if (spouseChildren.length > 0) {
         groups.push({
@@ -139,9 +226,9 @@ export function getChildrenBySpouse(personId: number, allPersons: Person[]): Chi
     }
 
     // Enfants sans mère identifiée
-    const noMotherChildren = children
-      .filter(c => !c.mother_id)
-      .sort((a, b) => (a.birth_date || '').localeCompare(b.birth_date || ''));
+    const noMotherChildren = sortChildrenChronologically(
+      children.filter(c => !c.mother_id)
+    );
 
     if (noMotherChildren.length > 0) {
       groups.push({
@@ -156,9 +243,9 @@ export function getChildrenBySpouse(personId: number, allPersons: Person[]): Chi
 
     for (const fatherId of fatherIds) {
       const father = allPersons.find(p => p.id === fatherId) || null;
-      const spouseChildren = children
-        .filter(c => c.father_id === fatherId)
-        .sort((a, b) => (a.birth_date || '').localeCompare(b.birth_date || ''));
+      const spouseChildren = sortChildrenChronologically(
+        children.filter(c => c.father_id === fatherId)
+      );
 
       if (spouseChildren.length > 0) {
         groups.push({
@@ -169,9 +256,9 @@ export function getChildrenBySpouse(personId: number, allPersons: Person[]): Chi
     }
 
     // Enfants sans père identifié
-    const noFatherChildren = children
-      .filter(c => !c.father_id)
-      .sort((a, b) => (a.birth_date || '').localeCompare(b.birth_date || ''));
+    const noFatherChildren = sortChildrenChronologically(
+      children.filter(c => !c.father_id)
+    );
 
     if (noFatherChildren.length > 0) {
       groups.push({

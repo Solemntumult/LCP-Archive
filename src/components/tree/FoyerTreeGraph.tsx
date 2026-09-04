@@ -14,6 +14,7 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { FoyerData, FoyerChildData, FoyerSpouseData, TreeNodeData } from '@/types';
+import { sortChildrenChronologically } from '@/lib/genealogy';
 import PersonDetailDrawer from './PersonDetailDrawer';
 
 interface FoyerTreeGraphProps {
@@ -118,7 +119,7 @@ export default function FoyerTreeGraph({
     const distinctSpouses = (spouses || []).filter((s) => Boolean(s && s.id));
     const groupsWithSpouse = childrenGroups.filter((g) => Boolean(g.spouse && g.spouse.id));
     const groupWithoutSpouse = childrenGroups.find((g) => !g.spouse || !g.spouse.id) || null;
-    const directChildren = groupWithoutSpouse ? groupWithoutSpouse.children : [];
+    const directChildren = sortChildrenChronologically(groupWithoutSpouse ? groupWithoutSpouse.children : []);
 
     let minX = 0;
     let maxX = 0;
@@ -131,7 +132,7 @@ export default function FoyerTreeGraph({
     // ------------------------------------------------------------------
     if (distinctSpouses.length === 1 && directChildren.length > 0) {
       const spouse = distinctSpouses[0];
-      const unionChildren = groupsWithSpouse[0]?.children || [];
+      const unionChildren = sortChildrenChronologically(groupsWithSpouse[0]?.children || []);
 
       const uCount = unionChildren.length;
       const uChildrenWidth = uCount > 0 ? uCount * NODE_WIDTH + (uCount - 1) * H_GAP : NODE_WIDTH;
@@ -281,7 +282,7 @@ export default function FoyerTreeGraph({
     // ------------------------------------------------------------------
     else if (distinctSpouses.length <= 1) {
       const spouse = distinctSpouses[0] || null;
-      const children = foyerData.childrenGroups.flatMap((g) => g.children);
+      const children = sortChildrenChronologically(foyerData.childrenGroups.flatMap((g) => g.children));
       const childrenCount = children.length;
       const childrenRowWidth =
         childrenCount > 0
@@ -528,7 +529,7 @@ export default function FoyerTreeGraph({
             type: 'union',
           });
 
-          const children = group.children;
+          const children = sortChildrenChronologically(group.children);
           if (children.length > 0) {
             const childRailY = spouseY + NODE_HEIGHT_BASE + 28;
             const cWidth =
