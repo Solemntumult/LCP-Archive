@@ -51,18 +51,15 @@ export function getAge(person: { birth_date?: string | null; death_date?: string
 }
 
 /**
- * Ordre chronologique strict des enfants de l'union Paul Comlan LISSANON & Lucienne DEGBO :
- * 1. Claude (id 7)
- * 2. Valère (id 8)
- * 3. Alexis (id 9)
- * 4. Eric (id 10)
- * 5. Hervé (id 11)
- * 6. Salomon (id 12)
- * 7. Léticia (id 13)
- * 8. Régina (id 14)
+ * Ordres chronologiques stricts et explicites pour les foyers :
+ * 
+ * 1. Union Paul Comlan LISSANON & Lucienne DEGBO :
+ *    Claude (id 7), Valère (id 8), Alexis (id 9), Eric (id 10), Hervé (id 11), Salomon (id 12), Léticia (id 13), Régina (id 14)
+ * 
+ * 2. Union Claude LISSANON & Rachelle GBAGUIDI :
+ *    Clara (id 20), Donald (id 21), Jubilé (id 22), Jean-Eudes (id 23), Jolidon (id 24), Paola (id 25), Paula (id 26)
  */
 const PAUL_LUCIENNE_SIBLING_IDS = [7, 8, 9, 10, 11, 12, 13, 14];
-
 const PAUL_LUCIENNE_FIRST_NAMES = [
   'claude',
   'valere',
@@ -72,6 +69,18 @@ const PAUL_LUCIENNE_FIRST_NAMES = [
   'salomon',
   'leticia',
   'regina',
+];
+
+const CLAUDE_RACHELLE_SIBLING_IDS = [20, 21, 22, 23, 24, 25, 26];
+const CLAUDE_RACHELLE_FIRST_NAMES = [
+  'clara',
+  'donald',
+  'jubile',
+  'jean-eudes',
+  'jeaneudes',
+  'jolidon',
+  'paola',
+  'paula',
 ];
 
 function cleanFirstName(name: string | null | undefined): string {
@@ -93,42 +102,48 @@ export function sortChildrenChronologically<
   }
 >(childrenList: T[]): T[] {
   return [...childrenList].sort((a, b) => {
-    // Check direct ID sequence for Paul & Lucienne's children
-    const idIndexA = a.id !== undefined ? PAUL_LUCIENNE_SIBLING_IDS.indexOf(a.id) : -1;
-    const idIndexB = b.id !== undefined ? PAUL_LUCIENNE_SIBLING_IDS.indexOf(b.id) : -1;
-
-    if (idIndexA !== -1 && idIndexB !== -1) {
-      return idIndexA - idIndexB;
+    // 1. Check Paul & Lucienne explicit sequence
+    const plIdA = a.id !== undefined ? PAUL_LUCIENNE_SIBLING_IDS.indexOf(a.id) : -1;
+    const plIdB = b.id !== undefined ? PAUL_LUCIENNE_SIBLING_IDS.indexOf(b.id) : -1;
+    if (plIdA !== -1 && plIdB !== -1) {
+      return plIdA - plIdB;
     }
 
-    // Check first name sequence for Paul & Lucienne's children
     const fNameA = cleanFirstName(a.first_name || a.name);
     const fNameB = cleanFirstName(b.first_name || b.name);
-    const nameIndexA = PAUL_LUCIENNE_FIRST_NAMES.indexOf(fNameA);
-    const nameIndexB = PAUL_LUCIENNE_FIRST_NAMES.indexOf(fNameB);
-
-    if (nameIndexA !== -1 && nameIndexB !== -1) {
-      return nameIndexA - nameIndexB;
+    const plNameA = PAUL_LUCIENNE_FIRST_NAMES.indexOf(fNameA);
+    const plNameB = PAUL_LUCIENNE_FIRST_NAMES.indexOf(fNameB);
+    if (plNameA !== -1 && plNameB !== -1) {
+      return plNameA - plNameB;
     }
 
-    // General case: compare valid dates
-    const dateA = a.birth_date && a.birth_date.trim() ? a.birth_date.trim() : null;
-    const dateB = b.birth_date && b.birth_date.trim() ? b.birth_date.trim() : null;
+    // 2. Check Claude & Rachelle explicit sequence (Clara, Donald, Jubilé, Jean-Eudes, Jolidon, Paola, Paula)
+    const crIdA = a.id !== undefined ? CLAUDE_RACHELLE_SIBLING_IDS.indexOf(a.id) : -1;
+    const crIdB = b.id !== undefined ? CLAUDE_RACHELLE_SIBLING_IDS.indexOf(b.id) : -1;
+    if (crIdA !== -1 && crIdB !== -1) {
+      return crIdA - crIdB;
+    }
+
+    const crNameA = CLAUDE_RACHELLE_FIRST_NAMES.indexOf(fNameA);
+    const crNameB = CLAUDE_RACHELLE_FIRST_NAMES.indexOf(fNameB);
+    if (crNameA !== -1 && crNameB !== -1) {
+      return crNameA - crNameB;
+    }
+
+    // 3. Known sequences priority over general
+    if (plIdA !== -1 || plNameA !== -1 || crIdA !== -1 || crNameA !== -1) return -1;
+    if (plIdB !== -1 || plNameB !== -1 || crIdB !== -1 || crNameB !== -1) return 1;
+
+    // 4. General case: if both have explicit valid birth dates, compare dates
+    const dateA = a.birth_date && a.birth_date.trim().length >= 4 ? a.birth_date.trim() : null;
+    const dateB = b.birth_date && b.birth_date.trim().length >= 4 ? b.birth_date.trim() : null;
 
     if (dateA && dateB) {
       const cmp = dateA.localeCompare(dateB);
       if (cmp !== 0) return cmp;
     }
 
-    // If one is in known sequence, prioritize known sequence
-    if (idIndexA !== -1 || nameIndexA !== -1) return -1;
-    if (idIndexB !== -1 || nameIndexB !== -1) return 1;
-
-    // If one has date and other doesn't
-    if (dateA && !dateB) return -1;
-    if (!dateA && dateB) return 1;
-
-    // Stable fallback on ID
+    // 5. 100% Fixed & Deterministic fallback by ID (archive creation sequence)
     return (a.id ?? 0) - (b.id ?? 0);
   });
 }
