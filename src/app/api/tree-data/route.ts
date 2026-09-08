@@ -8,7 +8,11 @@ export async function GET() {
   try {
     const persons = await getAllPersons();
     const data = getTreeDataFormatted(persons);
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=30',
+      },
+    });
   } catch (error) {
     console.error('Error fetching tree data:', error);
     return NextResponse.json({ error: 'Failed to fetch tree data' }, { status: 500 });

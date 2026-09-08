@@ -7,7 +7,11 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     const persons = await getAllPersons();
-    return NextResponse.json(persons);
+    return NextResponse.json(persons, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=30',
+      },
+    });
   } catch (error) {
     console.error('Error fetching persons:', error);
     return NextResponse.json({ error: 'Failed to fetch persons' }, { status: 500 });

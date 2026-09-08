@@ -40,43 +40,18 @@ export function removeLocalStoredEvent(id: number) {
 }
 
 export async function syncClientAndServerEvents(serverEvents: FamilyEvent[]): Promise<FamilyEvent[]> {
-  if (typeof window === 'undefined') return serverEvents;
+  if (typeof window === 'undefined') return serverEvents || [];
 
   try {
-    const local = getLocalStoredEvents();
-    const serverMap = new Map<number, FamilyEvent>((serverEvents || []).map((e) => [e.id, e]));
-
-    // Check if client has events that the server lambda does not know about
-    const missingOnServer: FamilyEvent[] = [];
-    local.forEach((loc) => {
-      if (!serverMap.has(loc.id)) {
-        missingOnServer.push(loc);
-      }
-    });
-
-    if (missingOnServer.length > 0) {
-      const res = await fetch('/api/events/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ events: local }),
-      });
-      if (res.ok) {
-        const synced: FamilyEvent[] = await res.json();
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(synced));
-        return synced;
-      }
+    if (serverEvents && Array.isArray(serverEvents)) {
+      // Server is the authoritative source of truth.
+      // Cache the fresh server events into localStorage.
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(serverEvents));
+      return serverEvents;
     }
 
-    // Merge server events into localStorage
-    const mergedMap = new Map<number, FamilyEvent>();
-    local.forEach((e) => mergedMap.set(e.id, e));
-    (serverEvents || []).forEach((e) => mergedMap.set(e.id, e));
-    const merged = Array.from(mergedMap.values()).sort(
-      (a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime()
-    );
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-    return merged;
+    const local = getLocalStoredEvents();
+    return local;
   } catch (e) {
     console.error('Error syncing client and server events:', e);
     return serverEvents || [];

@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { GitFork, User } from 'lucide-react';
 import { FoyerChildData } from '@/types';
+import { isDeceased } from '@/lib/genealogy';
 
 export interface ChildCardProps {
   child: FoyerChildData;
@@ -27,13 +28,18 @@ export default function ChildCard({ child, onDeploy }: ChildCardProps) {
 
   const birthYear = getYear(child.birth_date);
   const deathYear = getYear(child.death_date);
+  const dead = isDeceased(child);
 
   const yearDisplay = birthYear
     ? deathYear
       ? `Né(e) en ${birthYear} • †${deathYear}`
+      : dead
+      ? `Né(e) en ${birthYear} • Décédé(e)`
       : `Né(e) en ${birthYear}`
     : deathYear
     ? `†${deathYear}`
+    : dead
+    ? 'Décédé(e)'
     : 'Date de naissance inconnue';
 
   const initials = `${child.first_name?.[0] || ''}${child.last_name?.[0] || ''}`.toUpperCase();
@@ -65,12 +71,20 @@ export default function ChildCard({ child, onDeploy }: ChildCardProps) {
           ) : (
             <User className="w-5 h-5 text-white" />
           )}
+          {dead && (
+            <span
+              className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#173124] text-[#fff8f4] text-[8px] font-bold flex items-center justify-center border border-white shadow-xs leading-none select-none z-10"
+              title="Décédé(e)"
+            >
+              †
+            </span>
+          )}
         </div>
 
         {/* Info Column */}
         <div className="min-w-0 flex-1 leading-tight">
           <h4 className="font-serif font-bold text-sm text-[#1f1b17] group-hover:text-[#173124] transition-colors truncate">
-            {child.name}
+            {child.name}{dead ? ' †' : ''}
           </h4>
           <p className="text-[10px] text-[#727973] font-medium mt-0.5">
             {yearDisplay}

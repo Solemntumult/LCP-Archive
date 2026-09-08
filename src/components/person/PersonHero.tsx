@@ -63,6 +63,15 @@ export default function PersonHero({
                 {initials}
               </div>
             )}
+            {/* Catholic Cross badge for deceased */}
+            {!person.is_alive && (
+              <span
+                className="absolute bottom-1 right-1 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#173124] text-[#fff8f4] text-xs sm:text-sm font-bold flex items-center justify-center border-2 border-white shadow-md leading-none select-none z-10"
+                title="Décédé(e)"
+              >
+                †
+              </span>
+            )}
           </div>
 
           {/* Badges under portrait */}
@@ -87,8 +96,13 @@ export default function PersonHero({
         <div className="flex-1 text-center md:text-left min-w-0 space-y-4">
           <div>
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-1">
-              <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#173124] tracking-tight">
-                {person.full_name}
+              <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#173124] tracking-tight flex items-center gap-1.5 justify-center md:justify-start">
+                <span>{person.full_name}</span>
+                {!person.is_alive && (
+                  <span className="text-[#7a5739] text-2xl sm:text-3xl font-serif select-none" title="Décédé(e)">
+                    †
+                  </span>
+                )}
               </h1>
               {person.spouse_of && (
                 <span className="text-xs bg-[#fdcea9] text-[#795638] font-semibold px-2.5 py-0.5 rounded-full">

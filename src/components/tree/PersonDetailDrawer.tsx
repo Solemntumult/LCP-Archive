@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { X, BookOpen, Plus } from 'lucide-react';
 import { TreeNodeData } from '@/types';
+import { isDeceased } from '@/lib/genealogy';
 
 export default function PersonDetailDrawer({
   person,
@@ -106,15 +107,31 @@ export default function PersonDetailDrawer({
           ) : (
             initials
           )}
+          {isDeceased(person) && (
+            <span
+              className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-[#173124] text-[#fff8f4] text-[9px] font-bold flex items-center justify-center border border-white shadow-xs leading-none select-none z-10"
+              title="Décédé(e)"
+            >
+              †
+            </span>
+          )}
         </div>
 
         <div className="min-w-0 flex-1">
           <h3 className="font-serif font-bold text-sm text-[#1f1b17] leading-tight truncate">
-            {person.name}
+            {person.name}{isDeceased(person) ? ' †' : ''}
           </h3>
-          {birthYear ? (
+          {deathYear ? (
             <p className="text-[11px] text-[#727973] font-medium mt-0.5">
-              {birthYear} {deathYear ? `– ${deathYear}` : '• Vivant(e)'}
+              {birthYear ? `${birthYear} – ${deathYear}` : `Décédé(e) en ${deathYear}`}
+            </p>
+          ) : isDeceased(person) ? (
+            <p className="text-[11px] text-[#727973] font-medium mt-0.5">
+              {birthYear ? `Né(e) en ${birthYear} • Décédé(e)` : 'Décédé(e)'}
+            </p>
+          ) : birthYear ? (
+            <p className="text-[11px] text-[#727973] font-medium mt-0.5">
+              {birthYear} • Vivant(e)
             </p>
           ) : (
             <p className="text-[10px] text-[#727973] italic">Dates non renseignées</p>

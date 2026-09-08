@@ -118,7 +118,11 @@ export async function GET(request: NextRequest) {
       totalChildrenCount,
     };
 
-    return NextResponse.json(foyerData);
+    return NextResponse.json(foyerData, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=30',
+      },
+    });
   } catch (error) {
     console.error('Error fetching foyer data:', error);
     return NextResponse.json(

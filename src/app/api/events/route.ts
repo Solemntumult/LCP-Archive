@@ -22,7 +22,11 @@ export async function GET(req: NextRequest) {
       events = events.filter((e) => e.category === category);
     }
 
-    return NextResponse.json(events);
+    return NextResponse.json(events, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=3, stale-while-revalidate=15',
+      },
+    });
   } catch (error) {
     console.error('Error fetching events:', error);
     return NextResponse.json({ error: 'Failed to fetch events' }, { status: 500 });

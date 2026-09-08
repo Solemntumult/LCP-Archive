@@ -17,11 +17,50 @@ export function isBloodFamily(person: { spouse_of_id?: number | null }): boolean
   return person.spouse_of_id === null || person.spouse_of_id === undefined;
 }
 
+export function cleanFirstName(name: string | null | undefined): string {
+  if (!name) return '';
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .split(/\s+/)[0];
+}
+
+/**
+ * Liste des identifiants et prénoms des membres défunts de la famille
+ * (Paul Comlan id 1, Rosalie id 3, Angelle id 6, Eric id 10, Tonami id 16, etc.)
+ */
+export const DECEASED_PERSON_IDS = [1, 3, 6, 10, 16];
+export const DECEASED_FIRST_NAMES = ['paul', 'rosalie', 'angelle', 'eric', 'tonami'];
+
+/**
+ * Détermine si la personne est décédée (date de décès renseignée ou membre connu comme défunt)
+ */
+export function isDeceased(person?: {
+  id?: number;
+  first_name?: string | null;
+  name?: string | null;
+  death_date?: string | null;
+} | null): boolean {
+  if (!person) return false;
+  if (person.death_date && person.death_date.trim() !== '') return true;
+  if (person.id !== undefined && DECEASED_PERSON_IDS.includes(person.id)) return true;
+  const fName = cleanFirstName(person.first_name || person.name);
+  if (fName && DECEASED_FIRST_NAMES.includes(fName)) return true;
+  return false;
+}
+
 /**
  * Détermine si la personne est vivante
  */
-export function isAlive(person: { death_date?: string | null }): boolean {
-  return !person.death_date;
+export function isAlive(person?: {
+  id?: number;
+  first_name?: string | null;
+  name?: string | null;
+  death_date?: string | null;
+} | null): boolean {
+  return !isDeceased(person);
 }
 
 /**
@@ -83,15 +122,6 @@ const CLAUDE_RACHELLE_FIRST_NAMES = [
   'paula',
 ];
 
-function cleanFirstName(name: string | null | undefined): string {
-  if (!name) return '';
-  return name
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim()
-    .split(/\s+/)[0];
-}
 
 export function sortChildrenChronologically<
   T extends {
@@ -411,16 +441,16 @@ export function getTimelineEvents(person: Person, allPersons: Person[]): Timelin
   }
 
   // Décès
-  if (person.death_date) {
-    const deathYear = new Date(person.death_date).getFullYear();
+  if (isDeceased(person)) {
+    const deathYear = person.death_date ? new Date(person.death_date).getFullYear() : null;
     const ageAtDeath = getAge(person);
     events.push({
       id: `death-${person.id}`,
-      date: person.death_date,
-      year: isNaN(deathYear) ? undefined : deathYear,
+      date: person.death_date || '2099-12-31',
+      year: deathYear && !isNaN(deathYear) ? deathYear : undefined,
       title: 'Décès',
       location: person.death_place || undefined,
-      description: `Décédé${person.gender === 'F' ? 'e' : ''} à l'âge de ${ageAtDeath ? `${ageAtDeath} ans` : 'inconnu'}${person.death_place ? ` à ${person.death_place}` : ''}.`,
+      description: `Décédé${person.gender === 'F' ? 'e' : ''}${ageAtDeath ? ` à l'âge de ${ageAtDeath} ans` : ''}${person.death_place ? ` à ${person.death_place}` : ''}.`,
       type: 'death',
     });
   }

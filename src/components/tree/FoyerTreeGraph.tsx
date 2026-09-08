@@ -14,7 +14,7 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { FoyerData, FoyerChildData, FoyerSpouseData, TreeNodeData } from '@/types';
-import { sortChildrenChronologically } from '@/lib/genealogy';
+import { sortChildrenChronologically, isDeceased } from '@/lib/genealogy';
 import PersonDetailDrawer from './PersonDetailDrawer';
 
 interface FoyerTreeGraphProps {
@@ -1026,6 +1026,14 @@ export default function FoyerTreeGraph({
                       ) : (
                         initials || <User className="w-6 h-6 text-white/80" />
                       )}
+                      {isDeceased(p) && (
+                        <span
+                          className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-[#173124] text-[#fff8f4] text-[9px] font-bold flex items-center justify-center border border-white shadow-xs leading-none select-none z-10"
+                          title="Décédé(e)"
+                        >
+                          †
+                        </span>
+                      )}
                     </div>
 
                     {/* Small Name Frame */}
@@ -1076,6 +1084,14 @@ export default function FoyerTreeGraph({
                         <Image src={(sp.photo_url || sp.photo)!} alt={sp.name} fill className="object-cover" sizes="48px" />
                       ) : (
                         initials || <User className="w-4 h-4 text-white/80" />
+                      )}
+                      {isDeceased(sp) && (
+                        <span
+                          className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-[#173124] text-[#fff8f4] text-[9px] font-bold flex items-center justify-center border border-white shadow-xs leading-none select-none z-10"
+                          title="Décédé(e)"
+                        >
+                          †
+                        </span>
                       )}
                     </div>
 
@@ -1130,6 +1146,14 @@ export default function FoyerTreeGraph({
                           <Image src={(child.photo_url || child.photo)!} alt={child.name} fill className="object-cover" sizes="44px" />
                         ) : (
                           initials || <User className="w-4 h-4 text-white/80" />
+                        )}
+                        {isDeceased(child) && (
+                          <span
+                            className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#173124] text-[#fff8f4] text-[8px] font-bold flex items-center justify-center border border-white shadow-xs leading-none select-none z-10"
+                            title="Décédé(e)"
+                          >
+                            †
+                          </span>
                         )}
                       </div>
 

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Crown, BookOpen, User } from 'lucide-react';
 import { TreeNodeData } from '@/types';
+import { isDeceased } from '@/lib/genealogy';
 
 interface CenterPersonCardProps {
   person: TreeNodeData;
@@ -35,12 +36,17 @@ export default function CenterPersonCard({
 
   const birthYear = getYear(person.birth_date);
   const deathYear = getYear(person.death_date);
+  const dead = isDeceased(person);
 
   let lifeDatesText = '';
   if (deathYear) {
     lifeDatesText = birthYear
       ? `Né(e) en ${birthYear} • Décédé(e) en ${deathYear}`
       : `Décédé(e) en ${deathYear}`;
+  } else if (dead) {
+    lifeDatesText = birthYear
+      ? `Né(e) en ${birthYear} • Décédé(e)`
+      : 'Décédé(e)';
   } else {
     lifeDatesText = birthYear
       ? `Né(e) en ${birthYear} • Vivant(e)`
@@ -82,6 +88,14 @@ export default function CenterPersonCard({
           >
             {initials || <User className="w-9 h-9 text-white/80" />}
           </div>
+        )}
+        {dead && (
+          <span
+            className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#173124] text-[#fff8f4] text-xs font-bold flex items-center justify-center border-2 border-white shadow-xs leading-none select-none z-10"
+            title="Décédé(e)"
+          >
+            †
+          </span>
         )}
       </div>
 

@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { Heart } from 'lucide-react';
 import { FoyerSpouseData } from '@/types';
+import { isDeceased } from '@/lib/genealogy';
 
 export interface SpouseCardProps {
   spouse: FoyerSpouseData;
@@ -33,6 +34,7 @@ export default function SpouseCard({
 
   const birthYear = getYear(spouse.birth_date);
   const deathYear = getYear(spouse.death_date);
+  const dead = isDeceased(spouse);
 
   const fullName =
     spouse.name ||
@@ -88,20 +90,35 @@ export default function SpouseCard({
           ) : (
             <span>{initials}</span>
           )}
+          {dead && (
+            <span
+              className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-[#173124] text-[#fff8f4] text-[9px] font-bold flex items-center justify-center border border-white shadow-xs leading-none select-none z-10"
+              title="Décédé(e)"
+            >
+              †
+            </span>
+          )}
         </div>
 
         {/* Name, Birth Year, Profession */}
         <div className="min-w-0 flex-1">
           <h4 className="font-serif font-bold text-sm text-[#1f1b17] truncate leading-snug">
-            {fullName}
+            {fullName}{dead ? ' †' : ''}
           </h4>
 
-          {birthYear && (
+          {deathYear ? (
             <p className="text-xs text-[#727973] font-medium mt-0.5">
-              {birthYear}
-              {deathYear ? ` – ${deathYear}` : ''}
+              {birthYear ? `${birthYear} – ${deathYear}` : `Décédé(e) en ${deathYear}`}
             </p>
-          )}
+          ) : dead ? (
+            <p className="text-xs text-[#727973] font-medium mt-0.5">
+              {birthYear ? `${birthYear} • Décédé(e)` : 'Décédé(e)'}
+            </p>
+          ) : birthYear ? (
+            <p className="text-xs text-[#727973] font-medium mt-0.5">
+              {birthYear} • Vivant(e)
+            </p>
+          ) : null}
 
           {spouse.profession && (
             <p className="text-[10px] text-[#7a5739] truncate mt-0.5">
