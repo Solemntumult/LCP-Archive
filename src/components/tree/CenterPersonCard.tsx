@@ -91,7 +91,7 @@ export default function CenterPersonCard({
         )}
         {dead && (
           <span
-            className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#173124] text-[#fff8f4] text-xs font-bold flex items-center justify-center border-2 border-white shadow-xs leading-none select-none z-10"
+            className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#1f1b17] text-white text-sm font-black flex items-center justify-center border-2 border-white shadow-md leading-none select-none z-20"
             title="Décédé(e)"
           >
             †
@@ -101,8 +101,9 @@ export default function CenterPersonCard({
 
       {/* Name, Life Dates & Profession */}
       <div className="space-y-1">
-        <h3 className="font-serif text-xl font-bold text-[#173124] leading-tight">
-          {fullName}
+        <h3 className="font-serif text-xl font-bold text-[#173124] leading-tight flex items-center justify-center gap-1.5">
+          <span>{fullName}</span>
+          {dead && <span className="text-[#173124] font-black text-lg">†</span>}
         </h3>
         <p className="text-xs text-[#727973] font-sans font-medium">
           {lifeDatesText}

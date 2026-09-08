@@ -49,31 +49,33 @@ export default function ChildCard({ child, onDeploy }: ChildCardProps) {
       {/* Identity & Avatar */}
       <div className="flex items-start gap-3 min-w-0">
         {/* Photo / Initials 44x44 */}
-        <div
-          className={`relative w-[44px] h-[44px] rounded-full overflow-hidden shrink-0 border-2 flex items-center justify-center shadow-xs ${
-            isMale
-              ? 'border-[#2980b9] bg-[#2980b9]'
-              : 'border-[#c0392b] bg-[#c0392b]'
-          }`}
-        >
-          {child.photo_url ? (
-            <Image
-              src={child.photo_url}
-              alt={child.name}
-              fill
-              className="object-cover"
-              sizes="44px"
-            />
-          ) : initials ? (
-            <span className="font-serif font-bold text-sm text-white select-none">
-              {initials}
-            </span>
-          ) : (
-            <User className="w-5 h-5 text-white" />
-          )}
+        <div className="relative shrink-0">
+          <div
+            className={`w-[44px] h-[44px] rounded-full overflow-hidden border-2 flex items-center justify-center shadow-xs relative ${
+              isMale
+                ? 'border-[#2980b9] bg-[#2980b9]'
+                : 'border-[#c0392b] bg-[#c0392b]'
+            }`}
+          >
+            {child.photo_url ? (
+              <Image
+                src={child.photo_url}
+                alt={child.name}
+                fill
+                className="object-cover"
+                sizes="44px"
+              />
+            ) : initials ? (
+              <span className="font-serif font-bold text-sm text-white select-none">
+                {initials}
+              </span>
+            ) : (
+              <User className="w-5 h-5 text-white" />
+            )}
+          </div>
           {dead && (
             <span
-              className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#173124] text-[#fff8f4] text-[8px] font-bold flex items-center justify-center border border-white shadow-xs leading-none select-none z-10"
+              className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full bg-[#1f1b17] text-white text-[10px] font-black flex items-center justify-center border-1.5 border-white shadow-md leading-none select-none z-20"
               title="Décédé(e)"
             >
               †
@@ -83,8 +85,9 @@ export default function ChildCard({ child, onDeploy }: ChildCardProps) {
 
         {/* Info Column */}
         <div className="min-w-0 flex-1 leading-tight">
-          <h4 className="font-serif font-bold text-sm text-[#1f1b17] group-hover:text-[#173124] transition-colors truncate">
-            {child.name}{dead ? ' †' : ''}
+          <h4 className="font-serif font-bold text-sm text-[#1f1b17] group-hover:text-[#173124] transition-colors truncate flex items-center gap-1">
+            <span>{child.name}</span>
+            {dead && <span className="text-[#173124] font-black text-xs">†</span>}
           </h4>
           <p className="text-[10px] text-[#727973] font-medium mt-0.5">
             {yearDisplay}

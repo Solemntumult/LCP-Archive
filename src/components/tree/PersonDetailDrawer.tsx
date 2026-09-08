@@ -91,25 +91,27 @@ export default function PersonDetailDrawer({
 
       {/* Identity Card: Avatar, Name, Dates, Profession */}
       <div className="flex items-center gap-3">
-        <div
-          className={`relative w-12 h-12 rounded-xl overflow-hidden shrink-0 border-2 flex items-center justify-center font-serif font-bold text-sm text-white shadow-xs ${
-            isMale ? 'border-[#2980b9] bg-[#2980b9]' : 'border-[#c0392b] bg-[#c0392b]'
-          }`}
-        >
-          {person.photo_url || person.photo ? (
-            <Image
-              src={(person.photo_url || person.photo)!}
-              alt={person.name}
-              fill
-              className="object-cover"
-              sizes="48px"
-            />
-          ) : (
-            initials
-          )}
+        <div className="relative shrink-0">
+          <div
+            className={`w-12 h-12 rounded-xl overflow-hidden border-2 flex items-center justify-center font-serif font-bold text-sm text-white shadow-xs relative ${
+              isMale ? 'border-[#2980b9] bg-[#2980b9]' : 'border-[#c0392b] bg-[#c0392b]'
+            }`}
+          >
+            {person.photo_url || person.photo ? (
+              <Image
+                src={(person.photo_url || person.photo)!}
+                alt={person.name}
+                fill
+                className="object-cover"
+                sizes="48px"
+              />
+            ) : (
+              initials
+            )}
+          </div>
           {isDeceased(person) && (
             <span
-              className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-[#173124] text-[#fff8f4] text-[9px] font-bold flex items-center justify-center border border-white shadow-xs leading-none select-none z-10"
+              className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#1f1b17] text-white text-[11px] font-black flex items-center justify-center border-2 border-white shadow-md leading-none select-none z-20"
               title="Décédé(e)"
             >
               †
@@ -118,8 +120,9 @@ export default function PersonDetailDrawer({
         </div>
 
         <div className="min-w-0 flex-1">
-          <h3 className="font-serif font-bold text-sm text-[#1f1b17] leading-tight truncate">
-            {person.name}{isDeceased(person) ? ' †' : ''}
+          <h3 className="font-serif font-bold text-sm text-[#1f1b17] leading-tight truncate flex items-center gap-1">
+            <span>{person.name}</span>
+            {isDeceased(person) && <span className="text-[#173124] font-black text-sm">†</span>}
           </h3>
           {deathYear ? (
             <p className="text-[11px] text-[#727973] font-medium mt-0.5">

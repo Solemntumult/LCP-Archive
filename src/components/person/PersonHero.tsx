@@ -44,29 +44,31 @@ export default function PersonHero({
       <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
         {/* Person Avatar Profile */}
         <div className="shrink-0 flex flex-col items-center">
-          <div className="relative w-36 h-36 sm:w-40 sm:h-40 rounded-full overflow-hidden shadow-md border-4 border-white ring-4 ring-[#173124]/10">
-            {person.photo || (person as any).photo_url ? (
-              <Image
-                src={(person.photo || (person as any).photo_url)!}
-                alt={person.full_name}
-                fill
-                className="object-cover"
-                priority
-                sizes="(max-width: 768px) 144px, 160px"
-              />
-            ) : (
-              <div
-                className={`w-full h-full flex items-center justify-center font-serif font-bold text-3xl sm:text-4xl text-white ${
-                  isMale ? 'bg-[#2980b9]' : 'bg-[#c0392b]'
-                }`}
-              >
-                {initials}
-              </div>
-            )}
+          <div className="relative">
+            <div className="w-36 h-36 sm:w-40 sm:h-40 rounded-full overflow-hidden shadow-md border-4 border-white ring-4 ring-[#173124]/10 relative">
+              {person.photo || (person as any).photo_url ? (
+                <Image
+                  src={(person.photo || (person as any).photo_url)!}
+                  alt={person.full_name}
+                  fill
+                  className="object-cover"
+                  priority
+                  sizes="(max-width: 768px) 144px, 160px"
+                />
+              ) : (
+                <div
+                  className={`w-full h-full flex items-center justify-center font-serif font-bold text-3xl sm:text-4xl text-white ${
+                    isMale ? 'bg-[#2980b9]' : 'bg-[#c0392b]'
+                  }`}
+                >
+                  {initials}
+                </div>
+              )}
+            </div>
             {/* Catholic Cross badge for deceased */}
             {!person.is_alive && (
               <span
-                className="absolute bottom-1 right-1 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#173124] text-[#fff8f4] text-xs sm:text-sm font-bold flex items-center justify-center border-2 border-white shadow-md leading-none select-none z-10"
+                className="absolute bottom-0 right-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#1f1b17] text-white text-base sm:text-lg font-black flex items-center justify-center border-2.5 border-white shadow-lg leading-none select-none z-20"
                 title="Décédé(e)"
               >
                 †
@@ -96,10 +98,10 @@ export default function PersonHero({
         <div className="flex-1 text-center md:text-left min-w-0 space-y-4">
           <div>
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-1">
-              <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#173124] tracking-tight flex items-center gap-1.5 justify-center md:justify-start">
+              <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#173124] tracking-tight flex items-center gap-2 justify-center md:justify-start">
                 <span>{person.full_name}</span>
                 {!person.is_alive && (
-                  <span className="text-[#7a5739] text-2xl sm:text-3xl font-serif select-none" title="Décédé(e)">
+                  <span className="text-[#173124] text-2xl sm:text-3xl font-black select-none" title="Décédé(e)">
                     †
                   </span>
                 )}

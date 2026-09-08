@@ -1010,25 +1010,27 @@ export default function FoyerTreeGraph({
                     title={`Cliquer pour voir la fiche de ${p.name}`}
                   >
                     {/* Circle Profile Photo */}
-                    <div
-                      className={`relative w-13 h-13 rounded-full overflow-hidden shrink-0 border-3 shadow-md flex items-center justify-center font-serif font-bold text-sm text-white ${
-                        isMale
-                          ? 'border-[#2980b9] bg-[#2980b9]'
-                          : 'border-[#c0392b] bg-[#c0392b]'
-                      } ${
-                        isHighlighted
-                          ? 'ring-4 ring-[#c69214] ring-offset-2 scale-110 shadow-xl animate-pulse'
-                          : 'ring-3 ring-[#173124]/20 group-hover:ring-[#173124]/50'
-                      } transition-all`}
-                    >
-                      {p.photo_url || p.photo ? (
-                        <Image src={(p.photo_url || p.photo)!} alt={p.name} fill className="object-cover" sizes="52px" />
-                      ) : (
-                        initials || <User className="w-6 h-6 text-white/80" />
-                      )}
+                    <div className="relative shrink-0">
+                      <div
+                        className={`w-13 h-13 rounded-full overflow-hidden border-3 shadow-md flex items-center justify-center font-serif font-bold text-sm text-white ${
+                          isMale
+                            ? 'border-[#2980b9] bg-[#2980b9]'
+                            : 'border-[#c0392b] bg-[#c0392b]'
+                        } ${
+                          isHighlighted
+                            ? 'ring-4 ring-[#c69214] ring-offset-2 scale-110 shadow-xl animate-pulse'
+                            : 'ring-3 ring-[#173124]/20 group-hover:ring-[#173124]/50'
+                        } transition-all relative`}
+                      >
+                        {p.photo_url || p.photo ? (
+                          <Image src={(p.photo_url || p.photo)!} alt={p.name} fill className="object-cover" sizes="52px" />
+                        ) : (
+                          initials || <User className="w-6 h-6 text-white/80" />
+                        )}
+                      </div>
                       {isDeceased(p) && (
                         <span
-                          className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-[#173124] text-[#fff8f4] text-[9px] font-bold flex items-center justify-center border border-white shadow-xs leading-none select-none z-10"
+                          className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#1f1b17] text-white text-[11px] font-black flex items-center justify-center border-2 border-white shadow-md leading-none select-none z-20"
                           title="Décédé(e)"
                         >
                           †
@@ -1069,25 +1071,27 @@ export default function FoyerTreeGraph({
                     title={`Cliquer pour voir la fiche de ${sp.name}`}
                   >
                     {/* Circle Profile Photo */}
-                    <div
-                      className={`relative w-12 h-12 rounded-full overflow-hidden shrink-0 border-2.5 shadow-md flex items-center justify-center font-serif font-bold text-xs text-white ${
-                        isMale
-                          ? 'border-[#2980b9] bg-[#2980b9]'
-                          : 'border-[#c0392b] bg-[#c0392b]'
-                      } ${
-                        isHighlighted
-                          ? 'ring-4 ring-[#c69214] ring-offset-2 scale-110 shadow-xl animate-pulse'
-                          : 'ring-2 ring-[#c69214]/40 group-hover:ring-[#c69214]'
-                      } transition-all`}
-                    >
-                      {sp.photo_url || sp.photo ? (
-                        <Image src={(sp.photo_url || sp.photo)!} alt={sp.name} fill className="object-cover" sizes="48px" />
-                      ) : (
-                        initials || <User className="w-4 h-4 text-white/80" />
-                      )}
+                    <div className="relative shrink-0">
+                      <div
+                        className={`w-12 h-12 rounded-full overflow-hidden border-2.5 shadow-md flex items-center justify-center font-serif font-bold text-xs text-white ${
+                          isMale
+                            ? 'border-[#2980b9] bg-[#2980b9]'
+                            : 'border-[#c0392b] bg-[#c0392b]'
+                        } ${
+                          isHighlighted
+                            ? 'ring-4 ring-[#c69214] ring-offset-2 scale-110 shadow-xl animate-pulse'
+                            : 'ring-2 ring-[#c69214]/40 group-hover:ring-[#c69214]'
+                        } transition-all relative`}
+                      >
+                        {sp.photo_url || sp.photo ? (
+                          <Image src={(sp.photo_url || sp.photo)!} alt={sp.name} fill className="object-cover" sizes="48px" />
+                        ) : (
+                          initials || <User className="w-4 h-4 text-white/80" />
+                        )}
+                      </div>
                       {isDeceased(sp) && (
                         <span
-                          className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-[#173124] text-[#fff8f4] text-[9px] font-bold flex items-center justify-center border border-white shadow-xs leading-none select-none z-10"
+                          className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#1f1b17] text-white text-[11px] font-black flex items-center justify-center border-2 border-white shadow-md leading-none select-none z-20"
                           title="Décédé(e)"
                         >
                           †
@@ -1131,25 +1135,27 @@ export default function FoyerTreeGraph({
                       className="flex flex-col items-center cursor-pointer transition-transform hover:scale-105"
                       title={`Cliquer pour voir la fiche de ${child.name}`}
                     >
-                      <div
-                        className={`relative w-11 h-11 rounded-full overflow-hidden shrink-0 border-2 shadow-xs flex items-center justify-center font-serif font-bold text-xs text-white ${
-                          isMale
-                            ? 'border-[#2980b9] bg-[#2980b9]'
-                            : 'border-[#c0392b] bg-[#c0392b]'
-                        } ${
-                          isHighlighted
-                            ? 'ring-4 ring-[#c69214] ring-offset-2 scale-110 shadow-xl animate-pulse'
-                            : 'group-hover:ring-2 group-hover:ring-[#173124]/40'
-                        } transition-all`}
-                      >
-                        {child.photo_url || child.photo ? (
-                          <Image src={(child.photo_url || child.photo)!} alt={child.name} fill className="object-cover" sizes="44px" />
-                        ) : (
-                          initials || <User className="w-4 h-4 text-white/80" />
-                        )}
+                      <div className="relative shrink-0">
+                        <div
+                          className={`w-11 h-11 rounded-full overflow-hidden border-2 shadow-xs flex items-center justify-center font-serif font-bold text-xs text-white ${
+                            isMale
+                              ? 'border-[#2980b9] bg-[#2980b9]'
+                              : 'border-[#c0392b] bg-[#c0392b]'
+                          } ${
+                            isHighlighted
+                              ? 'ring-4 ring-[#c69214] ring-offset-2 scale-110 shadow-xl animate-pulse'
+                              : 'group-hover:ring-2 group-hover:ring-[#173124]/40'
+                          } transition-all relative`}
+                        >
+                          {child.photo_url || child.photo ? (
+                            <Image src={(child.photo_url || child.photo)!} alt={child.name} fill className="object-cover" sizes="44px" />
+                          ) : (
+                            initials || <User className="w-4 h-4 text-white/80" />
+                          )}
+                        </div>
                         {isDeceased(child) && (
                           <span
-                            className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#173124] text-[#fff8f4] text-[8px] font-bold flex items-center justify-center border border-white shadow-xs leading-none select-none z-10"
+                            className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full bg-[#1f1b17] text-white text-[10px] font-black flex items-center justify-center border-1.5 border-white shadow-md leading-none select-none z-20"
                             title="Décédé(e)"
                           >
                             †

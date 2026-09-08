@@ -72,27 +72,29 @@ export default function SpouseCard({
       {/* Main Spouse Identity */}
       <div className="flex items-center gap-3">
         {/* Photo (48x48) or Initials Avatar */}
-        <div
-          className={`relative w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 flex items-center justify-center font-serif font-bold text-sm shadow-xs ${
-            isMale
-              ? 'border-[#2980b9] bg-[#ebf5fb] text-[#2980b9]'
-              : 'border-[#c0392b] bg-[#fdedec] text-[#c0392b]'
-          }`}
-        >
-          {spouse.photo_url ? (
-            <Image
-              src={spouse.photo_url}
-              alt={fullName}
-              fill
-              className="object-cover"
-              sizes="48px"
-            />
-          ) : (
-            <span>{initials}</span>
-          )}
+        <div className="relative shrink-0">
+          <div
+            className={`w-12 h-12 rounded-full overflow-hidden border-2 flex items-center justify-center font-serif font-bold text-sm shadow-xs relative ${
+              isMale
+                ? 'border-[#2980b9] bg-[#ebf5fb] text-[#2980b9]'
+                : 'border-[#c0392b] bg-[#fdedec] text-[#c0392b]'
+            }`}
+          >
+            {spouse.photo_url ? (
+              <Image
+                src={spouse.photo_url}
+                alt={fullName}
+                fill
+                className="object-cover"
+                sizes="48px"
+              />
+            ) : (
+              <span>{initials}</span>
+            )}
+          </div>
           {dead && (
             <span
-              className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-[#173124] text-[#fff8f4] text-[9px] font-bold flex items-center justify-center border border-white shadow-xs leading-none select-none z-10"
+              className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#1f1b17] text-white text-[11px] font-black flex items-center justify-center border-2 border-white shadow-md leading-none select-none z-20"
               title="Décédé(e)"
             >
               †
@@ -102,8 +104,9 @@ export default function SpouseCard({
 
         {/* Name, Birth Year, Profession */}
         <div className="min-w-0 flex-1">
-          <h4 className="font-serif font-bold text-sm text-[#1f1b17] truncate leading-snug">
-            {fullName}{dead ? ' †' : ''}
+          <h4 className="font-serif font-bold text-sm text-[#1f1b17] truncate leading-snug flex items-center gap-1">
+            <span>{fullName}</span>
+            {dead && <span className="text-[#173124] font-black text-sm">†</span>}
           </h4>
 
           {deathYear ? (
