@@ -20,12 +20,11 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { translateEventData, getCategoryBadgeData } from '@/lib/i18n/dbTranslation';
 
 export default function UpcomingEventCarousel({
-  events: rawEvents,
+  events,
 }: {
   events: FamilyEvent[];
 }) {
   const { t, language } = useLanguage();
-  const events = rawEvents.map((e) => translateEventData(e, language));
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
 

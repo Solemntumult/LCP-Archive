@@ -58,14 +58,7 @@ export async function translateAsync(text: string | null | undefined, lang: Lang
     return memoryCache.get(cacheKey)!;
   }
 
-  // 2. Check synchronous DB translation
-  const syncTrans = translateDbText(trimmed, 'en');
-  if (syncTrans && syncTrans !== trimmed) {
-    memoryCache.set(cacheKey, syncTrans);
-    return syncTrans;
-  }
-
-  // 3. Call server translation API
+  // 2. Call server translation API for clean, whole-sentence translation
   try {
     const res = await fetch('/api/translate', {
       method: 'POST',
@@ -75,7 +68,7 @@ export async function translateAsync(text: string | null | undefined, lang: Lang
 
     if (res.ok) {
       const data = await res.json();
-      if (data.translatedText) {
+      if (data.translatedText && data.translatedText.trim().length > 0) {
         memoryCache.set(cacheKey, data.translatedText);
         saveToLocalStorage(cacheKey, data.translatedText);
         return data.translatedText;
@@ -85,6 +78,8 @@ export async function translateAsync(text: string | null | undefined, lang: Lang
     console.warn('Error fetching translation:', err);
   }
 
+  // 3. Fallback to dictionary translation
+  const syncTrans = translateDbText(trimmed, 'en');
   return syncTrans || text;
 }
 
@@ -110,15 +105,9 @@ export async function translateBatchAsync(texts: string[], lang: Language): Prom
     if (memoryCache.has(cacheKey)) {
       results.push(memoryCache.get(cacheKey)!);
     } else {
-      const syncTrans = translateDbText(trimmed, 'en');
-      if (syncTrans && syncTrans !== trimmed) {
-        memoryCache.set(cacheKey, syncTrans);
-        results.push(syncTrans);
-      } else {
-        results.push(trimmed);
-        missingIndices.push(i);
-        missingTexts.push(trimmed);
-      }
+      results.push(trimmed);
+      missingIndices.push(i);
+      missingTexts.push(trimmed);
     }
   }
 
@@ -137,7 +126,7 @@ export async function translateBatchAsync(texts: string[], lang: Language): Prom
             const originalIndex = missingIndices[idx];
             const originalText = missingTexts[idx];
             const cacheKey = `fr:en:${originalText}`;
-            if (trans) {
+            if (trans && trans.trim().length > 0) {
               results[originalIndex] = trans;
               memoryCache.set(cacheKey, trans);
               saveToLocalStorage(cacheKey, trans);
@@ -147,6 +136,14 @@ export async function translateBatchAsync(texts: string[], lang: Language): Prom
       }
     } catch (err) {
       console.warn('Batch translation error:', err);
+    }
+  }
+
+  // Any remaining un-translated items get dictionary fallback
+  for (let i = 0; i < results.length; i++) {
+    if (results[i] === texts[i]) {
+      const sync = translateDbText(texts[i], 'en');
+      if (sync) results[i] = sync;
     }
   }
 

@@ -19,14 +19,13 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { translateEventData, getCategoryBadgeData } from '@/lib/i18n/dbTranslation';
 
 export default function EventCarousel({
-  events: rawEvents,
+  events,
   onOpenCreateModal,
 }: {
   events: FamilyEvent[];
   onOpenCreateModal?: () => void;
 }) {
   const { t, language } = useLanguage();
-  const events = rawEvents.map((e) => translateEventData(e, language));
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
 
