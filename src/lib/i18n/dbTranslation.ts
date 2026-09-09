@@ -1,26 +1,31 @@
 'use client';
 
-import { FamilyEvent, Person, PersonDetail, TreeNodeData } from '@/types';
+import { FamilyEvent, Person, PersonDetail, TreeNodeData, TimelineEvent, EventCategory } from '@/types';
 import { Language } from './translations';
+import { Users, Award, Sparkles, Baby, Heart, Compass, Calendar } from 'lucide-react';
 
 /**
- * High-accuracy dictionary of common genealogical, historical, professional,
- * event, and location translations between French and English.
+ * Universal Dictionary mapping French words & common phrases to English
  */
-const EXACT_PHRASES_FR_TO_EN: Record<string, string> = {
-  // Common Event Titles & Themes
+const EXACT_PHRASES: Record<string, string> = {
+  // Event Titles & Occasions
   "Célébration de l'indépendance": "Independence Day Celebration",
   "Célébration de l'Indépendance": "Independence Day Celebration",
   "Celebration de l'independance": "Independence Day Celebration",
   "Fête de l'Indépendance": "Independence Day Celebration",
   "Fête de l'indépendance": "Independence Day Celebration",
+  "Fête nationale": "National Holiday Celebration",
   "Grande Réunion Familiale": "Grand Family Reunion",
   "Grande réunion familiale": "Grand Family Reunion",
   "Grande Reunion Familiale": "Grand Family Reunion",
+  "Réunion de famille": "Family Reunion",
+  "Réunion familiale": "Family Gathering",
   "Retrouvailles Annuelles": "Annual Family Reunion",
   "Retrouvailles annuelles": "Annual Family Reunion",
+  "Retrouvailles Familiales": "Family Reunion Gathering",
   "Hommage au Patriarche": "Tribute to the Patriarch",
   "Hommage au Patriarche Paul": "Tribute to Patriarch Paul",
+  "Hommage aux Ancêtres": "Tribute to the Ancestors",
   "Commémoration des Ancêtres": "Ancestors Commemoration",
   "Pèlerinage aux Sources": "Pilgrimage to Ancestral Roots",
   "Pelerinage aux sources": "Pilgrimage to Ancestral Roots",
@@ -29,46 +34,90 @@ const EXACT_PHRASES_FR_TO_EN: Record<string, string> = {
   "Fête des Moissons": "Harvest Festival",
   "Fête de Fin d'Année": "End of Year Celebration",
   "Arbre de Noël Familial": "Family Christmas Gathering",
+  "Arbre de Noël": "Christmas Gathering",
   "Anniversaire des 80 ans": "80th Birthday Celebration",
   "Célébration des 50 ans": "50th Anniversary Celebration",
+  "Anniversaire de mariage": "Wedding Anniversary",
   "Obsèques & Hommage": "Funeral & Memorial Tribute",
   "Sortie de Nouveau-né": "Newborn Outing & Blessing Ceremony",
   "Baptême Traditionnel": "Traditional Christening Ceremony",
+  "Présentation du nouveau-né": "Presentation of the Newborn",
+  "Rassemblement des descendants": "Descendants Gathering",
+  "Jubilé d'or": "Golden Jubilee",
+  "Jubilé d'argent": "Silver Jubilee",
 
   // Professions & Occupations
   "Enseignant": "Teacher / Educator",
   "Enseignante": "Teacher / Educator",
   "Professeur": "Professor / Teacher",
   "Professeur de mathématiques": "Mathematics Professor",
+  "Professeur de sciences": "Science Professor",
+  "Professeur de français": "French Teacher",
+  "Instituteur": "Primary School Teacher",
+  "Institutrice": "Primary School Teacher",
   "Ingénieur": "Engineer",
+  "Ingénieure": "Engineer",
   "Ingénieur en mines": "Mining Engineer",
   "Ingénieur des mines": "Mining Engineer",
   "Ingénieur en électrotechnique": "Electrical Engineer",
+  "Ingénieur électrotechnique": "Electrical Engineer",
   "Ingénieur agronome": "Agronomist Engineer",
   "Ingénieur informatique": "Software Engineer",
+  "Ingénieur génie civil": "Civil Engineer",
   "Commerçante": "Trader / Businesswoman",
   "Commerçant": "Merchant / Businessman",
   "Médecin": "Medical Doctor / Physician",
+  "Chirurgien": "Surgeon",
   "Infirmier": "Nurse",
   "Infirmière": "Nurse",
   "Sage-femme": "Midwife",
+  "Pharmacien": "Pharmacist",
+  "Pharmacienne": "Pharmacist",
   "Avocat": "Lawyer / Attorney",
+  "Avocate": "Lawyer / Attorney",
   "Magistrat": "Magistrate / Judge",
+  "Juriste": "Legal Consultant",
   "Comptable": "Accountant",
+  "Expert-comptable": "Chartered Accountant",
   "Économiste": "Economist",
   "Fonctionnaire": "Civil Servant",
   "Administrateur civil": "Civil Administrator",
   "Diplomate": "Diplomat",
   "Entrepreneur": "Entrepreneur",
+  "Entrepreneure": "Entrepreneur",
+  "Chef d'entreprise": "Business Executive",
   "Artisan": "Craftsman / Artisan",
+  "Artisane": "Craftswoman / Artisan",
   "Menuisier": "Carpenter",
+  "Maçon": "Mason / Builder",
+  "Électricien": "Electrician",
+  "Plombier": "Plumber",
+  "Mécanicien": "Mechanic",
+  "Tailleur": "Tailor",
+  "Couturière": "Seamstress / Dressmaker",
+  "Styliste": "Fashion Designer",
   "Cultivateur": "Farmer / Cultivator",
+  "Cultivatrice": "Farmer / Cultivator",
   "Agriculteur": "Farmer",
+  "Agricultrice": "Farmer",
+  "Éleveur": "Breeder / Livestock Farmer",
   "Étudiant": "Student",
   "Étudiante": "Student",
+  "Élève": "Pupil / Student",
   "Militaire": "Military Officer",
+  "Gendarme": "Gendarme / Officer",
   "Policier": "Police Officer",
+  "Douanier": "Customs Officer",
   "Conseiller pédagogique": "Educational Consultant / Pedagogical Advisor",
+  "Directeur d'école": "School Principal",
+  "Directrice d'école": "School Principal",
+  "Inspecteur": "Inspector",
+  "Secrétaire": "Secretary",
+  "Chauffeur": "Driver",
+  "Artiste": "Artist",
+  "Musicien": "Musician",
+  "Pasteur": "Pastor",
+  "Prêtre": "Priest",
 
   // Places & Cities
   "Cotonou, Bénin": "Cotonou, Benin",
@@ -78,6 +127,9 @@ const EXACT_PHRASES_FR_TO_EN: Record<string, string> = {
   "Ouidah, Bénin": "Ouidah, Benin",
   "Parakou, Bénin": "Parakou, Benin",
   "Logbozounkpa, Bénin": "Logbozounkpa, Benin",
+  "Djidja, Bénin": "Djidja, Benin",
+  "Natitingou, Bénin": "Natitingou, Benin",
+  "Allada, Bénin": "Allada, Benin",
   "Abidjan, Côte d'Ivoire": "Abidjan, Ivory Coast",
   "Paris, France": "Paris, France",
   "Lomé, Togo": "Lome, Togo",
@@ -89,8 +141,47 @@ const EXACT_PHRASES_FR_TO_EN: Record<string, string> = {
   "Abomey": "Abomey",
   "Bohicon": "Bohicon",
   "Ouidah": "Ouidah",
+  "Parakou": "Parakou",
   "Logbozounkpa": "Logbozounkpa",
   "Bénin": "Benin",
+  "Côte d'Ivoire": "Ivory Coast",
+  "Sénégal": "Senegal",
+  "France": "France",
+  "Afrique": "Africa",
+
+  // Relationship & Status
+  "Patriarche": "Patriarch",
+  "Matriarche": "Matriarch",
+  "Chef de foyer": "Head of Household",
+  "Époux": "Husband / Spouse",
+  "Épouse": "Wife / Spouse",
+  "Conjoint": "Spouse",
+  "Conjointe": "Spouse",
+  "Conjoint(e)": "Spouse",
+  "Frère": "Brother",
+  "Sœur": "Sister",
+  "Fils": "Son",
+  "Fille": "Daughter",
+  "Enfant": "Child",
+  "Enfants": "Children",
+  "Père": "Father",
+  "Mère": "Mother",
+  "Parents": "Parents",
+  "Grand-père": "Grandfather",
+  "Grand-mère": "Grandmother",
+  "Oncle": "Uncle",
+  "Tante": "Aunt",
+  "Cousin": "Cousin",
+  "Cousine": "Cousin",
+  "Neveu": "Nephew",
+  "Nièce": "Niece",
+  "Descendant": "Descendant",
+  "Descendants": "Descendants",
+  "Lignée": "Lineage",
+  "Génération": "Generation",
+  "de sang": "bloodline",
+  "par alliance": "by marriage",
+  "Autre union": "Other union",
 
   // Activity Log Descriptions
   "Initialisation de l'arbre avec 52 membres de la famille LISSANON.": "Initialized family tree with 52 members of the LISSANON family.",
@@ -149,56 +240,160 @@ His lifelong dedication to continuous learning and academic mentorship positione
 };
 
 /**
- * Rule-based translator for sentences & descriptions when no exact match exists
+ * High-performance regex pipeline to transform French phrases into natural English
  */
-function translateFrenchTextToEnglish(text: string): string {
-  if (!text || typeof text !== 'string') return text;
+const PATTERN_REPLACEMENTS: [RegExp, string][] = [
+  // Specific Event Names & Expressions
+  [/Célébration de l['’]indépendance/gi, "Independence Day Celebration"],
+  [/Celebration de l['’]independance/gi, "Independence Day Celebration"],
+  [/Fête de l['’]indépendance/gi, "Independence Day Celebration"],
+  [/Fete de l['’]independance/gi, "Independence Day Celebration"],
+  [/Grande Réunion Familiale/gi, "Grand Family Reunion"],
+  [/Grande Reunion Familiale/gi, "Grand Family Reunion"],
+  [/Réunion Familiale/gi, "Family Reunion"],
+  [/Reunion Familiale/gi, "Family Reunion"],
+  [/Retrouvailles Familiales/gi, "Family Gathering"],
+  [/Retrouvailles/gi, "Reunion & Gathering"],
+  [/Célébration Familiale/gi, "Family Celebration"],
+  [/Célébration/gi, "Celebration"],
+  [/Celebration/gi, "Celebration"],
+  [/Commémoration/gi, "Commemoration"],
+  [/Commemoration/gi, "Commemoration"],
+  [/Hommage au Patriarche/gi, "Tribute to the Patriarch"],
+  [/Hommage/gi, "Tribute"],
+  [/Mariage & Fiançailles/gi, "Wedding & Betrothal"],
+  [/Mariage/gi, "Wedding"],
+  [/Naissance & Baptême/gi, "Birth & Christening"],
+  [/Naissance/gi, "Birth"],
+  [/Tradition & Culture/gi, "Tradition & Culture"],
+  [/Autre événement/gi, "Other Event"],
+  [/Pèlerinage aux sources/gi, "Pilgrimage to Ancestral Roots"],
+  [/Pèlerinage/gi, "Pilgrimage"],
+  [/Pelerinage/gi, "Pilgrimage"],
+
+  // Timeline sentence patterns
+  [/Naissance d['’]un enfant\s*:\s*/gi, "Birth of a child: "],
+  [/Naissance de son fils\s+/gi, "Birth of their son "],
+  [/Naissance de sa fille\s+/gi, "Birth of their daughter "],
+  [/Naissance de\s+/gi, "Birth of "],
+  [/^Naissance\s+à\s+/i, "Birth in "],
+  [/^Naissance\s+au\s+/i, "Birth in "],
+  [/^Naissance\s+en\s+/i, "Birth in "],
+  [/^Naissance$/i, "Birth"],
+  [/Formation & Études/gi, "Education & Studies"],
+  [/Formation & Etudes/gi, "Education & Studies"],
+  [/Activité professionnelle/gi, "Professional Career"],
+  [/Activite professionnelle/gi, "Professional Career"],
+  [/Exercice du métier de\s+/gi, "Working as "],
+  [/Exercice du metier de\s+/gi, "Working as "],
+  [/Décédé\(e\)\s+à l['’]âge de\s+(\d+)\s+ans/gi, "Passed away at the age of $1 years old"],
+  [/Décédée\s+à l['’]âge de\s+(\d+)\s+ans/gi, "Passed away at the age of $1 years old"],
+  [/Décédé\s+à l['’]âge de\s+(\d+)\s+ans/gi, "Passed away at the age of $1 years old"],
+  [/Décédé\(e\)/gi, "Passed away"],
+  [/Décédée/gi, "Passed away"],
+  [/Décédé/gi, "Passed away"],
+  [/Décès\s+à\s+/gi, "Passed away in "],
+  [/^Décès$/gi, "Passed away"],
+  [/Enfants avec\s+/gi, "Children with "],
+
+  // Common prepositions & connectives
+  [/\s+à l['’]âge de\s+(\d+)\s+ans/gi, " at the age of $1 years old"],
+  [/\s+à l['’]âge de\s+/gi, " at the age of "],
+  [/\s+à\s+Cotonou/gi, " in Cotonou"],
+  [/\s+à\s+Porto-Novo/gi, " in Porto-Novo"],
+  [/\s+à\s+Abomey/gi, " in Abomey"],
+  [/\s+à\s+Bohicon/gi, " in Bohicon"],
+  [/\s+à\s+Ouidah/gi, " in Ouidah"],
+  [/\s+à\s+Parakou/gi, " in Parakou"],
+  [/\s+à\s+Logbozounkpa/gi, " in Logbozounkpa"],
+  [/\s+à\s+Djidja/gi, " in Djidja"],
+  [/\s+à\s+Natitingou/gi, " in Natitingou"],
+  [/\s+à\s+Allada/gi, " in Allada"],
+  [/\s+à\s+Lomé/gi, " in Lome"],
+  [/\s+à\s+Dakar/gi, " in Dakar"],
+  [/\s+à\s+Paris/gi, " in Paris"],
+  [/\s+à\s+Accra/gi, " in Accra"],
+  [/\s+à\s+Lagos/gi, " in Lagos"],
+  [/\s+au\s+Bénin/gi, " in Benin"],
+  [/\s+en\s+Côte d['’]Ivoire/gi, " in Ivory Coast"],
+  [/\s+en\s+France/gi, " in France"],
+  [/\s+au\s+Sénégal/gi, " in Senegal"],
+  [/,\s*Bénin/gi, ", Benin"],
+  [/,\s*Côte d['’]Ivoire/gi, ", Ivory Coast"],
+  [/,\s*Sénégal/gi, ", Senegal"],
+  [/,\s*France/gi, ", France"],
+
+  // Titles & Titles roles
+  [/\bPatriarche\b/gi, "Patriarch"],
+  [/\bMatriarche\b/gi, "Matriarch"],
+  [/\bChef de foyer\b/gi, "Head of Household"],
+  [/\bConjoint\(e\)\b/gi, "Spouse"],
+  [/\bConjoint\b/gi, "Spouse"],
+  [/\bConjointe\b/gi, "Spouse"],
+  [/\bÉpouse\b/gi, "Spouse"],
+  [/\bEpouse\b/gi, "Spouse"],
+  [/\bÉpoux\b/gi, "Spouse"],
+  [/\bEpoux\b/gi, "Spouse"],
+  [/\bFrère\b/gi, "Brother"],
+  [/\bFrere\b/gi, "Brother"],
+  [/\bSœur\b/gi, "Sister"],
+  [/\bSoeur\b/gi, "Sister"],
+  [/\bFils\b/g, "Son"],
+  [/\bFille\b/g, "Daughter"],
+  [/\bEnfants\b/gi, "Children"],
+  [/\bDescendance\b/gi, "Descendants"],
+  [/\bLignée\b/gi, "Lineage"],
+  [/\bLignee\b/gi, "Lineage"],
+  [/\bGénération\b/gi, "Generation"],
+  [/\bGeneration\b/gi, "Generation"],
+
+  // Professions & Key terms
+  [/\bEnseignant\(e\)\b/gi, "Teacher / Educator"],
+  [/\bEnseignant\b/gi, "Teacher"],
+  [/\bEnseignante\b/gi, "Teacher"],
+  [/\bProfesseur\b/gi, "Professor"],
+  [/\bIngénieur\b/gi, "Engineer"],
+  [/\bIngenieur\b/gi, "Engineer"],
+  [/\bCommerçant\(e\)\b/gi, "Trader / Merchant"],
+  [/\bCommerçant\b/gi, "Trader / Merchant"],
+  [/\bCommerçante\b/gi, "Trader / Businesswoman"],
+  [/\bCommercant\b/gi, "Trader / Merchant"],
+  [/\bCommercante\b/gi, "Trader / Businesswoman"],
+  [/\bMédecin\b/gi, "Physician / Medical Doctor"],
+  [/\bMedecin\b/gi, "Physician / Medical Doctor"],
+  [/\bÉtudiant\(e\)\b/gi, "Student"],
+  [/\bÉtudiant\b/gi, "Student"],
+  [/\bÉtudiante\b/gi, "Student"],
+  [/\bEtudiant\b/gi, "Student"],
+  [/\bEtudiante\b/gi, "Student"],
+  [/\bBénin\b/g, "Benin"],
+  [/\bBenin\b/g, "Benin"],
+  [/\bCôte d['’]Ivoire\b/g, "Ivory Coast"],
+  [/\bCote d['’]Ivoire\b/g, "Ivory Coast"],
+  [/\bSénégal\b/g, "Senegal"],
+  [/\bSenegal\b/g, "Senegal"],
+  [/\bAfrique\b/g, "Africa"],
+
+  // Activity logs
+  [/Création de l['’]événement familial/gi, "Creation of family event"],
+  [/Mise à jour de l['’]événement/gi, "Update of family event"],
+  [/Suppression de l['’]événement/gi, "Deletion of family event"],
+];
+
+/**
+ * Translates any French text string into natural English when in 'en' mode.
+ */
+export function translateDbText(text: string | null | undefined, lang: Language): string {
+  if (!text || typeof text !== 'string') return '';
+  if (lang === 'fr') return text;
+
   const trimmed = text.trim();
-  if (EXACT_PHRASES_FR_TO_EN[trimmed]) {
-    return EXACT_PHRASES_FR_TO_EN[trimmed];
+  if (EXACT_PHRASES[trimmed]) {
+    return EXACT_PHRASES[trimmed];
   }
 
   let result = text;
-
-  // Word & expression replacements
-  const replacements: [RegExp, string][] = [
-    [/Célébration de l['’]indépendance/gi, "Independence Day Celebration"],
-    [/Fête de l['’]indépendance/gi, "Independence Celebration"],
-    [/Grande Réunion Familiale/gi, "Grand Family Reunion"],
-    [/Réunion Familiale/gi, "Family Reunion"],
-    [/Retrouvailles Familiales/gi, "Family Gathering"],
-    [/Retrouvailles/gi, "Gathering"],
-    [/Célébration/gi, "Celebration"],
-    [/Commémoration/gi, "Commemoration"],
-    [/Hommage/gi, "Tribute"],
-    [/Mariage/gi, "Wedding"],
-    [/Naissance/gi, "Birth"],
-    [/Pèlerinage/gi, "Pilgrimage"],
-    [/Enseignant(e)?/gi, "Teacher"],
-    [/Ingénieur/gi, "Engineer"],
-    [/Commerçant(e)?/gi, "Trader / Merchant"],
-    [/Médecin/gi, "Physician"],
-    [/Étudiant(e)?/gi, "Student"],
-    [/Bénin/g, "Benin"],
-    [/Côte d['’]Ivoire/g, "Ivory Coast"],
-    [/Sénégal/g, "Senegal"],
-    [/Afrique/g, "Africa"],
-    [/Patriarche/gi, "Patriarch"],
-    [/Matriarche/gi, "Matriarch"],
-    [/Chef de foyer/gi, "Head of Household"],
-    [/Épouse/gi, "Spouse"],
-    [/Époux/gi, "Spouse"],
-    [/Foyer/gi, "Household"],
-    [/Enfants/gi, "Children"],
-    [/Descendants/gi, "Descendants"],
-    [/Lignée/gi, "Lineage"],
-    [/Génération/gi, "Generation"],
-    [/Création de l['’]événement familial/gi, "Creation of family event"],
-    [/Mise à jour de l['’]événement/gi, "Update of family event"],
-    [/Suppression de l['’]événement/gi, "Deletion of family event"],
-  ];
-
-  for (const [pattern, repl] of replacements) {
+  for (const [pattern, repl] of PATTERN_REPLACEMENTS) {
     result = result.replace(pattern, repl);
   }
 
@@ -206,42 +401,54 @@ function translateFrenchTextToEnglish(text: string): string {
 }
 
 /**
+ * Universal Event Category Formatter & Badge Provider
+ */
+export function getCategoryBadgeData(cat: string | undefined | null, t: (k: any) => string) {
+  const c = (cat || '').toLowerCase().trim();
+  if (c.includes('reunion') || c.includes('rassemblement') || c.includes('retrouvaille') || c.includes('foyer')) {
+    return { label: t('evform_cat_reunion'), bg: 'bg-[#173124] text-white', icon: Users };
+  }
+  if (c.includes('commem') || c.includes('hommage') || c.includes('tribute') || c.includes('obsequ') || c.includes('obsèqu')) {
+    return { label: t('evform_cat_commemoration'), bg: 'bg-[#7a5739] text-white', icon: Award };
+  }
+  if (c.includes('celeb') || c.includes('cél') || c.includes('fete') || c.includes('fête') || c.includes('anniv') || c.includes('jubil')) {
+    return { label: t('evform_cat_celebration'), bg: 'bg-[#c69214] text-white', icon: Sparkles };
+  }
+  if (c.includes('birth') || c.includes('naiss') || c.includes('bapt') || c.includes('nouveau-ne') || c.includes('nouveau-né')) {
+    return { label: t('evform_cat_birth'), bg: 'bg-[#2980b9] text-white', icon: Baby };
+  }
+  if (c.includes('wed') || c.includes('mar') || c.includes('fian') || c.includes('epous') || c.includes('épous')) {
+    return { label: t('evform_cat_wedding'), bg: 'bg-[#c0392b] text-white', icon: Heart };
+  }
+  if (c.includes('cult') || c.includes('trad') || c.includes('moiss') || c.includes('arbre')) {
+    return { label: t('evform_cat_cultural'), bg: 'bg-[#496455] text-white', icon: Compass };
+  }
+  return { label: t('evform_cat_other'), bg: 'bg-[#727973] text-white', icon: Calendar };
+}
+
+/**
  * Translates event categories to user language
  */
 export function translateEventCategory(category: string | undefined | null, lang: Language): string {
   if (!category) return '';
+  const c = category.toLowerCase().trim();
   if (lang === 'fr') {
-    switch (category.toLowerCase()) {
-      case 'reunion': return 'Rassemblement';
-      case 'commemoration': return 'Commémoration';
-      case 'celebration': return 'Célébration';
-      case 'birth': return 'Naissance & Baptême';
-      case 'wedding': return 'Mariage & Fiançailles';
-      case 'cultural': return 'Tradition & Culture';
-      case 'other': return 'Autre événement';
-      default: return category;
-    }
+    if (c.includes('reunion') || c.includes('rassemblement')) return 'Rassemblement';
+    if (c.includes('commem') || c.includes('hommage')) return 'Commémoration';
+    if (c.includes('celeb') || c.includes('cél') || c.includes('fete') || c.includes('fête')) return 'Célébration';
+    if (c.includes('birth') || c.includes('naiss') || c.includes('bapt')) return 'Naissance & Baptême';
+    if (c.includes('wed') || c.includes('mar')) return 'Mariage & Fiançailles';
+    if (c.includes('cult') || c.includes('trad')) return 'Tradition & Culture';
+    return 'Autre événement';
   } else {
-    switch (category.toLowerCase()) {
-      case 'reunion': return 'Family Reunion';
-      case 'commemoration': return 'Commemoration & Tribute';
-      case 'celebration': return 'Celebration & Jubilee';
-      case 'birth': return 'Birth & Christening';
-      case 'wedding': return 'Wedding & Betrothal';
-      case 'cultural': return 'Tradition & Culture';
-      case 'other': return 'Other Event';
-      default: return category;
-    }
+    if (c.includes('reunion') || c.includes('rassemblement')) return 'Family Reunion';
+    if (c.includes('commem') || c.includes('hommage')) return 'Commemoration & Tribute';
+    if (c.includes('celeb') || c.includes('cél') || c.includes('fete') || c.includes('fête')) return 'Celebration & Jubilee';
+    if (c.includes('birth') || c.includes('naiss') || c.includes('bapt')) return 'Birth & Christening';
+    if (c.includes('wed') || c.includes('mar')) return 'Wedding & Betrothal';
+    if (c.includes('cult') || c.includes('trad')) return 'Tradition & Culture';
+    return 'Other Event';
   }
-}
-
-/**
- * Translates general dynamic database text according to selected language
- */
-export function translateDbText(text: string | null | undefined, lang: Language): string {
-  if (!text) return '';
-  if (lang === 'fr') return text;
-  return translateFrenchTextToEnglish(text);
 }
 
 /**
@@ -297,4 +504,18 @@ export function translatePersonData<T extends Person | PersonDetail | TreeNodeDa
     ...(accomplishments !== undefined ? { accomplishments } : {}),
     ...(education !== undefined ? { education } : {}),
   } as T;
+}
+
+/**
+ * Translates timeline events
+ */
+export function translateTimelineEvent(event: TimelineEvent, lang: Language): TimelineEvent {
+  if (!event || lang === 'fr') return event;
+
+  return {
+    ...event,
+    title: translateDbText(event.title, lang),
+    description: translateDbText(event.description, lang),
+    location: event.location ? translateDbText(event.location, lang) : event.location,
+  };
 }

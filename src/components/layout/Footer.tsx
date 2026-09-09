@@ -82,7 +82,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm text-[#d8e5dc]">
               <li>
                 <Link href="/person/1" className="hover:text-white transition-colors flex items-center gap-1">
-                  <span>Patriarche Paul LISSANON</span>
+                  <span>{language === 'fr' ? 'Patriarche Paul LISSANON' : 'Patriarch Paul LISSANON'}</span>
                   <ArrowUpRight className="w-3.5 h-3.5 text-[#fdcea9]" />
                 </Link>
               </li>

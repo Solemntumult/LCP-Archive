@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { FamilyEvent, EventCategory } from '@/types';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
-import { translateEventData } from '@/lib/i18n/dbTranslation';
+import { translateEventData, getCategoryBadgeData } from '@/lib/i18n/dbTranslation';
 
 export default function UpcomingEventCarousel({
   events: rawEvents,
@@ -78,24 +78,7 @@ export default function UpcomingEventCarousel({
     year: 'numeric',
   });
 
-  const getCategoryLabel = (cat: EventCategory) => {
-    switch (cat) {
-      case 'reunion':
-        return t('evform_cat_reunion');
-      case 'commemoration':
-        return t('evform_cat_commemoration');
-      case 'celebration':
-        return t('evform_cat_celebration');
-      case 'birth':
-        return t('evform_cat_birth');
-      case 'wedding':
-        return t('evform_cat_wedding');
-      case 'cultural':
-        return t('evform_cat_cultural');
-      default:
-        return t('events_upcoming_title');
-    }
-  };
+  const badge = getCategoryBadgeData(current.category, t);
 
   return (
     <div
@@ -127,7 +110,7 @@ export default function UpcomingEventCarousel({
               {current.days_until === 0 ? t('events_today_pill') : `${t('events_days_left')} ${current.days_until}${t('events_days_unit')}`}
             </span>
             <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-white/20 backdrop-blur-md text-white border border-white/20">
-              {getCategoryLabel(current.category)}
+              {badge.label}
             </span>
             <div className="flex items-center gap-1.5 text-xs text-[#fdcea9] bg-black/50 backdrop-blur-xs px-3 py-1 rounded-full">
               <Calendar className="w-3.5 h-3.5" />

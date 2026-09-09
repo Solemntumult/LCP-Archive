@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { FamilyEvent, EventCategory } from '@/types';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
-import { translateEventData } from '@/lib/i18n/dbTranslation';
+import { translateEventData, getCategoryBadgeData } from '@/lib/i18n/dbTranslation';
 
 export default function EventGridCard({
   event: rawEvent,
@@ -35,26 +35,7 @@ export default function EventGridCard({
     year: 'numeric',
   });
 
-  const getCategoryBadge = (category: EventCategory) => {
-    switch (category) {
-      case 'reunion':
-        return { label: t('evform_cat_reunion'), bg: 'bg-[#173124] text-white', icon: Users };
-      case 'commemoration':
-        return { label: t('evform_cat_commemoration'), bg: 'bg-[#7a5739] text-white', icon: Award };
-      case 'celebration':
-        return { label: t('evform_cat_celebration'), bg: 'bg-[#c69214] text-white', icon: Sparkles };
-      case 'birth':
-        return { label: t('evform_cat_birth'), bg: 'bg-[#2980b9] text-white', icon: Baby };
-      case 'wedding':
-        return { label: t('evform_cat_wedding'), bg: 'bg-[#c0392b] text-white', icon: Heart };
-      case 'cultural':
-        return { label: t('evform_cat_cultural'), bg: 'bg-[#496455] text-white', icon: Compass };
-      default:
-        return { label: t('evform_cat_other'), bg: 'bg-[#727973] text-white', icon: Calendar };
-    }
-  };
-
-  const badge = getCategoryBadge(event.category);
+  const badge = getCategoryBadgeData(event.category, t);
   const BadgeIcon = badge.icon;
 
   return (
@@ -105,9 +86,9 @@ export default function EventGridCard({
             <span className="capitalize">{formattedDate}</span>
             {event.location && (
               <>
-                <span>?</span>
+                <span>•</span>
                 <div className="flex items-center gap-1 truncate">
-                  <MapPin className="w-3 h-3 text-[#7a5739]" />
+                  <MapPin className="w-3.5 h-3.5 text-[#7a5739]" />
                   <span className="truncate">{event.location}</span>
                 </div>
               </>

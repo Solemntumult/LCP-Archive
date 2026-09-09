@@ -31,7 +31,7 @@ import { FamilyEvent, EventCategory, Person } from '@/types';
 import EventFormModal from './EventFormModal';
 import { removeLocalStoredEvent } from '@/lib/eventStorage';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
-import { translateEventData } from '@/lib/i18n/dbTranslation';
+import { translateEventData, getCategoryBadgeData } from '@/lib/i18n/dbTranslation';
 
 export default function EventDetailView({
   initialEvent,
@@ -140,26 +140,7 @@ export default function EventDetailView({
     year: 'numeric',
   });
 
-  const getCategoryBadge = (category: EventCategory) => {
-    switch (category) {
-      case 'reunion':
-        return { label: t('evform_cat_reunion'), bg: 'bg-[#173124] text-white', icon: Users };
-      case 'commemoration':
-        return { label: t('evform_cat_commemoration'), bg: 'bg-[#7a5739] text-white', icon: Award };
-      case 'celebration':
-        return { label: t('evform_cat_celebration'), bg: 'bg-[#c69214] text-white', icon: Sparkles };
-      case 'birth':
-        return { label: t('evform_cat_birth'), bg: 'bg-[#2980b9] text-white', icon: Baby };
-      case 'wedding':
-        return { label: t('evform_cat_wedding'), bg: 'bg-[#c0392b] text-white', icon: Heart };
-      case 'cultural':
-        return { label: t('evform_cat_cultural'), bg: 'bg-[#496455] text-white', icon: Compass };
-      default:
-        return { label: t('evform_cat_other'), bg: 'bg-[#727973] text-white', icon: Calendar };
-    }
-  };
-
-  const badge = getCategoryBadge(event.category);
+  const badge = getCategoryBadgeData(event.category, t);
   const BadgeIcon = badge.icon;
 
   const refreshEvent = async () => {
@@ -181,7 +162,7 @@ export default function EventDetailView({
         method: 'DELETE',
       });
       if (!res.ok) {
-        throw new Error('?chec de la suppression');
+        throw new Error('Failed to delete event');
       }
       removeLocalStoredEvent(event.id);
       router.push('/events');
