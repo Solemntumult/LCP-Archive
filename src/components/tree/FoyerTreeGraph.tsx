@@ -1184,9 +1184,9 @@ export default function FoyerTreeGraph({
                           onDeployChild(child.id);
                         }}
                         className="mt-1.5 deploy-btn-shimmer bg-[#173124] hover:bg-[#2d4739] text-white rounded-lg py-1 px-2.5 font-bold text-[10px] transition-all shadow-xs flex items-center justify-center active:scale-95 cursor-pointer text-center whitespace-nowrap"
-                        title={`Déployer le foyer familial de ${child.name}`}
+                        title={language === 'en' ? `Deploy family household of ${child.name}` : `Déployer le foyer familial de ${child.name}`}
                       >
-                        <span>Déployer</span>
+                        <span>{t('tree_has_descendants_btn')}</span>
                       </button>
                     ) : child.isPartiallyDocumented ? (
                       <button

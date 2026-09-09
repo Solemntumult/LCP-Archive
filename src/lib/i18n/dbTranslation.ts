@@ -222,6 +222,11 @@ const EXACT_PHRASES: Record<string, string> = {
   "Célébration de l'an IV du décès de LISSANON Comlan Paul (LCP)": "Celebration of the 4th Anniversary of the Passing of LISSANON Comlan Paul (LCP)",
   "Célébration de l'an IV du décès de Paul Comlan LISSANON": "Celebration of the 4th Anniversary of the Passing of Paul Comlan LISSANON",
   "Hommage et Célébration de l'an IV": "Tribute and Celebration of the 4th Anniversary",
+
+  // Missing Data Hints
+  "Date de naissance inconnue": "Unknown birth date",
+  "Photo de profil manquante": "Missing profile photo",
+  "Histoire de vie à compléter": "Life story to complete",
 };
 
 /**
@@ -455,6 +460,11 @@ const PATTERN_REPLACEMENTS: [RegExp, string][] = [
   [/à la maison familiale/gi, "at the family residence"],
   [/au domicile du patriarche/gi, "at the patriarch's residence"],
   [/au domicile familial/gi, "at the family home"],
+
+  // Missing Data Hint Descriptions
+  [/^Ajoutez la date de naissance de (.*?) pour enrichir la chronologie\.?$/i, "Add the birth date of $1 to enrich the timeline."],
+  [/^Une photo d['’]archive pour (.*?) valoriserait l['’]arbre familial\.?$/i, "An archive photo for $1 will enhance the family tree."],
+  [/^Racontez la biographie et les accomplissements de (.*?)\.?$/i, "Document the biography and achievements of $1."],
 
   // Timeline generated sentence patterns (with optional trailing dots/punctuations)
   [/^Naissance d['’]un enfant\s*:\s*(.*?)\.?$/i, "Birth of a child: $1"],
