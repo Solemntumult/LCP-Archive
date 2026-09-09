@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import PersonHero from './PersonHero';
 import { PersonDetail } from '@/types';
 import { AlertTriangle, Trash2, X } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function PersonDetailClientActions({
   person,
@@ -12,6 +13,7 @@ export default function PersonDetailClientActions({
   person: PersonDetail;
 }) {
   const router = useRouter();
+  const { t, language } = useLanguage();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -25,11 +27,11 @@ export default function PersonDetailClientActions({
         router.push('/tree');
         router.refresh();
       } else {
-        alert('Erreur lors de la suppression');
+        alert(language === 'en' ? 'Error during deletion' : 'Erreur lors de la suppression');
       }
     } catch (err) {
       console.error(err);
-      alert('Erreur de communication avec le serveur');
+      alert(language === 'en' ? 'Communication error with server' : 'Erreur de communication avec le serveur');
     } finally {
       setDeleting(false);
     }
@@ -52,10 +54,12 @@ export default function PersonDetailClientActions({
 
             <div className="text-center space-y-2">
               <h3 className="font-serif font-bold text-xl text-[#1f1b17]">
-                Supprimer {person.full_name} ?
+                {language === 'en' ? `Delete ${person.full_name}?` : `Supprimer ${person.full_name} ?`}
               </h3>
               <p className="text-sm text-[#727973] leading-relaxed">
-                Cette action retirera définitivement ce membre de l&apos;arbre généalogique. Les liens avec ses parents et enfants seront réajustés.
+                {language === 'en'
+                  ? 'This action will permanently remove this member from the family tree. Parent and child links will be adjusted.'
+                  : "Cette action retirera d?finitivement ce membre de l'arbre g?n?alogique. Les liens avec ses parents et enfants seront r?ajust?s."}
               </p>
             </div>
 
@@ -66,7 +70,7 @@ export default function PersonDetailClientActions({
                 disabled={deleting}
                 className="flex-1 py-2.5 rounded-xl border border-[#eae1da] text-sm font-semibold text-[#424844] hover:bg-[#f5ece5] transition-all"
               >
-                Annuler
+                {t('cancel')}
               </button>
               <button
                 type="button"
@@ -79,7 +83,7 @@ export default function PersonDetailClientActions({
                 ) : (
                   <>
                     <Trash2 className="w-4 h-4" />
-                    <span>Confirmer</span>
+                    <span>{t('delete')}</span>
                   </>
                 )}
               </button>

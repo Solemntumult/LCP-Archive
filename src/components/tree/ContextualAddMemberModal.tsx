@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, User, Heart, Baby, GitFork, Sparkles } from 'lucide-react';
 import { TreeNodeData } from '@/types';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export type RelationType = 'child' | 'parent' | 'spouse' | 'sibling';
 
@@ -19,6 +20,7 @@ export default function ContextualAddMemberModal({
   allPersons: TreeNodeData[];
   onSuccess: () => void;
 }) {
+  const { t, language } = useLanguage();
   const [relationType, setRelationType] = useState<RelationType>('child');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -71,8 +73,7 @@ export default function ContextualAddMemberModal({
           fatherId = selectedCoParentId ? parseInt(selectedCoParentId, 10) : null;
         }
       } else if (relationType === 'parent') {
-        // Adding a parent to targetPerson
-        // We will create the parent, then update targetPerson with father_id or mother_id
+        // Adding parent logic
       } else if (relationType === 'spouse') {
         spouseOfId = targetPerson.id;
       } else if (relationType === 'sibling') {
@@ -97,12 +98,11 @@ export default function ContextualAddMemberModal({
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Erreur lors de l'enregistrement");
+        throw new Error(data.error || (language === 'en' ? 'Error saving member' : "Erreur lors de l'enregistrement"));
       }
 
       const created = await res.json();
 
-      // If we added a parent to targetPerson, update targetPerson with the new parent
       if (relationType === 'parent') {
         const updatePayload =
           gender === 'M' ? { father_id: created.id } : { mother_id: created.id };
@@ -116,7 +116,7 @@ export default function ContextualAddMemberModal({
       onSuccess();
       onClose();
     } catch (err: any) {
-      setError(err.message || 'Une erreur est survenue');
+      setError(err.message || (language === 'en' ? 'An error occurred' : 'Une erreur est survenue'));
     } finally {
       setSubmitting(false);
     }
@@ -129,15 +129,16 @@ export default function ContextualAddMemberModal({
         <div className="flex items-center justify-between pb-4 border-b border-[#f5ece5]">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-[#7a5739]">
-              Ajout Rapide Contextuel
+              {language === 'en' ? 'Quick Relative Addition' : 'Ajout Rapide Contextuel'}
             </span>
             <h3 className="font-serif font-bold text-xl text-[#173124]">
-              Ajouter un proche de {targetPerson.first_name}
+              {language === 'en' ? `Add relative of ${targetPerson.first_name}` : `Ajouter un proche de ${targetPerson.first_name}`}
             </h3>
           </div>
           <button
             onClick={onClose}
             className="p-2 rounded-xl text-[#727973] hover:bg-[#f5ece5] transition-all"
+            aria-label={t('close')}
           >
             <X className="w-5 h-5" />
           </button>
@@ -153,7 +154,7 @@ export default function ContextualAddMemberModal({
           {/* Relation Choice Buttons */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-2">
-              Lien de parenté avec {targetPerson.first_name} *
+              {language === 'en' ? `Relationship to ${targetPerson.first_name} *` : `Lien de parent? avec ${targetPerson.first_name} *`}
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <button
@@ -166,7 +167,7 @@ export default function ContextualAddMemberModal({
                 }`}
               >
                 <Baby className="w-4 h-4" />
-                <span>Enfant</span>
+                <span>{language === 'en' ? 'Child' : 'Enfant'}</span>
               </button>
 
               <button
@@ -179,7 +180,7 @@ export default function ContextualAddMemberModal({
                 }`}
               >
                 <User className="w-4 h-4" />
-                <span>Parent</span>
+                <span>{language === 'en' ? 'Parent' : 'Parent'}</span>
               </button>
 
               <button
@@ -192,7 +193,7 @@ export default function ContextualAddMemberModal({
                 }`}
               >
                 <Heart className="w-4 h-4" />
-                <span>Conjoint</span>
+                <span>{language === 'en' ? 'Spouse' : 'Conjoint'}</span>
               </button>
 
               <button
@@ -205,120 +206,97 @@ export default function ContextualAddMemberModal({
                 }`}
               >
                 <GitFork className="w-4 h-4" />
-                <span>Frère/Sœur</span>
+                <span>{language === 'en' ? 'Sibling' : 'Fr?re/S?ur'}</span>
               </button>
             </div>
           </div>
 
-          {/* If adding a child and target has spouse(s), allow selecting the other parent */}
-          {relationType === 'child' && (
+          {/* Form Fields: First Name, Last Name */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1.5">
-                Autre parent (conjoint co-parent)
-              </label>
-              <select
-                value={selectedCoParentId}
-                onChange={(e) => setSelectedCoParentId(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-[#eae1da] bg-[#fff8f4] text-xs text-[#1f1b17] focus:outline-hidden focus:ring-2 focus:ring-[#173124]"
-              >
-                <option value="">-- Non spécifié / Parent unique --</option>
-                {allPersons
-                  .filter((p) => p.id !== targetPerson.id && p.gender !== targetPerson.gender)
-                  .map((sp) => (
-                    <option key={`coparent-${sp.id}`} value={sp.id}>
-                      {sp.name} ({sp.gender === 'M' ? 'Père' : 'Mère'})
-                    </option>
-                  ))}
-              </select>
-            </div>
-          )}
-
-          {/* First & Last Name */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1">
-                Prénom *
+              <label className="block text-xs font-bold text-[#424844] mb-1">
+                {language === 'en' ? 'First Name *' : 'Pr?nom *'}
               </label>
               <input
                 type="text"
                 required
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                placeholder="ex: Paul"
-                className="w-full px-3.5 py-2 rounded-xl border border-[#eae1da] bg-[#fff8f4] text-xs text-[#1f1b17] focus:outline-hidden focus:ring-2 focus:ring-[#173124]"
+                placeholder={language === 'en' ? 'e.g. Jean' : 'Ex: Jean'}
+                className="w-full px-3.5 py-2.5 bg-[#fff8f4] border border-[#eae1da] rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#173124]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1">
-                Nom de famille *
+              <label className="block text-xs font-bold text-[#424844] mb-1">
+                {language === 'en' ? 'Last Name *' : 'Nom de famille *'}
               </label>
               <input
                 type="text"
                 required
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl border border-[#eae1da] bg-[#fff8f4] text-xs text-[#1f1b17] focus:outline-hidden focus:ring-2 focus:ring-[#173124]"
+                className="w-full px-3.5 py-2.5 bg-[#fff8f4] border border-[#eae1da] rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#173124]"
               />
             </div>
           </div>
 
-          {/* Gender & Birth Date */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Gender and Birth Date */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1">
-                Genre *
+              <label className="block text-xs font-bold text-[#424844] mb-1">
+                {language === 'en' ? 'Gender *' : 'Genre *'}
               </label>
-              <div className="flex items-center gap-2">
+              <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => setGender('M')}
-                  className={`flex-1 py-2 rounded-xl text-xs font-bold border ${
+                  className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${
                     gender === 'M'
                       ? 'bg-[#2980b9] text-white border-[#2980b9]'
                       : 'bg-[#fff8f4] text-[#424844] border-[#eae1da]'
                   }`}
                 >
-                  Homme
+                  {t('male')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setGender('F')}
-                  className={`flex-1 py-2 rounded-xl text-xs font-bold border ${
+                  className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${
                     gender === 'F'
                       ? 'bg-[#c0392b] text-white border-[#c0392b]'
                       : 'bg-[#fff8f4] text-[#424844] border-[#eae1da]'
                   }`}
                 >
-                  Femme
+                  {t('female')}
                 </button>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1">
-                Date de naissance
+              <label className="block text-xs font-bold text-[#424844] mb-1">
+                {language === 'en' ? 'Birth Date' : 'Date de naissance'}
               </label>
               <input
                 type="date"
                 value={birthDate}
                 onChange={(e) => setBirthDate(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl border border-[#eae1da] bg-[#fff8f4] text-xs text-[#1f1b17] focus:outline-hidden focus:ring-2 focus:ring-[#173124]"
+                className="w-full px-3.5 py-2 bg-[#fff8f4] border border-[#eae1da] rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#173124]"
               />
             </div>
           </div>
 
           {/* Profession */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1">
-              Profession
+            <label className="block text-xs font-bold text-[#424844] mb-1">
+              {language === 'en' ? 'Profession / Occupation' : 'Profession'}
             </label>
             <input
               type="text"
               value={profession}
               onChange={(e) => setProfession(e.target.value)}
-              placeholder="ex: Enseignant, Ingénieur..."
-              className="w-full px-3.5 py-2 rounded-xl border border-[#eae1da] bg-[#fff8f4] text-xs text-[#1f1b17] focus:outline-hidden focus:ring-2 focus:ring-[#173124]"
+              placeholder={language === 'en' ? 'e.g. Teacher, Engineer...' : 'Ex: Enseignant, Ing?nieur...'}
+              className="w-full px-3.5 py-2.5 bg-[#fff8f4] border border-[#eae1da] rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#173124]"
             />
           </div>
 
@@ -327,16 +305,16 @@ export default function ContextualAddMemberModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl border border-[#eae1da] text-xs font-semibold text-[#424844] hover:bg-[#f5ece5]"
+              className="px-4 py-2.5 rounded-xl border border-[#eae1da] text-xs font-semibold text-[#424844] hover:bg-[#f5ece5] transition-all"
             >
-              Annuler
+              {t('cancel')}
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2 rounded-xl bg-[#173124] text-white text-xs font-bold hover:bg-[#2d4739] shadow-md transition-all active:scale-95 disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl bg-[#173124] text-white text-xs font-bold hover:bg-[#2d4739] shadow-md transition-all active:scale-95 disabled:opacity-50"
             >
-              {submitting ? 'Enregistrement...' : 'Ajouter à la famille'}
+              {submitting ? t('loading') : t('save')}
             </button>
           </div>
         </form>

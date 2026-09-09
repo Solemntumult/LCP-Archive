@@ -16,12 +16,14 @@ import {
   Clock,
 } from 'lucide-react';
 import { FamilyEvent, EventCategory } from '@/types';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function UpcomingEventCarousel({
   events,
 }: {
   events: FamilyEvent[];
 }) {
+  const { t, language } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
 
@@ -56,10 +58,10 @@ export default function UpcomingEventCarousel({
       <div className="w-full py-14 sm:py-16 bg-white rounded-3xl border border-[#eae1da] text-center p-6 sm:p-8 space-y-3">
         <Calendar className="w-10 h-10 text-[#727973] mx-auto opacity-40" />
         <h3 className="font-serif font-bold text-lg text-[#1f1b17]">
-          Aucun événement à venir pour le moment
+          {t('events_empty_upcoming_title')}
         </h3>
         <p className="text-xs text-[#727973]">
-          Les prochains rassemblements et célébrations s&apos;afficheront ici.
+          {t('events_empty_upcoming_desc')}
         </p>
       </div>
     );
@@ -68,7 +70,7 @@ export default function UpcomingEventCarousel({
   const current = upcomingEvents[currentIndex];
   const photoUrl = current.photo || (current.photos && current.photos.length > 0 ? current.photos[0] : null);
 
-  const formattedDate = new Date(current.event_date).toLocaleDateString('fr-FR', {
+  const formattedDate = new Date(current.event_date).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -77,19 +79,19 @@ export default function UpcomingEventCarousel({
   const getCategoryLabel = (cat: EventCategory) => {
     switch (cat) {
       case 'reunion':
-        return 'Rassemblement';
+        return t('evform_cat_reunion');
       case 'commemoration':
-        return 'Commémoration';
+        return t('evform_cat_commemoration');
       case 'celebration':
-        return 'Célébration';
+        return t('evform_cat_celebration');
       case 'birth':
-        return 'Naissance & Anniversaire';
+        return t('evform_cat_birth');
       case 'wedding':
-        return 'Mariage';
+        return t('evform_cat_wedding');
       case 'cultural':
-        return 'Pèlerinage';
+        return t('evform_cat_cultural');
       default:
-        return 'Événement à venir';
+        return t('events_upcoming_title');
     }
   };
 
@@ -99,146 +101,95 @@ export default function UpcomingEventCarousel({
       onMouseEnter={() => setIsAutoPlay(false)}
       onMouseLeave={() => setIsAutoPlay(true)}
     >
-      {/* Background Image: Dual-layer ambient fill + centered pure framed image */}
-      <div className="relative w-full h-[420px] sm:h-[480px] lg:h-[540px] overflow-hidden bg-[#0e0e0e]">
+      <div className="relative min-h-[360px] sm:min-h-[420px] flex flex-col justify-end p-6 sm:p-10 z-10">
+        {/* Background photo with subtle zoom */}
         {photoUrl ? (
-          <>
-            {/* Ambient blurred backdrop to seamlessly fill any aspect-ratio */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              <Image
-                src={photoUrl}
-                alt=""
-                fill
-                className="object-cover object-center blur-2xl scale-110 opacity-40 brightness-75"
-              />
-            </div>
-
-            {/* Sharp, pure photo centered without awkward cropping */}
+          <div className="absolute inset-0 z-0">
             <Image
               src={photoUrl}
               alt={current.title}
               fill
+              className="object-cover object-center transition-all duration-700 ease-out"
               priority
-              className="object-contain object-center transition-transform duration-700 group-hover:scale-[1.02]"
-              sizes="(max-width: 768px) 100vw, 1200px"
             />
-          </>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/30" />
+          </div>
         ) : (
-          <div className="w-full h-full bg-[#1c1917]" />
+          <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#7a5739] to-[#1f1b17]" />
         )}
 
-        {/* Minimal neutral dark gradient strictly at bottom for text readability */}
-        <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/95 via-black/45 to-transparent pointer-events-none" />
-
-        {/* Foreground Content */}
-        <div
-          key={current.id}
-          className="absolute inset-0 p-5 sm:p-8 lg:p-12 flex flex-col justify-end max-w-3xl z-10 space-y-2.5 sm:space-y-3.5 animate-fade-in"
-        >
-          {/* Metadata Badges */}
+        {/* Content Details */}
+        <div className="relative z-10 max-w-3xl space-y-3 sm:space-y-4">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider bg-white text-[#1f1b17] shadow-sm">
+            <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#c69214] text-white shadow-md">
+              {current.days_until === 0 ? t('events_today_pill') : `${t('events_days_left')} ${current.days_until}${t('events_days_unit')}`}
+            </span>
+            <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-white/20 backdrop-blur-md text-white border border-white/20">
               {getCategoryLabel(current.category)}
             </span>
-
-            {/* Countdown Badge */}
-            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-[#173124] text-white border border-white/20 shadow-xs">
-              <Clock className="w-3.5 h-3.5 text-[#98b5a3]" />
-              <span>
-                {current.days_until === 0
-                  ? "Aujourd'hui !"
-                  : current.days_until !== undefined && current.days_until > 0
-                  ? `Dans ${current.days_until} jours`
-                  : 'Prochainement'}
-              </span>
-            </span>
-
-            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] sm:text-xs font-medium bg-black/60 backdrop-blur-md text-white border border-white/20">
-              <Calendar className="w-3.5 h-3.5 text-[#eae1da]" />
+            <div className="flex items-center gap-1.5 text-xs text-[#fdcea9] bg-black/50 backdrop-blur-xs px-3 py-1 rounded-full">
+              <Calendar className="w-3.5 h-3.5" />
               <span>{formattedDate}</span>
-            </span>
-
+            </div>
             {current.location && (
-              <span className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-black/50 backdrop-blur-md text-[#eae1da] border border-white/10">
-                <MapPin className="w-3.5 h-3.5 text-[#eae1da]" />
+              <div className="flex items-center gap-1.5 text-xs text-white/80 bg-black/50 backdrop-blur-xs px-3 py-1 rounded-full">
+                <MapPin className="w-3.5 h-3.5" />
                 <span>{current.location}</span>
-              </span>
+              </div>
             )}
           </div>
 
-          {/* Title */}
-          <h3 className="font-serif text-xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight leading-tight line-clamp-2">
+          <h3 className="font-serif text-2xl sm:text-4xl font-bold tracking-tight text-white leading-tight">
             {current.title}
           </h3>
 
-          {/* Descriptive text snippet */}
-          <p className="text-xs sm:text-sm text-[#f0f0f0] leading-relaxed line-clamp-2 sm:line-clamp-3 max-w-2xl font-normal drop-shadow-xs">
+          <p className="text-xs sm:text-sm text-white/85 line-clamp-2 sm:line-clamp-3 leading-relaxed max-w-2xl">
             {current.description}
           </p>
 
-          {/* Direct CTA link */}
-          <div className="pt-1 flex items-center gap-3">
+          <div className="pt-2 flex flex-wrap items-center gap-3">
             <Link
               href={`/events/${current.id}`}
-              className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-white text-[#1f1b17] hover:bg-[#f5ece5] text-xs sm:text-sm font-bold shadow-lg transition-all flex items-center gap-2 active:scale-95 group/btn"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-[#1f1b17] font-bold text-xs hover:bg-[#faebe0] transition-all shadow-lg active:scale-95"
             >
-              <BookOpen className="w-4 h-4 text-[#7a5739]" />
-              <span>Voir le programme & la galerie</span>
-              <ArrowRight className="w-4 h-4 text-[#7a5739] group-hover/btn:translate-x-1 transition-transform" />
+              <span>{t('events_read_narrative')}</span>
             </Link>
           </div>
         </div>
 
-        {/* Carousel Navigation Arrows */}
+        {/* Carousel Slide Indicators */}
         {upcomingEvents.length > 1 && (
-          <>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                prevSlide();
-              }}
-              className="absolute left-2.5 sm:left-5 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all shadow-lg hover:scale-105 active:scale-95 z-20"
-              aria-label="Événement précédent"
-            >
-              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
-
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                nextSlide();
-              }}
-              className="absolute right-2.5 sm:right-5 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all shadow-lg hover:scale-105 active:scale-95 z-20"
-              aria-label="Événement suivant"
-            >
-              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
-          </>
-        )}
-
-        {/* Bottom Slide Indicators */}
-        {upcomingEvents.length > 1 && (
-          <div className="absolute bottom-3 right-4 sm:bottom-5 sm:right-8 z-20 flex items-center gap-2 bg-black/50 backdrop-blur-md px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-2xl border border-white/10">
-            <button
-              onClick={() => setIsAutoPlay(!isAutoPlay)}
-              className="text-white/80 hover:text-white transition-colors mr-1"
-              title={isAutoPlay ? 'Mettre en pause' : 'Défilement automatique'}
-            >
-              {isAutoPlay ? <Pause className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> : <Play className="w-3 h-3 sm:w-3.5 sm:h-3.5" />}
-            </button>
-
+          <div className="absolute top-6 right-6 z-20 flex items-center gap-1.5">
             {upcomingEvents.map((_, idx) => (
               <button
-                key={`dot-upcoming-${idx}`}
+                key={`indicator-${idx}`}
                 onClick={() => setCurrentIndex(idx)}
-                className={`transition-all rounded-full ${
-                  currentIndex === idx
-                    ? 'w-5 sm:w-6 h-1.5 sm:h-2 bg-white'
-                    : 'w-1.5 sm:w-2 h-1.5 sm:h-2 bg-white/40 hover:bg-white/70'
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  idx === currentIndex ? 'w-7 bg-white' : 'w-2 bg-white/40 hover:bg-white/70'
                 }`}
-                aria-label={`Aller à l'événement ${idx + 1}`}
+                aria-label={`Slide ${idx + 1}`}
               />
             ))}
+          </div>
+        )}
+
+        {/* Prev / Next Buttons */}
+        {upcomingEvents.length > 1 && (
+          <div className="absolute bottom-6 right-6 z-20 flex items-center gap-2">
+            <button
+              onClick={prevSlide}
+              className="p-2.5 rounded-xl bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/20 transition-all active:scale-95"
+              aria-label="Previous slide"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={nextSlide}
+              className="p-2.5 rounded-xl bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/20 transition-all active:scale-95"
+              aria-label="Next slide"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
         )}
       </div>

@@ -1,9 +1,14 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import { Clock, PlusCircle, Edit3, Image as ImageIcon, Sparkles, User } from 'lucide-react';
 import { ActivityEvent } from '@/types';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function ActivityFeed({ activities }: { activities: ActivityEvent[] }) {
+  const { t, language } = useLanguage();
+
   const getIcon = (type: ActivityEvent['type']) => {
     switch (type) {
       case 'addition':
@@ -20,7 +25,7 @@ export default function ActivityFeed({ activities }: { activities: ActivityEvent
   const formatTimestamp = (ts: string) => {
     try {
       const d = new Date(ts);
-      return d.toLocaleDateString('fr-FR', {
+      return d.toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
@@ -36,17 +41,17 @@ export default function ActivityFeed({ activities }: { activities: ActivityEvent
         <div className="flex items-center gap-2.5">
           <Clock className="w-5 h-5 text-[#7a5739]" />
           <h3 className="font-serif font-bold text-lg text-[#1f1b17]">
-            Activité & Archives récentes
+            {t('dash_activity_title')}
           </h3>
         </div>
         <span className="text-xs bg-[#f5ece5] text-[#795638] px-2.5 py-1 rounded-full font-medium">
-          Historique
+          {t('dash_activity_history')}
         </span>
       </div>
 
       {activities.length === 0 ? (
         <div className="py-6 text-center text-[#727973]">
-          <p className="text-sm">Aucune activité récente enregistrée.</p>
+          <p className="text-sm">{t('dash_activity_empty')}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -65,16 +70,16 @@ export default function ActivityFeed({ activities }: { activities: ActivityEvent
                 </p>
                 <div className="flex items-center gap-2 mt-1 text-xs text-[#727973]">
                   <span>{act.user}</span>
-                  <span>•</span>
+                  <span>?</span>
                   <span>{formatTimestamp(act.timestamp)}</span>
                   {act.person_id && (
                     <>
-                      <span>•</span>
+                      <span>?</span>
                       <Link
                         href={`/person/${act.person_id}`}
                         className="text-[#173124] hover:underline font-medium inline-flex items-center gap-0.5"
                       >
-                        <User className="w-3 h-3" /> Fiche
+                        <User className="w-3 h-3" /> {t('view_profile')}
                       </Link>
                     </>
                   )}

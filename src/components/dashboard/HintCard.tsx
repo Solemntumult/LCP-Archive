@@ -1,9 +1,14 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import { Lightbulb, ArrowRight, Camera, Calendar, BookOpen, UserPlus } from 'lucide-react';
 import { DashboardStats } from '@/types';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function HintCard({ hints }: { hints: DashboardStats['missingDataHints'] }) {
+  const { t, language } = useLanguage();
+
   const getIcon = (type: DashboardStats['missingDataHints'][0]['type']) => {
     switch (type) {
       case 'missing_photo':
@@ -23,18 +28,18 @@ export default function HintCard({ hints }: { hints: DashboardStats['missingData
         <div className="flex items-center gap-2.5">
           <Lightbulb className="w-5 h-5 text-[#c69214]" />
           <h3 className="font-serif font-bold text-lg text-[#1f1b17]">
-            Recommandations de recherche
+            {t('dash_hints_title')}
           </h3>
         </div>
         <span className="text-xs bg-[#f5e7c8] text-[#8c6508] px-2.5 py-1 rounded-full font-medium">
-          {hints.length} piste{hints.length > 1 ? 's' : ''}
+          {hints.length} {language === 'fr' ? (hints.length > 1 ? 'pistes' : 'piste') : (hints.length > 1 ? 'hints' : 'hint')}
         </span>
       </div>
 
       {hints.length === 0 ? (
         <div className="py-6 text-center text-[#727973]">
-          <p className="font-serif text-[#173124] font-medium">Arbre généalogique complet !</p>
-          <p className="text-xs mt-1">Toutes les informations essentielles sont renseignées.</p>
+          <p className="font-serif text-[#173124] font-medium">{t('dash_hints_completed')}</p>
+          <p className="text-xs mt-1">{t('dash_hints_completed_desc')}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -60,7 +65,7 @@ export default function HintCard({ hints }: { hints: DashboardStats['missingData
               <Link
                 href={`/person/${hint.personId}/edit`}
                 className="shrink-0 p-2 rounded-lg bg-white border border-[#eae1da] text-[#173124] hover:bg-[#173124] hover:text-white transition-all shadow-2xs group-hover:translate-x-0.5"
-                title="Compléter"
+                title={t('edit')}
               >
                 <ArrowRight className="w-4 h-4" />
               </Link>

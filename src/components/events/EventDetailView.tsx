@@ -186,7 +186,7 @@ export default function EventDetailView({
       router.refresh();
     } catch (err) {
       console.error('Error deleting event:', err);
-      alert('Erreur lors de la suppression de l\'?v?nement.');
+      alert(language === 'en' ? 'Error deleting event.' : "Erreur lors de la suppression de l'?v?nement.");
       setDeleting(false);
     }
   };
@@ -323,7 +323,7 @@ export default function EventDetailView({
                     setStoryIndex((prev) => (prev - 1 + storyPhotos.length) % storyPhotos.length);
                   }}
                   className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/80 text-white border border-white/20 transition-all opacity-0 group-hover:opacity-100 z-10"
-                  aria-label="Pr?c?dent"
+                  aria-label={language === 'en' ? 'Previous' : 'Pr?c?dent'}
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
@@ -335,7 +335,7 @@ export default function EventDetailView({
                     setStoryIndex((prev) => (prev + 1) % storyPhotos.length);
                   }}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/80 text-white border border-white/20 transition-all opacity-0 group-hover:opacity-100 z-10"
-                  aria-label="Suivant"
+                  aria-label={language === 'en' ? 'Next' : 'Suivant'}
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>
@@ -345,7 +345,7 @@ export default function EventDetailView({
             {/* Tap hint */}
             <div className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-[11px] text-white font-medium flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
               <Maximize2 className="w-3.5 h-3.5" />
-              <span>{language === 'fr' ? 'Agrandir la photo' : 'View full size'}</span>
+              <span>{t('events_view_full')}</span>
             </div>
           </div>
         )}
@@ -374,7 +374,7 @@ export default function EventDetailView({
                   {t('events_gallery_photos')}
                 </h2>
                 <p className="text-xs text-[#727973] mt-0.5">
-                  {language === 'fr' ? 'Cliquez sur une photo pour l\'afficher en grand' : 'Click on any photo to view in full size'}
+                  {language === 'en' ? 'Click on any photo to view in full size' : "Cliquez sur une photo pour l'afficher en grand"}
                 </p>
               </div>
             </div>
@@ -383,7 +383,7 @@ export default function EventDetailView({
               onClick={() => setIsEditModalOpen(true)}
               className="text-xs font-semibold text-[#173124] hover:underline"
             >
-              + {language === 'fr' ? 'G?rer les photos' : 'Manage photos'} ({photos.length}/20)
+              + {t('events_manage_photos')} ({photos.length}/20)
             </button>
           </div>
 
@@ -426,7 +426,7 @@ export default function EventDetailView({
                   {t('events_gallery_videos')}
                 </h2>
                 <p className="text-xs text-[#727973] mt-0.5">
-                  {language === 'fr' ? 'Vid?os de l\'?v?nement optimis?es pour une lecture instantan?e' : 'Event videos optimized for fast streaming'}
+                  {language === 'en' ? 'Event videos optimized for instant streaming' : "Vid?os de l'?v?nement optimis?es pour une lecture instantan?e"}
                 </p>
               </div>
             </div>
@@ -435,7 +435,7 @@ export default function EventDetailView({
               onClick={() => setIsEditModalOpen(true)}
               className="text-xs font-semibold text-[#7a5739] hover:underline"
             >
-              + {language === 'fr' ? 'G?rer les vid?os' : 'Manage videos'} ({videos.length}/5)
+              + {t('events_manage_videos')} ({videos.length}/5)
             </button>
           </div>
 
@@ -502,7 +502,7 @@ export default function EventDetailView({
                       );
                     }}
                     className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 hover:bg-black/90 text-white border border-white/20 transition-all shadow-xl z-20"
-                    aria-label="Pr?c?dent"
+                    aria-label={language === 'en' ? 'Previous' : 'Pr?c?dent'}
                   >
                     <ChevronLeft className="w-6 h-6" />
                   </button>
@@ -516,7 +516,7 @@ export default function EventDetailView({
                       );
                     }}
                     className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 hover:bg-black/90 text-white border border-white/20 transition-all shadow-xl z-20"
-                    aria-label="Suivant"
+                    aria-label={language === 'en' ? 'Next' : 'Suivant'}
                   >
                     <ChevronRight className="w-6 h-6" />
                   </button>
@@ -580,7 +580,7 @@ export default function EventDetailView({
                   disabled={deleting}
                   className="px-5 py-2.5 rounded-xl bg-[#ba1a1a] text-white text-xs font-bold hover:bg-[#93000a] shadow-md transition-all active:scale-95 disabled:opacity-50"
                 >
-                  {deleting ? 'Suppression...' : t('events_delete_confirm_btn')}
+                  {deleting ? t('loading') : t('events_delete_confirm_btn')}
                 </button>
               </div>
             </div>

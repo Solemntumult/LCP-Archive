@@ -5,17 +5,17 @@ import Image from 'next/image';
 import { GitFork, User } from 'lucide-react';
 import { FoyerChildData } from '@/types';
 import { isDeceased } from '@/lib/genealogy';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export interface ChildCardProps {
   child: FoyerChildData;
-  /** Called when the user clicks the deploy button to explore this child's family */
   onDeploy: (childId: number) => void;
 }
 
 export default function ChildCard({ child, onDeploy }: ChildCardProps) {
+  const { t, language } = useLanguage();
   const isMale = child.gender === 'M';
 
-  // Helper to extract year safely from date string or ISO format
   const getYear = (dateStr?: string | null): number | null => {
     if (!dateStr) return null;
     const parsed = new Date(dateStr);
@@ -32,23 +32,21 @@ export default function ChildCard({ child, onDeploy }: ChildCardProps) {
 
   const yearDisplay = birthYear
     ? deathYear
-      ? `Né(e) en ${birthYear} • †${deathYear}`
+      ? `${t('born_in_year')} ${birthYear} ? ?${deathYear}`
       : dead
-      ? `Né(e) en ${birthYear} • Décédé(e)`
-      : `Né(e) en ${birthYear}`
+      ? `${t('born_in_year')} ${birthYear} ? ${t('deceased')}`
+      : `${t('born_in_year')} ${birthYear}`
     : deathYear
-    ? `†${deathYear}`
+    ? `?${deathYear}`
     : dead
-    ? 'Décédé(e)'
-    : 'Date de naissance inconnue';
+    ? t('deceased')
+    : t('unknown_date');
 
   const initials = `${child.first_name?.[0] || ''}${child.last_name?.[0] || ''}`.toUpperCase();
 
   return (
     <div className="bg-[#fff8f4] rounded-2xl border border-[#eae1da] p-4 hover:border-[#173124] hover:shadow-md transition-all flex flex-col justify-between gap-3 group">
-      {/* Identity & Avatar */}
       <div className="flex items-start gap-3 min-w-0">
-        {/* Photo / Initials 44x44 */}
         <div className="relative shrink-0">
           <div
             className={`w-[44px] h-[44px] rounded-full overflow-hidden border-2 flex items-center justify-center shadow-xs relative ${
@@ -76,18 +74,17 @@ export default function ChildCard({ child, onDeploy }: ChildCardProps) {
           {dead && (
             <span
               className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full bg-[#1f1b17] text-white text-[10px] font-black flex items-center justify-center border-1.5 border-white shadow-md leading-none select-none z-20"
-              title="Décédé(e)"
+              title={t('deceased')}
             >
-              †
+              ?
             </span>
           )}
         </div>
 
-        {/* Info Column */}
         <div className="min-w-0 flex-1 leading-tight">
           <h4 className="font-serif font-bold text-sm text-[#1f1b17] group-hover:text-[#173124] transition-colors truncate flex items-center gap-1">
             <span>{child.name}</span>
-            {dead && <span className="text-[#173124] font-black text-xs">†</span>}
+            {dead && <span className="text-[#173124] font-black text-xs">?</span>}
           </h4>
           <p className="text-[10px] text-[#727973] font-medium mt-0.5">
             {yearDisplay}
@@ -100,15 +97,13 @@ export default function ChildCard({ child, onDeploy }: ChildCardProps) {
         </div>
       </div>
 
-      {/* Variant Footer / Actions */}
       <div className="pt-2.5 border-t border-[#f5ece5]">
         {child.hasDescendants ? (
-          /* Variant A: Child WITH descendants */
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <div className="flex items-center gap-1.5 text-xs font-semibold text-[#173124]">
               <GitFork className="w-3.5 h-3.5 text-[#7a5739] shrink-0" />
               <span>
-                {child.descendantsCount} enfant{child.descendantsCount > 1 ? 's' : ''}
+                {child.descendantsCount} {t('children_count_label')}
               </span>
             </div>
             <button
@@ -119,14 +114,13 @@ export default function ChildCard({ child, onDeploy }: ChildCardProps) {
               }}
               className="deploy-btn-shimmer bg-[#173124] hover:bg-[#2d4739] text-white rounded-xl px-4 py-2 font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer text-center"
             >
-              <span>Déployer sa famille</span>
+              <span>{t('tree_deploy_btn')}</span>
             </button>
           </div>
         ) : child.isPartiallyDocumented ? (
-          /* Variant C: Partially documented */
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <p className="text-xs text-[#c69214] italic">
-              Descendance partiellement documentée
+              {language === 'fr' ? 'Descendance partielle' : 'Partial branch'}
             </p>
             <button
               type="button"
@@ -136,14 +130,13 @@ export default function ChildCard({ child, onDeploy }: ChildCardProps) {
               }}
               className="deploy-btn-shimmer bg-[#7a5739] hover:bg-[#63452c] text-white rounded-xl px-3 py-1.5 font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer text-center"
             >
-              <span>Explorer</span>
+              <span>{t('explore_foyer')}</span>
             </button>
           </div>
         ) : (
-          /* Variant B: Child WITHOUT descendants */
           <div className="py-1">
             <p className="text-xs text-[#727973] italic">
-              Aucun descendant répertorié
+              {language === 'fr' ? 'Aucun descendant r?pertori?' : 'No descendants recorded'}
             </p>
           </div>
         )}

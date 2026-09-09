@@ -3,12 +3,14 @@
 import React from 'react';
 import { Sparkles, Camera, BookOpen, Calendar, CheckCircle2 } from 'lucide-react';
 import { TreeNodeData } from '@/types';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function TreeCompletenessWidget({
   allPersons,
 }: {
   allPersons: TreeNodeData[];
 }) {
+  const { t, language } = useLanguage();
   const total = allPersons.length || 1;
   const withPhoto = allPersons.filter((p) => Boolean(p.photo_url)).length;
   const withBirth = allPersons.filter((p) => Boolean(p.birth_date)).length;
@@ -25,11 +27,11 @@ export default function TreeCompletenessWidget({
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-[#c69214]" />
           <span className="font-serif font-bold text-sm text-[#1f1b17]">
-            Complétude de la Mémoire Familiale
+            {t('tree_completeness_title')}
           </span>
         </div>
         <span className="font-mono font-bold text-xs bg-[#f5e7c8] text-[#8c6508] px-2.5 py-0.5 rounded-full">
-          {completeness}% documenté
+          {completeness}% {t('tree_completeness_documented')}
         </span>
       </div>
 
@@ -45,15 +47,15 @@ export default function TreeCompletenessWidget({
       <div className="flex items-center justify-between text-[11px] text-[#727973] pt-1">
         <span className="flex items-center gap-1">
           <Camera className="w-3 h-3 text-[#7a5739]" />
-          <span>{withPhoto}/{total} portraits</span>
+          <span>{withPhoto}/{total} {t('tree_portraits')}</span>
         </span>
         <span className="flex items-center gap-1">
           <Calendar className="w-3 h-3 text-[#2980b9]" />
-          <span>{withBirth}/{total} dates</span>
+          <span>{withBirth}/{total} {t('tree_dates')}</span>
         </span>
         <span className="flex items-center gap-1">
           <BookOpen className="w-3 h-3 text-[#173124]" />
-          <span>{withBio}/{total} récits</span>
+          <span>{withBio}/{total} {t('tree_stories')}</span>
         </span>
       </div>
     </div>

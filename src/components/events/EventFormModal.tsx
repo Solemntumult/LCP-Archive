@@ -191,7 +191,7 @@ export default function EventFormModal({
         photos: [...(prev.photos || []), ...optimizedUrls].slice(0, MAX_PHOTOS),
       }));
     } catch (err: any) {
-      setError(err.message || '?chec du chargement des photos');
+      setError(err.message || (language === 'en' ? 'Error loading photos' : '?chec du chargement des photos'));
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
@@ -269,7 +269,7 @@ export default function EventFormModal({
         video: prev.video || compressedVideos[0] || '',
       }));
     } catch (err: any) {
-      setError(err.message || 'Erreur lors de la compression de la vid?o');
+      setError(err.message || (language === 'en' ? 'Error compressing video' : 'Erreur lors de la compression de la vid?o'));
     } finally {
       setVideoCompressing(false);
       setCompressionProgress(0);
@@ -350,7 +350,7 @@ export default function EventFormModal({
       onSuccess();
       onClose();
     } catch (err: any) {
-      setError(err.message || 'Une erreur est survenue');
+      setError(err.message || (language === 'en' ? 'An error occurred' : 'Une erreur est survenue'));
     } finally {
       setSubmitting(false);
     }
@@ -404,7 +404,7 @@ export default function EventFormModal({
             <input
               type="text"
               required
-              placeholder="Ex: Grande R?union Familiale 2024..."
+              placeholder={language === 'fr' ? 'Ex: Grande R?union Familiale 2024...' : 'e.g. Grand Family Reunion 2024...'}
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               className="w-full px-4 py-2.5 rounded-xl border border-[#eae1da] bg-[#fff8f4] text-sm text-[#1f1b17] focus:outline-hidden focus:ring-2 focus:ring-[#173124]"
@@ -453,7 +453,7 @@ export default function EventFormModal({
             </label>
             <input
               type="text"
-              placeholder="Ex: Cotonou, Ouidah, Paris, Abidjan..."
+              placeholder={language === 'fr' ? 'Ex: Cotonou, Ouidah, Paris, Abidjan...' : 'e.g. Cotonou, Ouidah, London, New York...'}
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
               className="w-full px-4 py-2.5 rounded-xl border border-[#eae1da] bg-[#fff8f4] text-sm text-[#1f1b17] focus:outline-hidden focus:ring-2 focus:ring-[#173124]"
@@ -486,7 +486,7 @@ export default function EventFormModal({
                         type="button"
                         onClick={() => openAdjuster(photoUrl, idx)}
                         className="p-1 rounded-md bg-black/75 text-white hover:bg-[#173124] transition-all shadow-xs"
-                        title={t('person_adjust_photo')}
+                        title={language === 'fr' ? 'Ajuster le cadrage' : 'Adjust crop'}
                       >
                         <Crop className="w-3 h-3" />
                       </button>
@@ -544,7 +544,7 @@ export default function EventFormModal({
                         {t('events_upload_photos')}
                       </p>
                       <p className="text-[10px] text-[#727973]">
-                        {language === 'fr' ? 'S?lection multiple jusqu\'? 20 photos' : 'Multi-selection up to 20 photos'}
+                        {language === 'fr' ? "S?lection multiple jusqu'? 20 photos" : 'Multi-selection up to 20 photos'}
                       </p>
                     </div>
                   </div>

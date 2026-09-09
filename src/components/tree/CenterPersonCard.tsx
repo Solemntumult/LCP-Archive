@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Crown, BookOpen, User } from 'lucide-react';
 import { TreeNodeData } from '@/types';
 import { isDeceased } from '@/lib/genealogy';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface CenterPersonCardProps {
   person: TreeNodeData;
@@ -18,6 +19,7 @@ export default function CenterPersonCard({
   totalChildren,
   totalSpouses,
 }: CenterPersonCardProps) {
+  const { t, language } = useLanguage();
   const isMale = person.gender === 'M';
   const fullName = person.name || `${person.first_name || ''} ${person.last_name || ''}`.trim();
   const initials = `${person.first_name?.[0] || ''}${person.last_name?.[0] || ''}`.toUpperCase();
@@ -41,16 +43,16 @@ export default function CenterPersonCard({
   let lifeDatesText = '';
   if (deathYear) {
     lifeDatesText = birthYear
-      ? `Né(e) en ${birthYear} • Décédé(e) en ${deathYear}`
-      : `Décédé(e) en ${deathYear}`;
+      ? `${t('born_in_year')} ${birthYear} ? ${t('died_in_year')} ${deathYear}`
+      : `${t('died_in_year')} ${deathYear}`;
   } else if (dead) {
     lifeDatesText = birthYear
-      ? `Né(e) en ${birthYear} • Décédé(e)`
-      : 'Décédé(e)';
+      ? `${t('born_in_year')} ${birthYear} ? ${t('deceased')}`
+      : t('deceased');
   } else {
     lifeDatesText = birthYear
-      ? `Né(e) en ${birthYear} • Vivant(e)`
-      : 'Vivant(e)';
+      ? `${t('born_in_year')} ${birthYear} ? ${t('alive')}`
+      : t('alive');
   }
 
   return (
@@ -60,11 +62,11 @@ export default function CenterPersonCard({
         {isPatriarch && (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#f5e7c8] text-[#7a5739] border border-[#c69214]/40 shadow-xs">
             <Crown className="w-3.5 h-3.5 text-[#c69214]" />
-            Patriarche
+            {t('tree_patriarch_badge')}
           </span>
         )}
         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-[#f5ece5] text-[#173124] border border-[#eae1da]">
-          Génération {person.generation}
+          {t('generation')} {person.generation}
         </span>
       </div>
 
@@ -92,9 +94,9 @@ export default function CenterPersonCard({
         {dead && (
           <span
             className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#1f1b17] text-white text-sm font-black flex items-center justify-center border-2 border-white shadow-md leading-none select-none z-20"
-            title="Décédé(e)"
+            title={t('deceased')}
           >
-            †
+            ?
           </span>
         )}
       </div>
@@ -103,7 +105,7 @@ export default function CenterPersonCard({
       <div className="space-y-1">
         <h3 className="font-serif text-xl font-bold text-[#173124] leading-tight flex items-center justify-center gap-1.5">
           <span>{fullName}</span>
-          {dead && <span className="text-[#173124] font-black text-lg">†</span>}
+          {dead && <span className="text-[#173124] font-black text-lg">?</span>}
         </h3>
         <p className="text-xs text-[#727973] font-sans font-medium">
           {lifeDatesText}
@@ -117,7 +119,7 @@ export default function CenterPersonCard({
 
       {/* Summary Stats */}
       <div className="text-xs font-medium text-[#424844] bg-[#f5ece5] px-4 py-1.5 rounded-xl border border-[#eae1da]">
-        {totalSpouses} union(s) • {totalChildren} enfant(s)
+        {totalSpouses} {t('unions')} ? {totalChildren} {t('children_count_label')}
       </div>
 
       {/* Biography Link Button */}
@@ -127,7 +129,7 @@ export default function CenterPersonCard({
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-[#173124] hover:bg-[#2d4739] active:scale-95 transition-all shadow-sm group"
         >
           <BookOpen className="w-3.5 h-3.5 text-[#98b5a3] group-hover:scale-110 transition-transform" />
-          <span>Consulter la biographie →</span>
+          <span>{t('tree_view_bio')}</span>
         </Link>
       </div>
     </div>

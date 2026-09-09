@@ -16,6 +16,7 @@ import {
 import { FoyerData, FoyerChildData, FoyerSpouseData, TreeNodeData } from '@/types';
 import { sortChildrenChronologically, isDeceased } from '@/lib/genealogy';
 import PersonDetailDrawer from './PersonDetailDrawer';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface FoyerTreeGraphProps {
   foyerData: FoyerData;
@@ -91,6 +92,7 @@ export default function FoyerTreeGraph({
   highlightPersonId,
 }: FoyerTreeGraphProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { t, language } = useLanguage();
 
   // Pan & Zoom states
   const [zoom, setZoom] = useState(1);
@@ -874,13 +876,13 @@ export default function FoyerTreeGraph({
               title={`Revenir au foyer de ${previousPersonName || 'précédent'}`}
             >
               <ArrowLeft className="w-3.5 h-3.5 text-[#fdcea9]" />
-              <span> Retour {previousPersonName ? `(${previousPersonName.split(' ')[0]})` : ''}</span>
+              <span> {t('back')} {previousPersonName ? `(${previousPersonName.split(' ')[0]})` : ''}</span>
             </button>
           )}
 
           <span className="font-serif font-bold text-[#173124] flex items-center gap-1.5 text-xs truncate">
             <GitFork className="w-3.5 h-3.5 text-[#7a5739] shrink-0" />
-            <span className="truncate">Graphe du Foyer</span>
+            <span className="truncate">{t('tree_foyer_graph')}</span>
           </span>
         </div>
 
@@ -898,14 +900,14 @@ export default function FoyerTreeGraph({
           <button
             onClick={() => setZoom((z) => Math.min(z * 1.1, 1.8))}
             className="p-1 rounded-lg hover:bg-[#f5ece5] text-[#424844] transition-all"
-            title="Zoomer"
+            title={t('tree_zoom_in')}
           >
             <ZoomIn className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={fitToScreen}
             className="p-1 rounded-lg hover:bg-[#f5ece5] text-[#424844] transition-all ml-0.5"
-            title="Recentrer le graphe"
+            title={t('tree_reset_zoom')}
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
@@ -1007,7 +1009,7 @@ export default function FoyerTreeGraph({
                     }}
                     onClick={(e) => handleNodeClick(node, e)}
                     className="pointer-events-auto flex flex-col items-center cursor-pointer group transition-transform hover:scale-105"
-                    title={`Cliquer pour voir la fiche de ${p.name}`}
+                    title={language === 'en' ? `Click to view profile of ${p.name}` : `Cliquer pour voir la fiche de ${p.name}`}
                   >
                     {/* Circle Profile Photo */}
                     <div className="relative shrink-0">
@@ -1068,7 +1070,7 @@ export default function FoyerTreeGraph({
                     }}
                     onClick={(e) => handleNodeClick(node, e)}
                     className="pointer-events-auto flex flex-col items-center cursor-pointer group transition-transform hover:scale-105"
-                    title={`Cliquer pour voir la fiche de ${sp.name}`}
+                    title={language === 'en' ? `Click to view profile of ${sp.name}` : `Cliquer pour voir la fiche de ${sp.name}`}
                   >
                     {/* Circle Profile Photo */}
                     <div className="relative shrink-0">
@@ -1133,7 +1135,7 @@ export default function FoyerTreeGraph({
                     <div
                       onClick={(e) => handleNodeClick(node, e)}
                       className="flex flex-col items-center cursor-pointer transition-transform hover:scale-105"
-                      title={`Cliquer pour voir la fiche de ${child.name}`}
+                      title={language === 'en' ? `Click to view profile of ${child.name}` : `Cliquer pour voir la fiche de ${child.name}`}
                     >
                       <div className="relative shrink-0">
                         <div
@@ -1195,7 +1197,7 @@ export default function FoyerTreeGraph({
                         }}
                         className="mt-1.5 bg-[#7a5739] hover:bg-[#5f4024] text-white rounded-lg py-0.5 px-2 font-bold text-[9px] transition-all shadow-xs flex items-center justify-center active:scale-95 cursor-pointer text-center"
                       >
-                        <span>Explorer</span>
+                        <span>{t('tree_explore_btn')}</span>
                       </button>
                     ) : null}
                   </div>
@@ -1223,19 +1225,19 @@ export default function FoyerTreeGraph({
         <div className="absolute bottom-2.5 left-2.5 z-20 flex items-center gap-2.5 px-2.5 py-1 bg-white/95 backdrop-blur-md rounded-xl border border-[#eae1da] shadow-md text-[9px] text-[#424844] pointer-events-none">
           <div className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-full bg-[#2980b9]" />
-            <span>Homme</span>
+            <span>{t('male')}</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-full bg-[#c0392b]" />
-            <span>Femme</span>
+            <span>{t('female')}</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-2.5 h-0.5 bg-[#7a5739]" />
-            <span>Filiation</span>
+            <span>{t('tree_filiation')}</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-2.5 h-0.5 border-t border-dashed border-[#c69214]" />
-            <span>Alliance</span>
+            <span>{t('tree_union')}</span>
           </div>
         </div>
       </div>

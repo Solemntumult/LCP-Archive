@@ -21,6 +21,7 @@ import {
 import { Person, PersonFormData } from '@/types';
 import { getFullName } from '@/lib/genealogy';
 import ImageAdjusterModal from '@/components/ui/ImageAdjusterModal';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function PersonForm({
   initialData,
@@ -34,6 +35,7 @@ export default function PersonForm({
   prefillParentGender?: 'M' | 'F';
 }) {
   const router = useRouter();
+  const { t, language } = useLanguage();
   const isEditing = Boolean(personId);
 
   // Form State
@@ -101,94 +103,95 @@ export default function PersonForm({
     }));
   };
 
-  // Photo Selection Handler -> Opens Interactive Adjuster
-  const handlePhotoSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setAdjusterImage(reader.result as string);
-      setIsAdjusterOpen(true);
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
-  };
-
-  const handleAdjusterApply = async (adjustedDataUrl: string) => {
-    setFormData((prev) => ({ ...prev, photo: adjustedDataUrl }));
-  };
-
-  // Form Submit Handler
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    setUploadingPhoto(true);
     setErrorMsg(null);
 
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const rawDataUrl = event.target?.result as string;
+      setAdjusterImage(rawDataUrl);
+      setIsAdjusterOpen(true);
+      setUploadingPhoto(false);
+    };
+    reader.onerror = () => {
+      setErrorMsg(language === 'en' ? 'Failed to read image file.' : "?chec de lecture du fichier image.");
+      setUploadingPhoto(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAdjusterApply = (adjustedDataUrl: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      photo: adjustedDataUrl,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMsg(null);
+
+    // Basic validation
     if (!formData.first_name.trim() || !formData.last_name.trim()) {
-      setErrorMsg('Veuillez renseigner le prénom et le nom de famille.');
+      setErrorMsg(language === 'en' ? 'First name and last name are required.' : 'Le pr?nom et le nom de famille sont obligatoires.');
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
     try {
-      const endpoint = isEditing ? `/api/persons/${personId}` : '/api/persons';
+      const url = isEditing ? `/api/persons/${personId}` : '/api/persons';
       const method = isEditing ? 'PUT' : 'POST';
 
-      const res = await fetch(endpoint, {
+      const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
-      if (res.ok) {
-        const saved = await res.json();
-        window.location.href = `/person/${saved.id}`;
-      } else {
-        let errorMsg = "Erreur lors de l'enregistrement";
-        try {
-          const err = await res.json();
-          if (err.error) errorMsg = err.error;
-        } catch {
-          const text = await res.text();
-          if (text.includes('Request Entity Too Large') || res.status === 413) {
-            errorMsg = 'La photo sélectionnée est trop volumineuse.';
-          } else if (text) {
-            errorMsg = `Erreur serveur (${res.status})`;
-          }
-        }
-        setErrorMsg(errorMsg);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || (language === 'en' ? 'An error occurred while saving.' : "Une erreur est survenue lors de l'enregistrement."));
       }
+
+      const savedPerson = await res.json();
+      router.push(`/person/${savedPerson.id}`);
+      router.refresh();
     } catch (err: any) {
       console.error(err);
-      setErrorMsg(err.message || 'Erreur de connexion avec le serveur');
-    } finally {
+      setErrorMsg(err.message || (language === 'en' ? 'Error during submission' : "Erreur lors de l'envoi"));
       setLoading(false);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8 animate-fade-in">
+      {/* Error Alert */}
       {errorMsg && (
-        <div className="p-4 rounded-2xl bg-[#ffdad6] border border-[#ba1a1a]/30 text-[#93000a] text-sm flex items-center gap-3">
+        <div className="p-4 rounded-2xl bg-[#ffdad6] text-[#ba1a1a] flex items-center gap-3 border border-[#ffb4ab] text-sm font-semibold">
           <AlertCircle className="w-5 h-5 shrink-0" />
           <span>{errorMsg}</span>
         </div>
       )}
 
-      {/* 1. Identity & Vital Status Card */}
+      {/* 1. Identity & Civil Status */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#eae1da] vintage-shadow space-y-6">
         <div className="flex items-center gap-2.5 pb-4 border-b border-[#f5ece5]">
-          <User className="w-5 h-5 text-[#7a5739]" />
+          <User className="w-5 h-5 text-[#173124]" />
           <h2 className="font-serif font-bold text-xl text-[#173124]">
-            1. État Civil & Identité
+            {language === 'en' ? '1. Identity & Vital Records' : '1. Identit? & ?tat Civil'}
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {/* Prénom */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {/* Pr?nom */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1.5">
-              Prénom *
+              {language === 'en' ? 'First Name *' : 'Pr?nom *'}
             </label>
             <input
               type="text"
@@ -196,7 +199,7 @@ export default function PersonForm({
               required
               value={formData.first_name}
               onChange={handleChange}
-              placeholder="Ex: Paul"
+              placeholder={language === 'en' ? 'e.g. Paul' : 'Ex: Paul'}
               className="w-full px-4 py-2.5 rounded-xl bg-[#fff8f4] border border-[#eae1da] focus:border-[#173124] focus:ring-1 focus:ring-[#173124] outline-hidden text-sm font-medium"
             />
           </div>
@@ -204,7 +207,7 @@ export default function PersonForm({
           {/* Nom de famille */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1.5">
-              Nom de famille *
+              {language === 'en' ? 'Last Name *' : 'Nom de famille *'}
             </label>
             <input
               type="text"
@@ -212,7 +215,7 @@ export default function PersonForm({
               required
               value={formData.last_name}
               onChange={handleChange}
-              placeholder="Ex: LISSANON"
+              placeholder={language === 'en' ? 'e.g. LISSANON' : 'Ex: LISSANON'}
               className="w-full px-4 py-2.5 rounded-xl bg-[#fff8f4] border border-[#eae1da] focus:border-[#173124] focus:ring-1 focus:ring-[#173124] outline-hidden text-sm font-medium"
             />
           </div>
@@ -220,7 +223,7 @@ export default function PersonForm({
           {/* Genre */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1.5">
-              Genre *
+              {language === 'en' ? 'Gender *' : 'Genre *'}
             </label>
             <select
               name="gender"
@@ -228,8 +231,8 @@ export default function PersonForm({
               onChange={handleChange}
               className="w-full px-4 py-2.5 rounded-xl bg-[#fff8f4] border border-[#eae1da] focus:border-[#173124] outline-hidden text-sm font-medium"
             >
-              <option value="M">Homme</option>
-              <option value="F">Femme</option>
+              <option value="M">{t('male')}</option>
+              <option value="F">{t('female')}</option>
             </select>
           </div>
 
@@ -237,14 +240,14 @@ export default function PersonForm({
           {formData.gender === 'F' && (
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1.5">
-                Nom de jeune fille (optionnel)
+                {language === 'en' ? 'Maiden Name (optional)' : 'Nom de jeune fille (optionnel)'}
               </label>
               <input
                 type="text"
                 name="maiden_name"
                 value={formData.maiden_name || ''}
                 onChange={handleChange}
-                placeholder="Ex: GBAGUIDI"
+                placeholder={language === 'en' ? 'e.g. DEGBO' : 'Ex: DEGBO'}
                 className="w-full px-4 py-2.5 rounded-xl bg-[#fff8f4] border border-[#eae1da] focus:border-[#173124] outline-hidden text-sm font-medium"
               />
             </div>
@@ -253,14 +256,14 @@ export default function PersonForm({
           {/* Profession */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1.5">
-              Profession
+              {language === 'en' ? 'Profession / Occupation' : 'Profession'}
             </label>
             <input
               type="text"
               name="profession"
               value={formData.profession || ''}
               onChange={handleChange}
-              placeholder="Ex: Enseignant, Ingénieur..."
+              placeholder={language === 'en' ? 'e.g. Teacher, Engineer...' : 'Ex: Enseignant, Ing?nieur...'}
               className="w-full px-4 py-2.5 rounded-xl bg-[#fff8f4] border border-[#eae1da] focus:border-[#173124] outline-hidden text-sm font-medium"
             />
           </div>
@@ -269,7 +272,7 @@ export default function PersonForm({
         {/* Photo Upload Section */}
         <div className="pt-4 border-t border-[#f5ece5]">
           <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-2">
-            Portrait / Photo d&apos;archive
+            {language === 'en' ? 'Portrait / Archive Photograph' : "Portrait / Photo d'archive"}
           </label>
           <div className="flex items-center gap-5">
             <div className="relative w-20 h-20 rounded-full overflow-hidden bg-[#eae1da] border-2 border-[#173124]/20 shadow-xs shrink-0">
@@ -291,7 +294,7 @@ export default function PersonForm({
               <div className="flex flex-wrap items-center gap-2">
                 <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-[#173124] text-white hover:bg-[#2d4739] shadow-xs transition-all">
                   <Upload className="w-4 h-4 text-[#98b5a3]" />
-                  <span>{formData.photo ? 'Changer la photo' : 'Sélectionner une photo'}</span>
+                  <span>{formData.photo ? (language === 'en' ? 'Change photo' : 'Changer la photo') : (language === 'en' ? 'Select photo' : 'S?lectionner une photo')}</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -311,7 +314,7 @@ export default function PersonForm({
                       className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-[#f5ece5] text-[#7a5739] hover:bg-[#eae1da] border border-[#eae1da] transition-all"
                     >
                       <Crop className="w-3.5 h-3.5" />
-                      <span>Ajuster / Recadrer</span>
+                      <span>{language === 'en' ? 'Crop / Adjust' : 'Ajuster / Recadrer'}</span>
                     </button>
 
                     <button
@@ -319,13 +322,13 @@ export default function PersonForm({
                       onClick={() => setFormData((prev) => ({ ...prev, photo: '' }))}
                       className="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold text-[#ba1a1a] hover:bg-[#ffdad6]/40 transition-all"
                     >
-                      <span>Supprimer</span>
+                      <span>{t('delete')}</span>
                     </button>
                   </>
                 )}
               </div>
               <p className="text-xs text-[#727973]">
-                Vous pourrez zoomer, déplacer et cadrer la photo avant de valider.
+                {language === 'en' ? 'You can zoom, pan and center the photo before saving.' : 'Vous pourrez zoomer, d?placer et cadrer la photo avant de valider.'}
               </p>
             </div>
           </div>
@@ -337,7 +340,7 @@ export default function PersonForm({
         <div className="flex items-center gap-2.5 pb-4 border-b border-[#f5ece5]">
           <Calendar className="w-5 h-5 text-[#7a5739]" />
           <h2 className="font-serif font-bold text-xl text-[#173124]">
-            2. Dates & Lieux Notables
+            {language === 'en' ? '2. Notable Dates & Locations' : '2. Dates & Lieux Notables'}
           </h2>
         </div>
 
@@ -345,7 +348,7 @@ export default function PersonForm({
           {/* Naissance */}
           <div className="space-y-3 p-4.5 rounded-2xl bg-[#fff8f4] border border-[#eae1da]">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#7a5739]">
-              Naissance
+              {t('birth')}
             </h3>
             <div>
               <label className="block text-xs text-[#727973] mb-1">Date</label>
@@ -358,22 +361,22 @@ export default function PersonForm({
               />
             </div>
             <div>
-              <label className="block text-xs text-[#727973] mb-1">Lieu</label>
+              <label className="block text-xs text-[#727973] mb-1">{language === 'en' ? 'Place' : 'Lieu'}</label>
               <input
                 type="text"
                 name="birth_place"
                 value={formData.birth_place || ''}
                 onChange={handleChange}
-                placeholder="Ex: Cotonou, Bénin"
+                placeholder={language === 'en' ? 'e.g. Cotonou, Benin' : 'Ex: Cotonou, B?nin'}
                 className="w-full px-3 py-2 rounded-xl bg-white border border-[#eae1da] text-sm"
               />
             </div>
           </div>
 
-          {/* Décès */}
+          {/* D?c?s */}
           <div className="space-y-3 p-4.5 rounded-2xl bg-[#fff8f4] border border-[#eae1da]">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#7a5739]">
-              Décès (laisser vide si en vie)
+              {language === 'en' ? 'Death (leave empty if living)' : 'D?c?s (laisser vide si en vie)'}
             </h3>
             <div>
               <label className="block text-xs text-[#727973] mb-1">Date</label>
@@ -386,13 +389,13 @@ export default function PersonForm({
               />
             </div>
             <div>
-              <label className="block text-xs text-[#727973] mb-1">Lieu</label>
+              <label className="block text-xs text-[#727973] mb-1">{language === 'en' ? 'Place' : 'Lieu'}</label>
               <input
                 type="text"
                 name="death_place"
                 value={formData.death_place || ''}
                 onChange={handleChange}
-                placeholder="Ex: Porto-Novo"
+                placeholder={language === 'en' ? 'e.g. Porto-Novo' : 'Ex: Porto-Novo'}
                 className="w-full px-3 py-2 rounded-xl bg-white border border-[#eae1da] text-sm"
               />
             </div>
@@ -405,15 +408,15 @@ export default function PersonForm({
         <div className="flex items-center gap-2.5 pb-4 border-b border-[#f5ece5]">
           <User className="w-5 h-5 text-[#7a5739]" />
           <h2 className="font-serif font-bold text-xl text-[#173124]">
-            3. Filiation & Relations Familiales
+            {language === 'en' ? '3. Lineage & Family Connections' : '3. Filiation & Relations Familiales'}
           </h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          {/* Père */}
+          {/* P?re */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1.5">
-              Père (Hommes)
+              {language === 'en' ? 'Father (Men)' : 'P?re (Hommes)'}
             </label>
             <select
               name="father_id"
@@ -421,7 +424,7 @@ export default function PersonForm({
               onChange={handleChange}
               className="w-full px-4 py-2.5 rounded-xl bg-[#fff8f4] border border-[#eae1da] text-sm font-medium"
             >
-              <option value="">-- Aucun père sélectionné --</option>
+              <option value="">-- {language === 'en' ? 'No father selected' : 'Aucun p?re s?lectionn?'} --</option>
               {fatherOptions.map((f) => (
                 <option key={f.id} value={f.id}>
                   {getFullName(f)} {f.birth_date ? `(${new Date(f.birth_date).getFullYear()})` : ''}
@@ -430,10 +433,10 @@ export default function PersonForm({
             </select>
           </div>
 
-          {/* Mère */}
+          {/* M?re */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1.5">
-              Mère (Femmes)
+              {language === 'en' ? 'Mother (Women)' : 'M?re (Femmes)'}
             </label>
             <select
               name="mother_id"
@@ -441,7 +444,7 @@ export default function PersonForm({
               onChange={handleChange}
               className="w-full px-4 py-2.5 rounded-xl bg-[#fff8f4] border border-[#eae1da] text-sm font-medium"
             >
-              <option value="">-- Aucune mère sélectionnée --</option>
+              <option value="">-- {language === 'en' ? 'No mother selected' : 'Aucune m?re s?lectionn?e'} --</option>
               {motherOptions.map((m) => (
                 <option key={m.id} value={m.id}>
                   {getFullName(m)} {m.birth_date ? `(${new Date(m.birth_date).getFullYear()})` : ''}
@@ -453,7 +456,7 @@ export default function PersonForm({
           {/* Conjoint(e) de (pour conjoints externes) */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1.5">
-              Conjoint(e) de (Alliance)
+              {language === 'en' ? 'Spouse of (Union)' : 'Conjoint(e) de (Alliance)'}
             </label>
             <select
               name="spouse_of_id"
@@ -461,7 +464,7 @@ export default function PersonForm({
               onChange={handleChange}
               className="w-full px-4 py-2.5 rounded-xl bg-[#fff8f4] border border-[#eae1da] text-sm font-medium"
             >
-              <option value="">-- Membre de sang / Aucun --</option>
+              <option value="">-- {language === 'en' ? 'Blood member / None' : 'Membre de sang / Aucun'} --</option>
               {bloodOptions.map((b) => (
                 <option key={b.id} value={b.id}>
                   {getFullName(b)}
@@ -469,7 +472,9 @@ export default function PersonForm({
               ))}
             </select>
             <p className="text-[11px] text-[#727973] mt-1">
-              Remplir uniquement si cette personne a épousé un membre de la lignée de sang.
+              {language === 'en'
+                ? 'Fill only if this person married a direct bloodline member.'
+                : 'Remplir uniquement si cette personne a ?pous? un membre de la lign?e de sang.'}
             </p>
           </div>
         </div>
@@ -480,49 +485,49 @@ export default function PersonForm({
         <div className="flex items-center gap-2.5 pb-4 border-b border-[#f5ece5]">
           <BookOpen className="w-5 h-5 text-[#7a5739]" />
           <h2 className="font-serif font-bold text-xl text-[#173124]">
-            4. Histoire de Vie, Accomplissements & Éducation
+            {language === 'en' ? '4. Life Story, Accomplishments & Education' : '4. Histoire de Vie, Accomplissements & ?ducation'}
           </h2>
         </div>
 
         <div className="space-y-4">
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1.5">
-              Biographie & Récit de vie
+              {t('person_bio_tab')}
             </label>
             <textarea
               name="biography"
               rows={6}
               value={formData.biography || ''}
               onChange={handleChange}
-              placeholder="Racontez le parcours, anecdotes, souvenirs marquants..."
+              placeholder={language === 'en' ? 'Share journey, anecdotes, notable memories...' : 'Racontez le parcours, anecdotes, souvenirs marquants...'}
               className="w-full p-4 rounded-2xl bg-[#fff8f4] border border-[#eae1da] focus:border-[#173124] outline-hidden text-sm leading-relaxed"
             />
           </div>
 
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1.5">
-              Accomplissements & Distinctions
+              {t('person_accomplishments_tab')}
             </label>
             <textarea
               name="accomplishments"
               rows={4}
               value={formData.accomplishments || ''}
               onChange={handleChange}
-              placeholder="Titres honorifiques, contributions majeures, réalisations..."
+              placeholder={language === 'en' ? 'Honors, major contributions, key projects...' : 'Titres honorifiques, contributions majeures, r?alisations...'}
               className="w-full p-4 rounded-2xl bg-[#fff8f4] border border-[#eae1da] focus:border-[#173124] outline-hidden text-sm leading-relaxed"
             />
           </div>
 
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1.5">
-              Formation & Éducation
+              {t('person_education_tab')}
             </label>
             <textarea
               name="education"
               rows={3}
               value={formData.education || ''}
               onChange={handleChange}
-              placeholder="Diplômes, écoles, parcours académique..."
+              placeholder={language === 'en' ? 'Degrees, universities, academic career...' : 'Dipl?mes, ?coles, parcours acad?mique...'}
               className="w-full p-4 rounded-2xl bg-[#fff8f4] border border-[#eae1da] focus:border-[#173124] outline-hidden text-sm leading-relaxed"
             />
           </div>
@@ -536,7 +541,7 @@ export default function PersonForm({
           onClick={() => router.back()}
           className="px-6 py-3 rounded-xl border border-[#eae1da] text-sm font-semibold text-[#424844] hover:bg-[#f5ece5] transition-all"
         >
-          Annuler
+          {t('cancel')}
         </button>
 
         <button
@@ -549,7 +554,7 @@ export default function PersonForm({
           ) : (
             <>
               <Save className="w-4 h-4" />
-              <span>{isEditing ? 'Enregistrer les modifications' : 'Ajouter ce membre'}</span>
+              <span>{isEditing ? (language === 'en' ? 'Save Changes' : 'Enregistrer les modifications') : (language === 'en' ? 'Add this member' : 'Ajouter ce membre')}</span>
             </>
           )}
         </button>

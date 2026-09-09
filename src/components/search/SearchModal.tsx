@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, X, User, Calendar, MapPin, Briefcase, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface SearchResult {
   id: number;
@@ -26,20 +27,19 @@ export default function SearchModal({
   isOpen: boolean;
   onClose: () => void;
 }) {
+  const { t, language } = useLanguage();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Keyboard shortcut Ctrl+K / Cmd+K
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         if (isOpen) onClose();
         else {
-          // Open
           setQuery('');
         }
       }
@@ -52,7 +52,6 @@ export default function SearchModal({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Focus input on open
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 50);
@@ -60,7 +59,6 @@ export default function SearchModal({
     }
   }, [isOpen]);
 
-  // Fetch search results
   const fetchResults = async (q: string) => {
     setLoading(true);
     try {
@@ -104,7 +102,7 @@ export default function SearchModal({
             type="text"
             value={query}
             onChange={handleInputChange}
-            placeholder="Rechercher par prénom, nom, lieu ou profession..."
+            placeholder={t('search_placeholder')}
             className="w-full bg-transparent text-[#1f1b17] placeholder-[#727973] text-base focus:outline-hidden font-medium"
           />
           {query && (
@@ -131,14 +129,14 @@ export default function SearchModal({
           {loading ? (
             <div className="py-12 text-center text-[#727973]">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-3 border-[#7a5739] border-t-transparent mb-2"></div>
-              <p className="text-sm">Recherche dans les archives...</p>
+              <p className="text-sm">{t('loading')}</p>
             </div>
           ) : results.length === 0 ? (
             <div className="py-12 text-center text-[#727973]">
               <User className="w-10 h-10 mx-auto text-[#c2c8c2] mb-2" />
-              <p className="font-serif text-lg text-[#1f1b17]">Aucun membre trouvé</p>
+              <p className="font-serif text-lg text-[#1f1b17]">{t('no_results')}</p>
               <p className="text-xs text-[#727973] mt-1">
-                Essayez un autre mot-clé ou ajoutez ce membre à l&apos;arbre.
+                {language === 'fr' ? 'Essayez un autre mot-cl? ou parcourez l\'arbre.' : 'Try another keyword or browse the tree.'}
               </p>
             </div>
           ) : (
@@ -153,7 +151,6 @@ export default function SearchModal({
                   className="flex items-center justify-between p-3 rounded-xl hover:bg-[#f5ece5] cursor-pointer transition-all group"
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
-                    {/* Avatar */}
                     <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-[#eae1da] bg-[#eae1da]">
                       {person.photo ? (
                         <Image
@@ -174,7 +171,6 @@ export default function SearchModal({
                       )}
                     </div>
 
-                    {/* Info */}
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <h4 className="font-serif font-bold text-[#1f1b17] text-base truncate group-hover:text-[#173124]">
@@ -182,7 +178,7 @@ export default function SearchModal({
                         </h4>
                         {person.is_spouse && (
                           <span className="text-[10px] bg-[#fdcea9] text-[#795638] font-medium px-2 py-0.5 rounded-full shrink-0">
-                            Conjoint(e)
+                            {t('by_marriage')}
                           </span>
                         )}
                       </div>
@@ -192,7 +188,7 @@ export default function SearchModal({
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3.5 h-3.5 text-[#7a5739]" />
                             {person.birth_year || '?'}
-                            {person.death_year ? ` – ${person.death_year}` : ' – présent'}
+                            {person.death_year ? ` ? ${person.death_year}` : (language === 'fr' ? ' ? pr?sent' : ' ? present')}
                           </span>
                         )}
 
@@ -222,8 +218,8 @@ export default function SearchModal({
 
         {/* Footer info */}
         <div className="px-4 py-2.5 bg-[#fbf2eb] border-t border-[#eae1da] text-xs text-[#727973] flex justify-between items-center">
-          <span>{results.length} résultat{results.length > 1 ? 's' : ''}</span>
-          <span>Appuyez sur Entrée pour sélectionner</span>
+          <span>{results.length} {language === 'fr' ? (results.length > 1 ? 'r?sultats' : 'r?sultat') : (results.length > 1 ? 'results' : 'result')}</span>
+          <span>{language === 'fr' ? 'Appuyez sur Entr?e pour s?lectionner' : 'Press Enter to select'}</span>
         </div>
       </div>
     </div>

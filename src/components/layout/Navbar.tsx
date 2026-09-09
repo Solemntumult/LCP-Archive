@@ -26,9 +26,9 @@ export default function Navbar() {
     <>
       <header className="sticky top-0 z-40 w-full border-b border-[#eae1da] bg-[#fff8f4]/95 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+          <div className="flex items-center justify-between h-20 gap-4">
             {/* Brand Logo */}
-            <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0">
+            <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0 min-w-[190px] sm:min-w-[240px]">
               <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-xl overflow-hidden shadow-md group-hover:scale-105 transition-all shrink-0">
                 <Image
                   src="/icon.svg"
@@ -39,7 +39,7 @@ export default function Navbar() {
                 />
               </div>
               <div className="min-w-0">
-                <span className="font-serif text-lg sm:text-xl font-bold tracking-tight text-[#173124] truncate">
+                <span className="font-serif text-lg sm:text-xl font-bold tracking-tight text-[#173124] block truncate">
                   LCP Archives
                 </span>
                 <p className="text-[11px] sm:text-xs text-[#727973] hidden sm:block truncate">
@@ -49,7 +49,7 @@ export default function Navbar() {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-1">
+            <nav className="hidden lg:flex items-center gap-1.5 shrink-0">
               {navLinks.map((link) => {
                 const Icon = link.icon;
                 const isActive = pathname === link.href;
@@ -63,15 +63,15 @@ export default function Navbar() {
                         : 'text-[#424844] hover:bg-[#f5ece5] hover:text-[#173124]'
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
-                    {link.label}
+                    <Icon className="w-4 h-4 shrink-0" />
+                    <span className="whitespace-nowrap">{link.label}</span>
                   </Link>
                 );
               })}
             </nav>
 
             {/* Right Action Buttons */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               {/* Language Switcher */}
               <LanguageToggle />
 
@@ -79,13 +79,13 @@ export default function Navbar() {
               <button
                 onClick={() => setSearchOpen(true)}
                 type="button"
-                className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-xs sm:text-sm text-[#727973] bg-[#f5ece5] hover:bg-[#eae1da] hover:text-[#1f1b17] rounded-xl transition-all border border-[#eae1da]"
+                className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-2 text-xs sm:text-sm text-[#727973] bg-[#f5ece5] hover:bg-[#eae1da] hover:text-[#1f1b17] rounded-xl transition-all border border-[#eae1da]"
                 title={`${t('nav_search')} (Ctrl+K)`}
               >
-                <Search className="w-4 h-4 text-[#7a5739]" />
-                <span className="hidden sm:inline">{t('nav_search')}</span>
-                <kbd className="hidden lg:inline-block text-[10px] font-mono bg-white text-[#727973] border border-[#c2c8c2] px-1.5 py-0.5 rounded shadow-2xs">
-                  ⌘K
+                <Search className="w-4 h-4 text-[#7a5739] shrink-0" />
+                <span className="hidden md:inline whitespace-nowrap">{t('nav_search')}</span>
+                <kbd className="hidden xl:inline-block text-[10px] font-mono bg-white text-[#727973] border border-[#c2c8c2] px-1.5 py-0.5 rounded shadow-2xs">
+                  ?K
                 </kbd>
               </button>
 
@@ -94,15 +94,15 @@ export default function Navbar() {
                 href="/person/add"
                 className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-[#7a5739] text-white hover:bg-[#5f4024] shadow-xs transition-all active:scale-95 shrink-0"
               >
-                <PlusCircle className="w-4 h-4" />
-                <span className="hidden sm:inline">{t('nav_add_member')}</span>
+                <PlusCircle className="w-4 h-4 shrink-0" />
+                <span className="hidden sm:inline whitespace-nowrap">{t('nav_add_member')}</span>
                 <span className="sm:hidden">+</span>
               </Link>
 
               {/* Mobile menu toggle */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-xl text-[#424844] hover:bg-[#f5ece5]"
+                className="lg:hidden p-2 rounded-xl text-[#424844] hover:bg-[#f5ece5]"
                 aria-label="Menu"
               >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -113,7 +113,7 @@ export default function Navbar() {
 
         {/* Mobile menu dropdown */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-[#eae1da] bg-[#fff8f4] px-4 pt-3 pb-5 space-y-1.5 animate-fade-in shadow-xl">
+          <div className="lg:hidden border-t border-[#eae1da] bg-[#fff8f4] px-4 pt-3 pb-5 space-y-1.5 animate-fade-in shadow-xl">
             {navLinks.map((link) => {
               const Icon = link.icon;
               const isActive = pathname === link.href;

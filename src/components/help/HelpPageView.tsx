@@ -17,7 +17,11 @@ import {
   Layers,
   Info,
   ArrowRight,
-  Bookmark
+  Bookmark,
+  User,
+  Heart,
+  Baby,
+  CheckCircle2
 } from 'lucide-react';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 
@@ -26,61 +30,120 @@ export default function HelpPageView() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
+  // Authentic Family Households from initial_seed.json
   const steps = [
     {
       id: 1,
-      title: t('help_step1_title'),
-      desc: t('help_step1_desc'),
-      badge: language === 'fr' ? 'G?n?ration 1 ? Les Racines' : 'Generation 1 ? The Roots',
+      title: language === 'fr' ? '1. Le Foyer Racine du Patriarche' : '1. Root Household of the Patriarch',
+      desc: language === 'fr'
+        ? "L'arbre commence par le patriarche Paul Comlan LISSANON et ses ?pouses (Lucienne DEGBO & Rosalie SEGBEDJI). Les enfants de l'union Paul-Lucienne suivent l'ordre chronologique exact : Claude, Val?re, Alexis, Eric (?), Herv?, Salomon, L?ticia, R?gina."
+        : 'The tree begins with the patriarch Paul Comlan LISSANON and his spouses (Lucienne DEGBO & Rosalie SEGBEDJI). The children of the Paul-Lucienne union follow the authentic chronological order: Claude, Val?re, Alexis, Eric (?), Herv?, Salomon, L?ticia, Regina.',
+      badge: language === 'fr' ? 'G?N?RATION 1 ? LES RACINES' : 'GENERATION 1 ? THE ROOTS',
       foyerName: 'Foyer Paul & Lucienne LISSANON',
-      centerPerson: { name: 'Paul LISSANON', role: language === 'fr' ? 'Patriarche' : 'Patriarch', isDeceased: true },
-      spouse: { name: 'Lucienne AGBODJAN', role: language === 'fr' ? '?pouse' : 'Spouse', isDeceased: true },
-      children: ['Claude', 'Val?re', 'Alexis', 'Eric', 'Herv?', 'Salomon', 'L?ticia', 'R?gina'],
-      highlight: 'center',
+      centerPerson: { id: 1, name: 'Paul Comlan LISSANON', role: language === 'fr' ? 'Patriarche' : 'Patriarch', isDeceased: true, gender: 'M', gen: 1 },
+      spouses: [
+        { id: 2, name: 'Lucienne DEGBO (Dida)', role: language === 'fr' ? '?pouse' : 'Spouse', isDeceased: false, gender: 'F' },
+        { id: 3, name: 'Rosalie SEGBEDJI (Daassi)', role: language === 'fr' ? '?pouse' : 'Spouse', isDeceased: false, gender: 'F' },
+      ],
+      children: [
+        { id: 7, name: 'Claude Gb?nan', isDeceased: false, gender: 'M', hasDescendants: true },
+        { id: 8, name: 'Val?re Andr?', isDeceased: false, gender: 'M', hasDescendants: true },
+        { id: 9, name: 'Alexis', isDeceased: false, gender: 'M', hasDescendants: true },
+        { id: 10, name: 'Eric', isDeceased: true, gender: 'M', hasDescendants: false },
+        { id: 11, name: 'Herv?', isDeceased: false, gender: 'M', hasDescendants: true },
+        { id: 12, name: 'Salomon', isDeceased: false, gender: 'M', hasDescendants: true },
+        { id: 13, name: 'L?ticia', isDeceased: false, gender: 'F', hasDescendants: false },
+        { id: 14, name: 'R?gina', isDeceased: false, gender: 'F', hasDescendants: true },
+      ],
+      actionTip: language === 'fr'
+        ? 'Cliquez sur le bouton ? D?ployer ? sous Claude pour ouvrir sa branche familiale.'
+        : 'Click on the "Deploy" button under Claude to open his family branch.',
     },
     {
       id: 2,
-      title: t('help_step2_title'),
-      desc: t('help_step2_desc'),
-      badge: language === 'fr' ? 'G?n?ration 2 ? Branche Fille' : 'Generation 2 ? Child Branch',
+      title: language === 'fr' ? '2. D?ploiement du Foyer Claude & Rachelle' : '2. Deploying Claude & Rachelle Household',
+      desc: language === 'fr'
+        ? "En d?ployant la branche de Claude Gb?nan LISSANON et de son ?pouse Rachelle GBAGUIDI, vous d?couvrez leurs 7 enfants dans l'ordre chronologique fixe : Clara, Donald, Jubil?, Jean-Eudes, Jolidon, Paola, Paula."
+        : 'Deploying the branch of Claude Gb?nan LISSANON and his spouse Rachelle GBAGUIDI reveals their 7 children in fixed chronological order: Clara, Donald, Jubil?, Jean-Eudes, Jolidon, Paola, Paula.',
+      badge: language === 'fr' ? 'G?N?RATION 2 ? BRANCHE CLAUDE' : 'GENERATION 2 ? CLAUDE BRANCH',
       foyerName: 'Foyer Claude & Rachelle LISSANON',
-      centerPerson: { name: 'Claude LISSANON', role: language === 'fr' ? 'Chef de foyer' : 'Head of Household', isDeceased: false },
-      spouse: { name: 'Rachelle HOUNNOU', role: language === 'fr' ? '?pouse' : 'Spouse', isDeceased: false },
-      children: ['Clara', 'Donald', 'Jubil?', 'Jean-Eudes', 'Jolidon', 'Paola', 'Paula'],
-      highlight: 'deploy',
+      centerPerson: { id: 7, name: 'Claude Gb?nan LISSANON', role: language === 'fr' ? 'Chef de foyer' : 'Head of Household', isDeceased: false, gender: 'M', gen: 2 },
+      spouses: [
+        { id: 19, name: 'Rachelle GBAGUIDI', role: language === 'fr' ? '?pouse' : 'Spouse', isDeceased: false, gender: 'F' },
+      ],
+      children: [
+        { id: 20, name: 'Clara', isDeceased: false, gender: 'F', hasDescendants: true },
+        { id: 21, name: 'Donald', isDeceased: false, gender: 'M', hasDescendants: false },
+        { id: 22, name: 'Jubil?', isDeceased: false, gender: 'M', hasDescendants: false },
+        { id: 23, name: 'Jean-Eudes', isDeceased: false, gender: 'M', hasDescendants: false },
+        { id: 24, name: 'Jolidon', isDeceased: false, gender: 'M', hasDescendants: false },
+        { id: 25, name: 'Paola', isDeceased: false, gender: 'F', hasDescendants: false },
+        { id: 26, name: 'Paula', isDeceased: false, gender: 'F', hasDescendants: false },
+      ],
+      actionTip: language === 'fr'
+        ? 'Le bouton ? ? Retour (Paul) ? permet de remonter instantan?ment au foyer parent.'
+        : 'The "? Back (Paul)" button allows you to instantly navigate back to the parent household.',
     },
     {
       id: 3,
-      title: t('help_step3_title'),
-      desc: t('help_step3_desc'),
-      badge: language === 'fr' ? 'Navigation & Historique' : 'Navigation & History',
-      foyerName: 'Foyer Alexis & Monique LISSANON',
-      centerPerson: { name: 'Alexis LISSANON', role: language === 'fr' ? 'Chef de foyer' : 'Head of Household', isDeceased: false },
-      spouse: { name: 'Monique DOSSOU', role: language === 'fr' ? '?pouse' : 'Spouse', isDeceased: false },
-      children: ['Aim?', 'B?atrice', 'Christian'],
-      highlight: 'back',
+      title: language === 'fr' ? '3. Foyer Alexis & Patricia LISSANON' : '3. Alexis & Patricia Household',
+      desc: language === 'fr'
+        ? 'Autre branche de la 2e g?n?ration : Alexis LISSANON et Patricia AHIHA avec leurs enfants Fridzel, Fifam? et Espoir. Chaque membre poss?de une fiche biographique d?taill?e.'
+        : 'Another 2nd generation branch: Alexis LISSANON and Patricia AHIHA with their children Fridzel, Fifam?, and Espoir. Every member features a dedicated biography record.',
+      badge: language === 'fr' ? 'G?N?RATION 2 ? BRANCHE ALEXIS' : 'GENERATION 2 ? ALEXIS BRANCH',
+      foyerName: 'Foyer Alexis & Patricia LISSANON',
+      centerPerson: { id: 9, name: 'Alexis LISSANON', role: language === 'fr' ? 'Chef de foyer' : 'Head of Household', isDeceased: false, gender: 'M', gen: 2 },
+      spouses: [
+        { id: 31, name: 'Patricia AHIHA', role: language === 'fr' ? '?pouse' : 'Spouse', isDeceased: false, gender: 'F' },
+      ],
+      children: [
+        { id: 32, name: 'Fridzel', isDeceased: false, gender: 'M', hasDescendants: false },
+        { id: 33, name: 'Fifam?', isDeceased: false, gender: 'F', hasDescendants: false },
+        { id: 34, name: 'Espoir', isDeceased: false, gender: 'M', hasDescendants: false },
+      ],
+      actionTip: language === 'fr'
+        ? "Cliquez sur n'importe quel portrait pour afficher la fen?tre d'aper?u et acc?der ? sa biographie."
+        : 'Click on any portrait avatar to open the quick preview drawer and view their full biography.',
     },
     {
       id: 4,
-      title: t('help_step4_title'),
-      desc: t('help_step4_desc'),
-      badge: language === 'fr' ? 'M?moire & Recueillement' : 'Remembrance & Respect',
-      foyerName: 'Foyer Salomon & Ad?le LISSANON',
-      centerPerson: { name: 'Salomon LISSANON', role: language === 'fr' ? 'Chef de foyer' : 'Head of Household', isDeceased: true },
-      spouse: { name: 'Ad?le KOFFI', role: language === 'fr' ? '?pouse' : 'Spouse', isDeceased: false },
-      children: ['Samuel', 'Sarah'],
-      highlight: 'deceased',
+      title: language === 'fr' ? '4. Foyer Salomon & D?borah LISSANON' : '4. Salomon & D?borah Household',
+      desc: language === 'fr'
+        ? 'Branche de Salomon LISSANON et de D?borah AKOUTOU avec leurs enfants Houef?, Roche et Chancelle. Le syst?me g?re les unions multiples et les descendances crois?es avec fluidit?.'
+        : 'Branch of Salomon LISSANON and D?borah AKOUTOU with their children Houef?, Roche, and Chancelle. The system seamlessly handles multiple unions and lineage trees.',
+      badge: language === 'fr' ? 'G?N?RATION 2 ? BRANCHE SALOMON' : 'GENERATION 2 ? SALOMON BRANCH',
+      foyerName: 'Foyer Salomon & D?borah LISSANON',
+      centerPerson: { id: 12, name: 'Salomon LISSANON', role: language === 'fr' ? 'Chef de foyer' : 'Head of Household', isDeceased: false, gender: 'M', gen: 2 },
+      spouses: [
+        { id: 40, name: 'D?borah AKOUTOU', role: language === 'fr' ? '?pouse' : 'Spouse', isDeceased: false, gender: 'F' },
+      ],
+      children: [
+        { id: 41, name: 'Houef?', isDeceased: false, gender: 'F', hasDescendants: false },
+        { id: 42, name: 'Roche', isDeceased: false, gender: 'M', hasDescendants: false },
+        { id: 43, name: 'Chancelle', isDeceased: false, gender: 'F', hasDescendants: false },
+      ],
+      actionTip: language === 'fr'
+        ? 'Le marqueur ? signale avec respect les membres d?funts de la famille.'
+        : 'The ? mark respectfully indicates deceased family members.',
     },
     {
       id: 5,
-      title: t('help_step5_title'),
-      desc: t('help_step5_desc'),
-      badge: language === 'fr' ? 'Archives Multim?dias' : 'Multimedia Archives',
-      foyerName: '?v?nements & R?cits ? R?trospective',
-      centerPerson: { name: 'Grande C?l?bration Familiale', role: '?v?nement', isDeceased: false },
-      spouse: null,
-      children: ['Photos HD', 'Diaporama Story', 'Vid?os MP4/WebM'],
-      highlight: 'media',
+      title: language === 'fr' ? '5. Foyer 3e G?n?ration : Clara & Oscar SOGLO' : '5. 3rd Generation Household: Clara & Oscar SOGLO',
+      desc: language === 'fr'
+        ? "La descendance se poursuit sur la 3e g?n?ration avec Clara LISSANON et son ?poux Oscar SOGLO, parents de Yanis SOGLO (G?n?ration 4). Vous pouvez naviguer sans fin d'une g?n?ration ? l'autre."
+        : 'Lineage continues into the 3rd generation with Clara LISSANON and her spouse Oscar SOGLO, parents of Yanis SOGLO (Generation 4). You can explore smoothly from generation to generation.',
+      badge: language === 'fr' ? 'G?N?RATION 3 ? BRANCHE CLARA' : 'GENERATION 3 ? CLARA BRANCH',
+      foyerName: 'Foyer Clara & Oscar SOGLO',
+      centerPerson: { id: 20, name: 'Clara LISSANON', role: language === 'fr' ? 'Chef de foyer' : 'Head of Household', isDeceased: false, gender: 'F', gen: 3 },
+      spouses: [
+        { id: 49, name: 'Oscar SOGLO', role: language === 'fr' ? '?poux' : 'Spouse', isDeceased: false, gender: 'M' },
+      ],
+      children: [
+        { id: 50, name: 'Yanis SOGLO', isDeceased: false, gender: 'M', hasDescendants: false },
+      ],
+      actionTip: language === 'fr'
+        ? 'Toutes les donn?es sont r?elles et issues de la base g?n?alogique du projet.'
+        : 'All data displayed is authentic and loaded from the project genealogical archive.',
     },
   ];
 
@@ -88,21 +151,21 @@ export default function HelpPageView() {
     if (!isPlaying) return;
     const interval = setInterval(() => {
       setCurrentStep((prev) => (prev + 1) % steps.length);
-    }, 6000);
+    }, 7000);
     return () => clearInterval(interval);
   }, [isPlaying, steps.length]);
 
-  const activeStepData = steps[currentStep];
+  const activeStep = steps[currentStep];
 
   return (
     <div className="min-h-screen bg-[#fff8f4] py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto space-y-12">
+      <div className="max-w-6xl mx-auto space-y-12 animate-fade-in">
         
         {/* Header Title & Subtitle */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#faebe0] text-[#7a5739] text-xs font-semibold tracking-wide uppercase">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#faebe0] text-[#7a5739] text-xs font-semibold tracking-wide uppercase">
             <HelpCircle className="w-4 h-4" />
-            <span>{language === 'fr' ? 'Tutoriel & Documentation' : 'Tutorial & Documentation'}</span>
+            <span>{language === 'fr' ? 'Guide Pratique & D?monstration' : 'User Guide & Interactive Demo'}</span>
           </div>
           <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#173124] tracking-tight">
             {t('help_title')}
@@ -112,24 +175,25 @@ export default function HelpPageView() {
           </p>
         </div>
 
-        {/* Interactive Video / Simulation Box */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-[#eae1da] overflow-hidden">
+        {/* Interactive Live Demo Simulation on Real Project Data */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-[#eae1da] overflow-hidden space-y-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-[#f0e6de]">
             <div>
               <div className="flex items-center gap-2 text-xs font-bold text-[#7a5739] uppercase tracking-wider">
-                <Sparkles className="w-4 h-4" />
+                <Sparkles className="w-4 h-4 text-[#c69214]" />
                 <span>{t('help_demo_title')}</span>
               </div>
               <p className="text-xs sm:text-sm text-[#727973] mt-1">
                 {t('help_demo_desc')}
               </p>
             </div>
-            {/* Demo Controls */}
+
+            {/* Demo Play / Reset Controls */}
             <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => setIsPlaying(!isPlaying)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#173124] text-white text-xs sm:text-sm font-semibold hover:bg-[#234936] transition-all shadow-xs active:scale-95"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#173124] text-white text-xs sm:text-sm font-semibold hover:bg-[#234936] transition-all shadow-xs active:scale-95 cursor-pointer"
               >
                 {isPlaying ? (
                   <>
@@ -143,143 +207,150 @@ export default function HelpPageView() {
                   </>
                 )}
               </button>
+
               <button
                 type="button"
                 onClick={() => {
                   setCurrentStep(0);
                   setIsPlaying(false);
                 }}
-                className="p-2 rounded-xl bg-[#f5ece5] text-[#424844] hover:bg-[#eae1da] transition-all"
-                title={t('help_restart_demo')}
+                className="p-2 rounded-xl border border-[#eae1da] text-[#727973] hover:bg-[#f5ece5] hover:text-[#173124] transition-all cursor-pointer"
+                title={language === 'fr' ? 'Recommencer la d?mo' : 'Restart demo'}
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          {/* Stepper Dots & Selector */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 my-6">
-            {steps.map((s, idx) => (
+          {/* Step Selector Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+            {steps.map((step, idx) => (
               <button
-                key={s.id}
-                type="button"
+                key={step.id}
                 onClick={() => {
                   setCurrentStep(idx);
                   setIsPlaying(false);
                 }}
-                className={`flex flex-col p-3 rounded-2xl text-left border transition-all ${
-                  currentStep === idx
-                    ? 'bg-[#f7efe9] border-[#7a5739] text-[#173124] shadow-xs'
-                    : 'bg-[#faf6f2] border-transparent text-[#727973] hover:bg-[#f3eae3]'
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 ${
+                  idx === currentStep
+                    ? 'bg-[#173124] text-white shadow-xs'
+                    : 'bg-[#fff8f4] text-[#727973] border border-[#eae1da] hover:bg-[#f5ece5]'
                 }`}
               >
-                <span className="text-[10px] uppercase font-bold text-[#7a5739]">
-                  {t('help_step')} {idx + 1}
-                </span>
-                <span className="text-xs font-semibold line-clamp-1 mt-0.5">
-                  {s.title.split('. ')[1] || s.title}
-                </span>
+                <span className={`w-2 h-2 rounded-full ${idx === currentStep ? 'bg-[#fdcea9]' : 'bg-[#7a5739]'}`} />
+                <span>{step.title.split(':')[0]}</span>
               </button>
             ))}
           </div>
 
-          {/* Interactive Simulation Frame */}
-          <div className="relative bg-[#faf6f2] rounded-2xl p-6 sm:p-8 border border-[#eae1da] min-h-[380px] flex flex-col justify-between overflow-hidden">
-            
-            {/* Top Bar inside simulation */}
+          {/* Simulation Stage Container */}
+          <div className="relative rounded-3xl bg-[#fff8f4] border-2 border-[#eae1da] p-6 sm:p-8 parchment-texture space-y-6">
+            {/* Top Badge & Household Name */}
             <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[#eae1da]">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-white border border-[#eae1da] text-xs font-semibold text-[#173124]">
-                <span className="w-2 h-2 rounded-full bg-[#2e6948] animate-pulse" />
-                <span>{activeStepData.foyerName}</span>
+              <div className="space-y-1">
+                <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-[#173124] text-white">
+                  {activeStep.badge}
+                </span>
+                <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#173124]">
+                  {activeStep.foyerName}
+                </h3>
               </div>
-              <span className="text-xs font-medium text-[#7a5739] bg-[#faebe0] px-2.5 py-1 rounded-lg">
-                {activeStepData.badge}
+
+              <span className="text-xs font-mono font-bold text-[#7a5739] bg-white px-3 py-1.5 rounded-xl border border-[#eae1da]">
+                {t('help_step_label')} {currentStep + 1} {t('help_on_total')} {steps.length}
               </span>
             </div>
 
-            {/* Simulation Canvas: Parents & Children */}
-            <div className="my-6 flex flex-col items-center gap-6">
-              {/* Parents / Spouses Block */}
-              <div className="flex items-center gap-4 sm:gap-8 flex-wrap justify-center">
-                {/* Spouse (Left) */}
-                {activeStepData.spouse && (
-                  <div className={`p-4 rounded-2xl bg-white border shadow-xs flex items-center gap-3 w-56 transition-all ${
-                    activeStepData.highlight === 'deceased' && activeStepData.spouse.isDeceased
-                      ? 'border-[#c68326] ring-2 ring-[#c68326]/30'
-                      : 'border-[#eae1da]'
-                  }`}>
-                    <div className="relative w-11 h-11 rounded-full bg-[#eae1da] flex items-center justify-center font-bold text-[#7a5739] shrink-0">
-                      {activeStepData.spouse.name[0]}
-                      {activeStepData.spouse.isDeceased && (
-                        <span className="absolute -bottom-1 -right-1 bg-[#1a1714] text-[#ffd166] text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-black border border-amber-400">
-                          ?
-                        </span>
-                      )}
+            {/* Simulated Live Tree Graph Nodes */}
+            <div className="py-6 flex flex-col items-center space-y-8">
+              {/* Top Row: Center Person & Spouses */}
+              <div className="flex flex-wrap items-center justify-center gap-8">
+                {/* Center Person Node */}
+                <div className="flex flex-col items-center space-y-2 p-3 bg-white rounded-2xl border-2 border-[#173124] shadow-md">
+                  <div className="relative">
+                    <div className={`w-14 h-14 rounded-full flex items-center justify-center font-serif font-bold text-white shadow-md ${
+                      activeStep.centerPerson.gender === 'M' ? 'bg-[#2980b9]' : 'bg-[#c0392b]'
+                    }`}>
+                      <User className="w-7 h-7 text-white" />
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold text-[#173124] truncate">{activeStepData.spouse.name}</p>
-                      <p className="text-[11px] text-[#727973]">{activeStepData.spouse.role}</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Alliance Link Symbol */}
-                {activeStepData.spouse && (
-                  <div className="hidden sm:flex flex-col items-center">
-                    <div className="w-6 h-0.5 bg-[#7a5739]/50" />
-                    <span className="text-[10px] font-bold text-[#7a5739]">?</span>
-                  </div>
-                )}
-
-                {/* Center Head of Foyer */}
-                <div className={`p-4 rounded-2xl bg-white border shadow-sm flex items-center gap-3 w-60 transition-all ${
-                  activeStepData.highlight === 'center'
-                    ? 'border-[#173124] ring-2 ring-[#173124]/30 scale-105'
-                    : activeStepData.highlight === 'deceased' && activeStepData.centerPerson.isDeceased
-                    ? 'border-[#c68326] ring-2 ring-[#c68326]/30'
-                    : 'border-[#eae1da]'
-                }`}>
-                  <div className="relative w-12 h-12 rounded-full bg-[#173124] text-white flex items-center justify-center font-bold text-sm shrink-0">
-                    {activeStepData.centerPerson.name[0]}
-                    {activeStepData.centerPerson.isDeceased && (
-                      <span className="absolute -bottom-1 -right-1 bg-[#1a1714] text-[#ffd166] text-[11px] w-4.5 h-4.5 rounded-full flex items-center justify-center font-black border border-amber-400 shadow-sm">
+                    {activeStep.centerPerson.isDeceased && (
+                      <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#1f1b17] text-white text-[11px] font-black flex items-center justify-center border-2 border-white">
                         ?
                       </span>
                     )}
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-xs sm:text-sm font-bold text-[#173124] truncate">{activeStepData.centerPerson.name}</p>
-                    <p className="text-[11px] text-[#7a5739] font-medium">{activeStepData.centerPerson.role}</p>
+                  <div className="text-center">
+                    <span className="font-serif font-bold text-xs text-[#173124] block">
+                      {activeStep.centerPerson.name}
+                    </span>
+                    <span className="text-[10px] text-[#7a5739] font-medium">
+                      {activeStep.centerPerson.role}
+                    </span>
                   </div>
                 </div>
+
+                {/* Spouses */}
+                {activeStep.spouses.map((sp) => (
+                  <div key={sp.id} className="flex flex-col items-center space-y-2 p-3 bg-white rounded-2xl border-2 border-[#c69214] shadow-md">
+                    <div className="relative">
+                      <div className={`w-14 h-14 rounded-full flex items-center justify-center font-serif font-bold text-white shadow-md ${
+                        sp.gender === 'M' ? 'bg-[#2980b9]' : 'bg-[#c0392b]'
+                      }`}>
+                        <Heart className="w-6 h-6 text-white" />
+                      </div>
+                      {sp.isDeceased && (
+                        <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#1f1b17] text-white text-[11px] font-black flex items-center justify-center border-2 border-white">
+                          ?
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-center">
+                      <span className="font-serif font-bold text-xs text-[#7a5739] block">
+                        {sp.name}
+                      </span>
+                      <span className="text-[10px] text-[#727973] font-medium">
+                        {sp.role}
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* Filiation Line */}
-              <div className="w-0.5 h-6 bg-[#eae1da] relative">
-                <div className="w-2 h-2 rounded-full bg-[#7a5739] absolute -top-1 -left-[3px]" />
-              </div>
+              <div className="w-12 h-6 border-l-2 border-b-2 border-r-2 border-[#7a5739] rounded-b-xl" />
 
-              {/* Children Grid */}
-              <div className="w-full">
-                <p className="text-center text-[11px] font-bold text-[#727973] uppercase tracking-wider mb-3">
-                  {t('tree_children')} ({activeStepData.children.length})
-                </p>
-                <div className="flex flex-wrap items-center justify-center gap-2.5 max-w-3xl mx-auto">
-                  {activeStepData.children.map((childName, cIdx) => (
+              {/* Bottom Row: Authentic Children of Household */}
+              <div className="space-y-2 w-full text-center">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#727973] block">
+                  {language === 'fr' ? 'Enfants du Foyer (Ordre Chronologique Fixe)' : 'Children of Household (Chronological Order)'}
+                </span>
+
+                <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                  {activeStep.children.map((child) => (
                     <div
-                      key={cIdx}
-                      className={`px-3 py-2 rounded-xl bg-white border text-xs font-semibold flex items-center gap-2 shadow-2xs transition-all ${
-                        activeStepData.highlight === 'deploy' && cIdx === 0
-                          ? 'border-[#7a5739] bg-[#faebe0] text-[#7a5739] ring-2 ring-[#7a5739]/30 scale-105'
-                          : 'border-[#eae1da] text-[#173124]'
-                      }`}
+                      key={child.id}
+                      className="flex flex-col items-center p-2.5 bg-white rounded-2xl border border-[#eae1da] shadow-xs hover:border-[#173124] transition-all min-w-[95px]"
                     >
-                      <span className="text-[10px] text-[#8c948e] font-mono">#{cIdx + 1}</span>
-                      <span>{childName}</span>
-                      {activeStepData.highlight === 'deploy' && cIdx === 0 && (
-                        <span className="text-[10px] bg-[#7a5739] text-white px-1.5 py-0.5 rounded-md flex items-center gap-0.5 font-bold">
-                          <span>{language === 'fr' ? 'D?ployer' : 'Expand'}</span>
-                          <ArrowRight className="w-3 h-3" />
+                      <div className="relative mb-1">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-serif font-bold text-xs ${
+                          child.gender === 'M' ? 'bg-[#2980b9]' : 'bg-[#c0392b]'
+                        }`}>
+                          <Baby className="w-5 h-5" />
+                        </div>
+                        {child.isDeceased && (
+                          <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#1f1b17] text-white text-[9px] font-black flex items-center justify-center border border-white">
+                            ?
+                          </span>
+                        )}
+                      </div>
+
+                      <span className="font-serif font-bold text-xs text-[#1f1b17] truncate max-w-[90px]">
+                        {child.name}
+                      </span>
+
+                      {child.hasDescendants && (
+                        <span className="mt-1 px-2 py-0.5 rounded-md bg-[#173124] text-white text-[9px] font-bold">
+                          {t('tree_has_descendants_btn')}
                         </span>
                       )}
                     </div>
@@ -288,171 +359,97 @@ export default function HelpPageView() {
               </div>
             </div>
 
-            {/* Step Description Callout */}
-            <div className="mt-4 p-4 rounded-2xl bg-white border border-[#eae1da] shadow-xs flex items-start gap-3.5">
-              <div className="p-2 rounded-xl bg-[#faebe0] text-[#7a5739] shrink-0 mt-0.5">
-                <Info className="w-4 h-4" />
-              </div>
-              <div className="space-y-1">
-                <h2 className="text-sm font-bold text-[#173124]">{activeStepData.title}</h2>
-                <p className="text-xs text-[#5c645e] leading-relaxed">{activeStepData.desc}</p>
+            {/* Narrative Explanation Box */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#eae1da] space-y-2">
+              <p className="text-xs sm:text-sm text-[#424844] leading-relaxed">
+                {activeStep.desc}
+              </p>
+              <div className="flex items-center gap-2 text-xs font-semibold text-[#173124]">
+                <Info className="w-4 h-4 text-[#7a5739] shrink-0" />
+                <span>{activeStep.actionTip}</span>
               </div>
             </div>
 
-            {/* Prev / Next step navigation */}
-            <div className="flex items-center justify-between mt-4 pt-3 border-t border-[#eae1da]">
+            {/* Bottom Step Navigation Buttons */}
+            <div className="flex items-center justify-between pt-2">
               <button
                 type="button"
-                onClick={() => {
-                  setCurrentStep((prev) => (prev > 0 ? prev - 1 : steps.length - 1));
-                  setIsPlaying(false);
-                }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-[#424844] hover:bg-white transition-all"
+                onClick={() => setCurrentStep((prev) => (prev - 1 + steps.length) % steps.length)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[#eae1da] bg-white text-xs font-bold text-[#424844] hover:bg-[#f5ece5] transition-all cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" />
-                <span>{language === 'fr' ? '?tape pr?c?dente' : 'Previous step'}</span>
+                <span>{t('help_prev_step')}</span>
               </button>
+
+              <Link
+                href="/tree"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#173124] text-white text-xs font-bold hover:bg-[#2d4739] shadow-md transition-all active:scale-95"
+              >
+                <span>{t('help_explore_live_tree')}</span>
+                <ArrowRight className="w-4 h-4 text-[#fdcea9]" />
+              </Link>
+
               <button
                 type="button"
-                onClick={() => {
-                  setCurrentStep((prev) => (prev + 1) % steps.length);
-                  setIsPlaying(false);
-                }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-[#173124] hover:bg-white transition-all"
+                onClick={() => setCurrentStep((prev) => (prev + 1) % steps.length)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[#eae1da] bg-white text-xs font-bold text-[#424844] hover:bg-[#f5ece5] transition-all cursor-pointer"
               >
-                <span>{language === 'fr' ? '?tape suivante' : 'Next step'}</span>
+                <span>{t('help_next_step')}</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>
         </div>
 
-        {/* Visual Symbols & Reading Guide */}
-        <div className="space-y-6">
-          <div>
-            <h2 className="font-serif text-2xl font-bold text-[#173124]">
-              {t('help_guide_symbols_title')}
-            </h2>
-            <p className="text-xs sm:text-sm text-[#727973] mt-1">
-              {language === 'fr'
-                ? 'Comprenez d\'un coup d\'?il les rep?res visuels affich?s sur les cartes et les liens.'
-                : 'Understand at a glance the visual indicators on cards and connections.'}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Symbol 1: Catholic Cross */}
-            <div className="p-5 rounded-3xl bg-white border border-[#eae1da] shadow-2xs space-y-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#1a1714] text-[#ffd166] flex items-center justify-center font-black border border-amber-400 text-sm">
-                  ?
-                </div>
-                <h3 className="text-sm font-bold text-[#173124]">{t('help_sym_cross_title')}</h3>
-              </div>
-              <p className="text-xs text-[#5c645e] leading-relaxed">
-                {t('help_sym_cross_desc')}
-              </p>
-            </div>
-
-            {/* Symbol 2: Alliance Line */}
-            <div className="p-5 rounded-3xl bg-white border border-[#eae1da] shadow-2xs space-y-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#faebe0] text-[#7a5739] flex items-center justify-center font-black text-sm">
-                  ?
-                </div>
-                <h3 className="text-sm font-bold text-[#173124]">{t('help_sym_alliance_title')}</h3>
-              </div>
-              <p className="text-xs text-[#5c645e] leading-relaxed">
-                {t('help_sym_alliance_desc')}
-              </p>
-            </div>
-
-            {/* Symbol 3: Filiation */}
-            <div className="p-5 rounded-3xl bg-white border border-[#eae1da] shadow-2xs space-y-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#e3eae5] text-[#173124] flex items-center justify-center font-bold text-xs">
-                  <Layers className="w-4 h-4" />
-                </div>
-                <h3 className="text-sm font-bold text-[#173124]">{t('help_sym_filiation_title')}</h3>
-              </div>
-              <p className="text-xs text-[#5c645e] leading-relaxed">
-                {t('help_sym_filiation_desc')}
-              </p>
-            </div>
-
-            {/* Symbol 4: Deploy Button */}
-            <div className="p-5 rounded-3xl bg-white border border-[#eae1da] shadow-2xs space-y-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#173124] text-white flex items-center justify-center font-bold text-xs">
-                  <GitFork className="w-4 h-4" />
-                </div>
-                <h3 className="text-sm font-bold text-[#173124]">{t('help_sym_deploy_title')}</h3>
-              </div>
-              <p className="text-xs text-[#5c645e] leading-relaxed">
-                {t('help_sym_deploy_desc')}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* FAQ & Tips */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#eae1da] shadow-xs space-y-6">
-          <div className="flex items-center gap-2">
-            <Bookmark className="w-5 h-5 text-[#7a5739]" />
-            <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#173124]">
+        {/* FAQ Section */}
+        <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#eae1da] shadow-sm space-y-8">
+          <div className="text-center space-y-2">
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#173124]">
               {t('help_faq_title')}
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-4 rounded-2xl bg-[#faf6f2] border border-[#eae1da] space-y-2">
-              <p className="text-xs font-bold text-[#173124] flex items-center gap-1.5">
-                <Search className="w-3.5 h-3.5 text-[#7a5739]" />
-                {t('help_faq_search_q')}
-              </p>
-              <p className="text-xs text-[#5c645e] leading-relaxed">
-                {t('help_faq_search_a')}
-              </p>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-[#faf6f2] border border-[#eae1da] space-y-2">
-              <p className="text-xs font-bold text-[#173124] flex items-center gap-1.5">
-                <Film className="w-3.5 h-3.5 text-[#7a5739]" />
-                {t('help_faq_video_q')}
-              </p>
-              <p className="text-xs text-[#5c645e] leading-relaxed">
-                {t('help_faq_video_a')}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="p-5 rounded-2xl bg-[#fff8f4] border border-[#eae1da] space-y-2">
+              <h4 className="font-serif font-bold text-sm sm:text-base text-[#173124] flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#7a5739] shrink-0" />
+                <span>{t('help_faq_q1')}</span>
+              </h4>
+              <p className="text-xs sm:text-sm text-[#5c645e] leading-relaxed">
+                {t('help_faq_a1')}
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#faf6f2] border border-[#eae1da] space-y-2">
-              <p className="text-xs font-bold text-[#173124] flex items-center gap-1.5">
-                <GitFork className="w-3.5 h-3.5 text-[#7a5739]" />
-                {t('help_faq_tree_q')}
+            <div className="p-5 rounded-2xl bg-[#fff8f4] border border-[#eae1da] space-y-2">
+              <h4 className="font-serif font-bold text-sm sm:text-base text-[#173124] flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#7a5739] shrink-0" />
+                <span>{t('help_faq_q2')}</span>
+              </h4>
+              <p className="text-xs sm:text-sm text-[#5c645e] leading-relaxed">
+                {t('help_faq_a2')}
               </p>
-              <p className="text-xs text-[#5c645e] leading-relaxed">
-                {t('help_faq_tree_a')}
+            </div>
+
+            <div className="p-5 rounded-2xl bg-[#fff8f4] border border-[#eae1da] space-y-2">
+              <h4 className="font-serif font-bold text-sm sm:text-base text-[#173124] flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#7a5739] shrink-0" />
+                <span>{t('help_faq_q3')}</span>
+              </h4>
+              <p className="text-xs sm:text-sm text-[#5c645e] leading-relaxed">
+                {t('help_faq_a3')}
+              </p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-[#fff8f4] border border-[#eae1da] space-y-2">
+              <h4 className="font-serif font-bold text-sm sm:text-base text-[#173124] flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#7a5739] shrink-0" />
+                <span>{t('help_faq_q4')}</span>
+              </h4>
+              <p className="text-xs sm:text-sm text-[#5c645e] leading-relaxed">
+                {t('help_faq_a4')}
               </p>
             </div>
           </div>
-        </div>
-
-        {/* Call to Action: Explore Tree & Events */}
-        <div className="flex flex-wrap items-center justify-center gap-4 pt-4 pb-8">
-          <Link
-            href="/tree"
-            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-[#173124] text-white text-sm font-semibold hover:bg-[#234936] transition-all shadow-sm active:scale-95"
-          >
-            <GitFork className="w-4 h-4" />
-            <span>{t('dash_explore_tree')}</span>
-          </Link>
-          <Link
-            href="/events"
-            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-[#7a5739] text-white text-sm font-semibold hover:bg-[#5f4024] transition-all shadow-sm active:scale-95"
-          >
-            <Calendar className="w-4 h-4" />
-            <span>{t('dash_view_events')}</span>
-          </Link>
         </div>
 
       </div>

@@ -1,20 +1,22 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
   Users,
   Heart,
-  User,
   PlusCircle,
-  Calendar,
   Baby,
   ArrowRight,
-  GitFork,
 } from 'lucide-react';
 import { Person, PersonDetail } from '@/types';
 import { getFullName } from '@/lib/genealogy';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function FamilyRelationships({ person }: { person: PersonDetail }) {
+  const { t, language } = useLanguage();
+
   const renderMemberMiniCard = (member: Person, relationLabel: string) => {
     const isMale = member.gender === 'M';
     const initials = `${member.first_name[0] || ''}${member.last_name[0] || ''}`;
@@ -71,7 +73,7 @@ export default function FamilyRelationships({ person }: { person: PersonDetail }
         <div className="flex items-center gap-2.5">
           <Users className="w-5 h-5 text-[#7a5739]" />
           <h2 className="font-serif font-bold text-xl text-[#173124]">
-            Liens & Relations Familiales
+            {t('person_family_tab')}
           </h2>
         </div>
       </div>
@@ -79,17 +81,17 @@ export default function FamilyRelationships({ person }: { person: PersonDetail }
       {/* Parents Section */}
       <div className="space-y-3">
         <h3 className="text-xs font-bold uppercase tracking-wider text-[#727973]">
-          Parents directes
+          {t('person_parents')}
         </h3>
 
         {!person.father && !person.mother ? (
           <p className="text-xs text-[#727973] italic p-3 bg-[#fff8f4] rounded-xl border border-[#eae1da]">
-            Aucun parent direct renseigné (Génération racine).
+            {language === 'fr' ? 'Aucun parent direct renseign? (G?n?ration racine).' : 'No direct parents recorded (Root generation).'}
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            {person.father && renderMemberMiniCard(person.father, 'Père')}
-            {person.mother && renderMemberMiniCard(person.mother, 'Mère')}
+            {person.father && renderMemberMiniCard(person.father, t('person_father'))}
+            {person.mother && renderMemberMiniCard(person.mother, t('person_mother'))}
           </div>
         )}
       </div>
@@ -98,11 +100,14 @@ export default function FamilyRelationships({ person }: { person: PersonDetail }
       {person.siblings.length > 0 && (
         <div className="space-y-3">
           <h3 className="text-xs font-bold uppercase tracking-wider text-[#727973]">
-            Fratrie ({person.siblings.length} frère{person.siblings.length > 1 ? 's' : ''} & sœur{person.siblings.length > 1 ? 's' : ''})
+            {t('person_siblings')} ({person.siblings.length})
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
             {person.siblings.map((sib) =>
-              renderMemberMiniCard(sib, sib.gender === 'M' ? 'Frère' : 'Sœur')
+              renderMemberMiniCard(
+                sib,
+                language === 'fr' ? (sib.gender === 'M' ? 'Fr?re' : 'S?ur') : (sib.gender === 'M' ? 'Brother' : 'Sister')
+              )
             )}
           </div>
         </div>
@@ -113,41 +118,43 @@ export default function FamilyRelationships({ person }: { person: PersonDetail }
         <div className="space-y-3">
           <h3 className="text-xs font-bold uppercase tracking-wider text-[#727973] flex items-center gap-1.5">
             <Heart className="w-3.5 h-3.5 text-[#c69214]" />
-            Conjoint(s) & Alliances
+            {t('person_spouses')}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             {person.spouses.map((spouse) =>
-              renderMemberMiniCard(spouse, 'Conjoint(e)')
+              renderMemberMiniCard(spouse, language === 'fr' ? 'Conjoint(e)' : 'Spouse')
             )}
           </div>
         </div>
       )}
 
-      {/* Children Section grouped by spouse */}
+      {/* Children Section */}
       <div className="space-y-4 pt-2">
         <div className="flex items-center justify-between">
           <h3 className="text-xs font-bold uppercase tracking-wider text-[#727973] flex items-center gap-1.5">
             <Baby className="w-3.5 h-3.5 text-[#173124]" />
-            Enfants & Descendance ({person.children.length})
+            {t('person_children')} ({person.children.length})
           </h3>
           <Link
             href={`/person/add?parent_id=${person.id}&parent_gender=${person.gender}`}
             className="text-xs font-semibold text-[#7a5739] hover:text-[#5f4024] flex items-center gap-1"
           >
             <PlusCircle className="w-3.5 h-3.5" />
-            <span>Ajouter un enfant</span>
+            <span>{t('add_child')}</span>
           </Link>
         </div>
 
         {person.children_by_spouse.length === 0 ? (
           <div className="p-6 text-center bg-[#fff8f4] rounded-2xl border border-[#eae1da]">
-            <p className="text-xs text-[#727973]">Aucun enfant enregistré pour cette personne.</p>
+            <p className="text-xs text-[#727973]">
+              {language === 'fr' ? 'Aucun enfant enregistr? pour cette personne.' : 'No children recorded for this person.'}
+            </p>
             <Link
               href={`/person/add?parent_id=${person.id}&parent_gender=${person.gender}`}
               className="inline-flex items-center gap-1.5 mt-3 px-4 py-2 rounded-xl text-xs font-semibold bg-[#173124] text-white hover:bg-[#2d4739] transition-all"
             >
               <PlusCircle className="w-3.5 h-3.5" />
-              <span>Enregistrer un premier enfant</span>
+              <span>{t('add_child')}</span>
             </Link>
           </div>
         ) : (
@@ -157,13 +164,12 @@ export default function FamilyRelationships({ person }: { person: PersonDetail }
                 key={`children-group-${idx}`}
                 className="p-4 rounded-2xl bg-[#fff8f4] border border-[#eae1da] space-y-3"
               >
-                {/* Spouse header */}
                 <div className="flex items-center gap-2 text-xs text-[#7a5739]">
                   <Heart className="w-3.5 h-3.5 text-[#c69214]" />
                   <span>
                     {group.spouse ? (
                       <>
-                        Enfants avec{' '}
+                        {language === 'fr' ? 'Enfants avec ' : 'Children with '}
                         <Link
                           href={`/person/${group.spouse.id}`}
                           className="font-bold underline text-[#173124]"
@@ -172,15 +178,17 @@ export default function FamilyRelationships({ person }: { person: PersonDetail }
                         </Link>
                       </>
                     ) : (
-                      <span className="italic">Autre union / Second parent non précisé</span>
+                      <span className="italic">{language === 'fr' ? 'Autre union' : 'Other union'}</span>
                     )}
                   </span>
                 </div>
 
-                {/* Children Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {group.children.map((child) =>
-                    renderMemberMiniCard(child, child.gender === 'M' ? 'Fils' : 'Fille')
+                    renderMemberMiniCard(
+                      child,
+                      language === 'fr' ? (child.gender === 'M' ? 'Fils' : 'Fille') : (child.gender === 'M' ? 'Son' : 'Daughter')
+                    )
                   )}
                 </div>
               </div>

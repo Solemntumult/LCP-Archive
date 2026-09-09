@@ -16,16 +16,18 @@ import {
   Compass,
 } from 'lucide-react';
 import { FamilyEvent, EventCategory } from '@/types';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function EventGridCard({
   event,
 }: {
   event: FamilyEvent;
 }) {
+  const { t, language } = useLanguage();
   const photoUrl = event.photo || (event.photos && event.photos.length > 0 ? event.photos[0] : null);
 
   const eventDate = new Date(event.event_date);
-  const formattedDate = eventDate.toLocaleDateString('fr-FR', {
+  const formattedDate = eventDate.toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -34,19 +36,19 @@ export default function EventGridCard({
   const getCategoryBadge = (category: EventCategory) => {
     switch (category) {
       case 'reunion':
-        return { label: 'Rassemblement', bg: 'bg-[#173124] text-white', icon: Users };
+        return { label: t('evform_cat_reunion'), bg: 'bg-[#173124] text-white', icon: Users };
       case 'commemoration':
-        return { label: 'Commémoration', bg: 'bg-[#7a5739] text-white', icon: Award };
+        return { label: t('evform_cat_commemoration'), bg: 'bg-[#7a5739] text-white', icon: Award };
       case 'celebration':
-        return { label: 'Célébration', bg: 'bg-[#c69214] text-white', icon: Sparkles };
+        return { label: t('evform_cat_celebration'), bg: 'bg-[#c69214] text-white', icon: Sparkles };
       case 'birth':
-        return { label: 'Naissance', bg: 'bg-[#2980b9] text-white', icon: Baby };
+        return { label: t('evform_cat_birth'), bg: 'bg-[#2980b9] text-white', icon: Baby };
       case 'wedding':
-        return { label: 'Mariage', bg: 'bg-[#c0392b] text-white', icon: Heart };
+        return { label: t('evform_cat_wedding'), bg: 'bg-[#c0392b] text-white', icon: Heart };
       case 'cultural':
-        return { label: 'Pèlerinage', bg: 'bg-[#496455] text-white', icon: Compass };
+        return { label: t('evform_cat_cultural'), bg: 'bg-[#496455] text-white', icon: Compass };
       default:
-        return { label: 'Événement', bg: 'bg-[#727973] text-white', icon: Calendar };
+        return { label: t('evform_cat_other'), bg: 'bg-[#727973] text-white', icon: Calendar };
     }
   };
 
@@ -89,7 +91,7 @@ export default function EventGridCard({
           {/* Upcoming pill if future */}
           {!event.is_past && (
             <div className="absolute bottom-3 right-3 bg-[#173124] text-white px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-md">
-              {event.days_until === 0 ? "Aujourd'hui" : `Dans ${event.days_until}j`}
+              {event.days_until === 0 ? t('events_today_pill') : `${t('events_days_left')} ${event.days_until}${t('events_days_unit')}`}
             </div>
           )}
         </div>
@@ -98,29 +100,40 @@ export default function EventGridCard({
         <div className="p-5 sm:p-6 space-y-3">
           <div className="flex items-center gap-2 text-xs text-[#727973]">
             <Calendar className="w-3.5 h-3.5 text-[#7a5739]" />
-            <span className="font-medium capitalize">{formattedDate}</span>
+            <span className="capitalize">{formattedDate}</span>
             {event.location && (
               <>
-                <span>•</span>
-                <span className="truncate">{event.location}</span>
+                <span>?</span>
+                <div className="flex items-center gap-1 truncate">
+                  <MapPin className="w-3 h-3 text-[#7a5739]" />
+                  <span className="truncate">{event.location}</span>
+                </div>
               </>
             )}
           </div>
 
-          <h3 className="font-serif font-bold text-lg sm:text-xl text-[#1f1b17] group-hover:text-[#173124] transition-colors leading-snug line-clamp-2">
+          <h3 className="font-serif font-bold text-lg sm:text-xl text-[#1f1b17] group-hover:text-[#7a5739] transition-colors line-clamp-2 leading-snug">
             {event.title}
           </h3>
 
-          <p className="text-xs sm:text-sm text-[#727973] line-clamp-3 leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#424844] line-clamp-2 leading-relaxed">
             {event.description}
           </p>
         </div>
       </div>
 
-      {/* Card Footer Link */}
-      <div className="px-5 sm:px-6 pb-5 pt-2 border-t border-[#f5ece5] flex items-center justify-between text-xs font-semibold text-[#7a5739] group-hover:text-[#173124]">
-        <span>Consulter le récit & photos</span>
-        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+      {/* Footer link */}
+      <div className="px-5 sm:px-6 pb-5 pt-2 flex items-center justify-between text-xs font-bold text-[#173124] border-t border-[#f5ece5] mt-2">
+        <span className="flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+          {t('dash_read_story')} &rarr;
+        </span>
+
+        {event.photos && event.photos.length > 0 && (
+          <span className="text-[11px] font-normal text-[#727973] flex items-center gap-1">
+            <Camera className="w-3 h-3 text-[#7a5739]" />
+            <span>{event.photos.length}</span>
+          </span>
+        )}
       </div>
     </Link>
   );

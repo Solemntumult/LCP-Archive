@@ -5,11 +5,12 @@ import Image from 'next/image';
 import { Heart } from 'lucide-react';
 import { FoyerSpouseData } from '@/types';
 import { isDeceased } from '@/lib/genealogy';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export interface SpouseCardProps {
   spouse: FoyerSpouseData;
-  unionIndex: number; // 0-based index for '1ère union', '2ème union', etc.
-  childrenCount: number; // number of children from this union
+  unionIndex: number;
+  childrenCount: number;
   onSelect?: (spouse: FoyerSpouseData) => void;
   className?: string;
 }
@@ -21,9 +22,9 @@ export default function SpouseCard({
   onSelect,
   className = '',
 }: SpouseCardProps) {
+  const { t, language } = useLanguage();
   const isMale = spouse.gender === 'M';
 
-  // Extract year safely from date strings
   const getYear = (dateStr?: string | null): string | number | null => {
     if (!dateStr) return null;
     const match = dateStr.match(/\b\d{4}\b/);
@@ -39,7 +40,7 @@ export default function SpouseCard({
   const fullName =
     spouse.name ||
     `${spouse.first_name || ''} ${spouse.last_name || ''}`.trim() ||
-    'Conjoint(e)';
+    (language === 'fr' ? 'Conjoint(e)' : 'Spouse');
 
   const firstInitial = spouse.first_name?.[0] || spouse.name?.[0] || '';
   const lastInitial =
@@ -50,8 +51,14 @@ export default function SpouseCard({
   const initials = `${firstInitial}${lastInitial}`.toUpperCase() || '?';
 
   const getUnionLabel = (index: number): string => {
-    if (index === 0) return '1ère union';
-    return `${index + 1}ème union`;
+    if (language === 'fr') {
+      if (index === 0) return '1?re union';
+      return `${index + 1}?me union`;
+    }
+    if (index === 0) return '1st Union';
+    if (index === 1) return '2nd Union';
+    if (index === 2) return '3rd Union';
+    return `${index + 1}th Union`;
   };
 
   return (
@@ -61,7 +68,6 @@ export default function SpouseCard({
         onSelect ? 'cursor-pointer hover:border-[#c69214]/50' : ''
       } ${className}`}
     >
-      {/* Alliance Union Badge */}
       <div className="flex items-center justify-between gap-2 mb-3">
         <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#f5e7c8] text-[#7a5739] text-[11px] font-semibold border border-[#c69214]/30">
           <Heart className="w-3.5 h-3.5 text-[#c69214] fill-[#c69214]/30 shrink-0" />
@@ -69,9 +75,7 @@ export default function SpouseCard({
         </div>
       </div>
 
-      {/* Main Spouse Identity */}
       <div className="flex items-center gap-3">
-        {/* Photo (48x48) or Initials Avatar */}
         <div className="relative shrink-0">
           <div
             className={`w-12 h-12 rounded-full overflow-hidden border-2 flex items-center justify-center font-serif font-bold text-sm shadow-xs relative ${
@@ -95,31 +99,30 @@ export default function SpouseCard({
           {dead && (
             <span
               className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#1f1b17] text-white text-[11px] font-black flex items-center justify-center border-2 border-white shadow-md leading-none select-none z-20"
-              title="Décédé(e)"
+              title={t('deceased')}
             >
-              †
+              ?
             </span>
           )}
         </div>
 
-        {/* Name, Birth Year, Profession */}
         <div className="min-w-0 flex-1">
           <h4 className="font-serif font-bold text-sm text-[#1f1b17] truncate leading-snug flex items-center gap-1">
             <span>{fullName}</span>
-            {dead && <span className="text-[#173124] font-black text-sm">†</span>}
+            {dead && <span className="text-[#173124] font-black text-sm">?</span>}
           </h4>
 
           {deathYear ? (
             <p className="text-xs text-[#727973] font-medium mt-0.5">
-              {birthYear ? `${birthYear} – ${deathYear}` : `Décédé(e) en ${deathYear}`}
+              {birthYear ? `${birthYear} ? ${deathYear}` : `${t('died_in_year')} ${deathYear}`}
             </p>
           ) : dead ? (
             <p className="text-xs text-[#727973] font-medium mt-0.5">
-              {birthYear ? `${birthYear} • Décédé(e)` : 'Décédé(e)'}
+              {birthYear ? `${birthYear} ? ${t('deceased')}` : t('deceased')}
             </p>
           ) : birthYear ? (
             <p className="text-xs text-[#727973] font-medium mt-0.5">
-              {birthYear} • Vivant(e)
+              {birthYear} ? {t('alive')}
             </p>
           ) : null}
 
@@ -131,10 +134,9 @@ export default function SpouseCard({
         </div>
       </div>
 
-      {/* Children Count Footer */}
       <div className="mt-3 pt-2.5 border-t border-[#eae1da]/70 flex items-center justify-between text-[10px] text-[#7a5739] font-medium">
         <span>
-          {childrenCount} enfant{childrenCount > 1 ? 's' : ''} de cette union
+          {childrenCount} {t('children_count_label')} {language === 'fr' ? 'de cette union' : 'from this union'}
         </span>
       </div>
     </div>

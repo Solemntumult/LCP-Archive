@@ -1,31 +1,40 @@
 'use client';
 
 import React from 'react';
-import { Globe } from 'lucide-react';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function LanguageToggle({ className = '' }: { className?: string }) {
-  const { language, toggleLanguage } = useLanguage();
+  const { language, setLanguage } = useLanguage();
 
   return (
-    <button
-      type="button"
-      onClick={toggleLanguage}
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-200 active:scale-95 ${
-        language === 'en'
-          ? 'bg-[#173124] text-white border-[#173124] shadow-xs'
-          : 'bg-[#f5ece5] text-[#424844] border-[#eae1da] hover:bg-[#eae1da] hover:text-[#1f1b17]'
-      } ${className}`}
-      title={language === 'fr' ? 'Switch to English' : 'Passer en Fran?ais'}
-      aria-label="Changer de langue / Change language"
+    <div
+      className={`relative inline-flex items-center bg-[#f5ece5] p-1 rounded-xl border border-[#eae1da] h-9 w-[78px] shrink-0 select-none ${className}`}
+      role="group"
+      aria-label="Language selection"
     >
-      <Globe className="w-3.5 h-3.5 text-[#7a5739] shrink-0" />
-      <span className="uppercase tracking-wider font-mono text-[11px]">
-        {language === 'fr' ? 'FR' : 'EN'}
-      </span>
-      <span className="text-[10px] text-[#8c948e] font-normal hidden lg:inline">
-        {language === 'fr' ? '? EN' : '? FR'}
-      </span>
-    </button>
+      <button
+        type="button"
+        onClick={() => setLanguage('fr')}
+        className={`relative z-10 w-1/2 h-full flex items-center justify-center text-[11px] font-bold font-mono tracking-wider rounded-lg transition-all duration-200 ${
+          language === 'fr'
+            ? 'bg-[#173124] text-white shadow-xs'
+            : 'text-[#5c645e] hover:text-[#173124]'
+        }`}
+      >
+        FR
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setLanguage('en')}
+        className={`relative z-10 w-1/2 h-full flex items-center justify-center text-[11px] font-bold font-mono tracking-wider rounded-lg transition-all duration-200 ${
+          language === 'en'
+            ? 'bg-[#173124] text-white shadow-xs'
+            : 'text-[#5c645e] hover:text-[#173124]'
+        }`}
+      >
+        EN
+      </button>
+    </div>
   );
 }

@@ -2,18 +2,17 @@
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
-  ArrowLeft,
   Search,
   Plus,
   GitFork,
   Sparkles,
-  Users,
   TreeDeciduous,
 } from 'lucide-react';
 import { TreeNodeData, FoyerData } from '@/types';
 import Breadcrumb from './Breadcrumb';
 import FoyerTreeGraph from './FoyerTreeGraph';
 import ContextualAddMemberModal from './ContextualAddMemberModal';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface FoyerExplorerProps {
   allPersons: TreeNodeData[];
@@ -22,19 +21,14 @@ interface FoyerExplorerProps {
   highlightPersonId?: number;
 }
 
-/**
- * FoyerExplorer — Root Explorer for the "Généalogie par Foyer" paradigm.
- * 
- * Renders each household as a true genealogical graph with SVG branches.
- * Navigating to an offspring deploys their individual family tree graph.
- */
 export default function FoyerExplorer({
   allPersons,
   onDataRefresh,
   initialFoyerId,
   highlightPersonId,
 }: FoyerExplorerProps) {
-  // Find the patriarch (root person)
+  const { t, language } = useLanguage();
+
   const patriarchId = useMemo(() => {
     const patriarch = allPersons.find(
       (p) => !p.father_id && !p.mother_id && p.is_blood
@@ -65,9 +59,6 @@ export default function FoyerExplorer({
   // Ref for search click-outside
   const searchRef = useRef<HTMLDivElement>(null);
 
-  // ==========================================
-  // DATA FETCHING
-  // ==========================================
   const fetchFoyer = useCallback(async (personId: number) => {
     try {
       const res = await fetch(`/api/foyer?personId=${personId}`);
@@ -80,7 +71,6 @@ export default function FoyerExplorer({
     }
   }, []);
 
-  // Load initial foyer
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -91,9 +81,6 @@ export default function FoyerExplorer({
     load();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ==========================================
-  // NAVIGATION
-  // ==========================================
   const deployToChild = useCallback(
     async (childId: number) => {
       setTransitioning(true);
@@ -120,13 +107,11 @@ export default function FoyerExplorer({
     setTransitioning(true);
     await new Promise((resolve) => setTimeout(resolve, 200));
 
-    const newHistory = [...navigationHistory];
-    const previousId = newHistory.pop()!;
+    const prevId = navigationHistory[navigationHistory.length - 1];
+    setNavigationHistory((prev) => prev.slice(0, -1));
+    setActivePersonId(prevId);
 
-    setNavigationHistory(newHistory);
-    setActivePersonId(previousId);
-
-    const data = await fetchFoyer(previousId);
+    const data = await fetchFoyer(prevId);
     setFoyerData(data);
     setAnimKey((k) => k + 1);
     setTransitioning(false);
@@ -134,15 +119,14 @@ export default function FoyerExplorer({
 
   const navigateToPerson = useCallback(
     async (personId: number) => {
-      if (personId === activePersonId) return;
-
       setTransitioning(true);
       await new Promise((resolve) => setTimeout(resolve, 200));
 
-      const idx = navigationHistory.indexOf(personId);
-      if (idx !== -1) {
-        setNavigationHistory(navigationHistory.slice(0, idx));
-      }
+      setNavigationHistory((prev) => {
+        const idx = prev.indexOf(personId);
+        if (idx !== -1) return prev.slice(0, idx);
+        return prev;
+      });
 
       setActivePersonId(personId);
       const data = await fetchFoyer(personId);
@@ -150,12 +134,11 @@ export default function FoyerExplorer({
       setAnimKey((k) => k + 1);
       setTransitioning(false);
     },
-    [activePersonId, navigationHistory, fetchFoyer]
+    [fetchFoyer]
   );
 
   const goHome = useCallback(async () => {
-    if (activePersonId === patriarchId && navigationHistory.length === 0) return;
-
+    if (activePersonId === patriarchId) return;
     setTransitioning(true);
     await new Promise((resolve) => setTimeout(resolve, 200));
 
@@ -166,30 +149,26 @@ export default function FoyerExplorer({
     setFoyerData(data);
     setAnimKey((k) => k + 1);
     setTransitioning(false);
-  }, [activePersonId, patriarchId, navigationHistory, fetchFoyer]);
-
-  // ==========================================
-  // SEARCH & NAMES
-  // ==========================================
-  const searchResults = useMemo(() => {
-    if (searchQuery.trim().length < 2) return [];
-    const q = searchQuery.toLowerCase();
-    return allPersons
-      .filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          (p.profession || '').toLowerCase().includes(q)
-      )
-      .slice(0, 8);
-  }, [searchQuery, allPersons]);
+  }, [activePersonId, patriarchId, fetchFoyer]);
 
   const personNames = useMemo(() => {
     const map: Record<number, string> = {};
-    allPersons.forEach((p) => {
-      map[p.id] = p.name;
-    });
+    for (const p of allPersons) {
+      map[p.id] = p.name || `${p.first_name} ${p.last_name}`;
+    }
     return map;
   }, [allPersons]);
+
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const q = searchQuery.toLowerCase().trim();
+    return allPersons
+      .filter((p) => {
+        const name = `${p.first_name} ${p.last_name} ${p.maiden_name || ''}`.toLowerCase();
+        return name.includes(q) || (p.profession && p.profession.toLowerCase().includes(q));
+      })
+      .slice(0, 8);
+  }, [searchQuery, allPersons]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -201,15 +180,12 @@ export default function FoyerExplorer({
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // ==========================================
-  // RENDER
-  // ==========================================
   if (loading) {
     return (
       <div className="w-full min-h-[500px] rounded-3xl bg-white border border-[#eae1da] flex flex-col items-center justify-center text-[#727973] vintage-shadow">
         <div className="animate-spin rounded-full h-10 w-10 border-4 border-[#173124] border-t-transparent mb-3" />
         <p className="font-serif text-base text-[#1f1b17]">
-          Génération du graphe généalogique...
+          {t('loading')}
         </p>
       </div>
     );
@@ -220,10 +196,10 @@ export default function FoyerExplorer({
       <div className="p-12 text-center bg-white rounded-3xl border border-[#eae1da] space-y-3 vintage-shadow">
         <GitFork className="w-14 h-14 mx-auto text-[#c2c8c2]" />
         <h2 className="font-serif text-2xl font-bold text-[#1f1b17]">
-          Aucun foyer trouvé
+          {t('no_results')}
         </h2>
         <p className="text-sm text-[#727973] max-w-md mx-auto">
-          Impossible de charger le graphe. Vérifiez que des membres sont enregistrés.
+          {language === 'fr' ? 'Impossible de charger le graphe. V?rifiez que des membres sont enregistr?s.' : 'Unable to load graph. Ensure members are recorded in database.'}
         </p>
       </div>
     );
@@ -241,7 +217,7 @@ export default function FoyerExplorer({
 
   return (
     <div className="space-y-4">
-      {/* ── Top Navigation Bar: Breadcrumb + Search + Add ── */}
+      {/* ?? Top Navigation Bar: Breadcrumb + Search + Add ?? */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2.5 min-w-0 flex-wrap">
           <Breadcrumb
@@ -261,7 +237,7 @@ export default function FoyerExplorer({
               <Search className="w-3.5 h-3.5 text-[#7a5739] shrink-0" />
               <input
                 type="text"
-                placeholder="Chercher un foyer..."
+                placeholder={t('tree_search_jump')}
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -289,11 +265,11 @@ export default function FoyerExplorer({
                         {p.name}
                       </p>
                       <p className="text-[10px] text-[#727973]">
-                        Génération {p.generation + 1}
+                        {t('generation')} {p.generation + 1}
                       </p>
                     </div>
                     <span className="text-[10px] text-[#7a5739] font-medium shrink-0 ml-2">
-                      Ouvrir foyer →
+                      {t('explore_foyer')} ?
                     </span>
                   </button>
                 ))}
@@ -307,12 +283,12 @@ export default function FoyerExplorer({
             className="px-3.5 py-2 rounded-2xl bg-[#173124] hover:bg-[#2d4739] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 active:scale-95 shrink-0"
           >
             <Plus className="w-3.5 h-3.5 text-[#98b5a3]" />
-            <span className="hidden sm:inline">Ajouter membre</span>
+            <span className="hidden sm:inline">{t('nav_add_member')}</span>
           </button>
         </div>
       </div>
 
-      {/* ── Foyer Header Banner ── */}
+      {/* ?? Foyer Header Banner ?? */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-3xl bg-gradient-to-br from-[#173124] via-[#234332] to-[#2d4739] text-white shadow-lg">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center text-[#fdcea9] border border-white/20 shadow-md shrink-0">
@@ -321,20 +297,24 @@ export default function FoyerExplorer({
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/15 text-[10px] font-bold text-[#b0cdbb] mb-0.5">
               <Sparkles className="w-3 h-3 text-[#fdcea9]" />
-              <span>Arbre Généalogique • Foyer de Génération {person.generation + 1}</span>
+              <span>{language === 'fr' ? `Arbre G?n?alogique ? Foyer de G?n?ration ${person.generation + 1}` : `Family Tree ? Generation ${person.generation + 1} Household`}</span>
             </div>
             <h2 className="font-serif font-black text-lg sm:text-2xl tracking-tight text-white">
-              Arbre de la Famille {person.last_name} ({person.first_name})
+              {language === 'fr' ? `Arbre de la Famille ${person.last_name} (${person.first_name})` : `${person.last_name} Family Tree (${person.first_name})`}
             </h2>
           </div>
         </div>
 
         <div className="text-xs text-[#eae1da]/80 font-medium">
-          Cliquez sur <strong className="text-[#fdcea9]">Déployer</strong> sous un enfant pour faire apparaître son propre arbre.
+          {language === 'fr' ? (
+            <>Cliquez sur <strong className="text-[#fdcea9]">D?ployer</strong> sous un enfant pour faire appara?tre son propre arbre.</>
+          ) : (
+            <>Click <strong className="text-[#fdcea9]">Expand</strong> below a child to open their family tree.</>
+          )}
         </div>
       </div>
 
-      {/* ── Real Genealogical Tree Graph Canvas ── */}
+      {/* ?? Real Genealogical Tree Graph Canvas ?? */}
       <div
         key={`foyer-graph-${animKey}`}
         className={transitioning ? 'foyer-exit' : 'foyer-enter'}
@@ -351,7 +331,7 @@ export default function FoyerExplorer({
         />
       </div>
 
-      {/* ── Contextual Add Member Modal ── */}
+      {/* ?? Contextual Add Member Modal ?? */}
       <ContextualAddMemberModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}

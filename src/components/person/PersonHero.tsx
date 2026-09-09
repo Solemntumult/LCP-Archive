@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -5,8 +7,6 @@ import {
   Calendar,
   MapPin,
   Briefcase,
-  User,
-  Heart,
   GitFork,
   Edit3,
   Trash2,
@@ -15,6 +15,7 @@ import {
   Award,
 } from 'lucide-react';
 import { PersonDetail } from '@/types';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function PersonHero({
   person,
@@ -23,13 +24,14 @@ export default function PersonHero({
   person: PersonDetail;
   onDelete?: () => void;
 }) {
+  const { t, language } = useLanguage();
   const isMale = person.gender === 'M';
   const initials = `${person.first_name[0] || ''}${person.last_name[0] || ''}`;
 
   const formatDate = (dateStr?: string | null) => {
     if (!dateStr) return null;
     try {
-      return new Date(dateStr).toLocaleDateString('fr-FR', {
+      return new Date(dateStr).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
@@ -69,9 +71,9 @@ export default function PersonHero({
             {!person.is_alive && (
               <span
                 className="absolute bottom-0 right-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#1f1b17] text-white text-base sm:text-lg font-black flex items-center justify-center border-2.5 border-white shadow-lg leading-none select-none z-20"
-                title="Décédé(e)"
+                title={t('deceased')}
               >
-                †
+                ?
               </span>
             )}
           </div>
@@ -85,11 +87,11 @@ export default function PersonHero({
                   : 'bg-[#fdedec] text-[#c0392b] border border-[#c0392b]/30'
               }`}
             >
-              {isMale ? 'Homme' : 'Femme'}
+              {isMale ? t('male') : t('female')}
             </span>
 
             <span className="text-xs font-semibold px-3 py-1 rounded-full bg-[#f5ece5] text-[#795638] border border-[#eae1da]">
-              Génération {person.generation + 1}
+              {t('generation')} {person.generation + 1}
             </span>
           </div>
         </div>
@@ -101,14 +103,14 @@ export default function PersonHero({
               <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#173124] tracking-tight flex items-center gap-2 justify-center md:justify-start">
                 <span>{person.full_name}</span>
                 {!person.is_alive && (
-                  <span className="text-[#173124] text-2xl sm:text-3xl font-black select-none" title="Décédé(e)">
-                    †
+                  <span className="text-[#173124] text-2xl sm:text-3xl font-black select-none" title={t('deceased')}>
+                    ?
                   </span>
                 )}
               </h1>
               {person.spouse_of && (
                 <span className="text-xs bg-[#fdcea9] text-[#795638] font-semibold px-2.5 py-0.5 rounded-full">
-                  Par alliance
+                  {t('by_marriage')}
                 </span>
               )}
             </div>
@@ -127,10 +129,10 @@ export default function PersonHero({
             <div className="p-3.5 rounded-2xl bg-[#fff8f4] border border-[#eae1da]">
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#7a5739]">
                 <Calendar className="w-4 h-4" />
-                <span>Naissance</span>
+                <span>{t('birth')}</span>
               </div>
               <p className="text-sm font-medium text-[#1f1b17] mt-1">
-                {formatDate(person.birth_date) || 'Date inconnue'}
+                {formatDate(person.birth_date) || t('unknown_date')}
               </p>
               {person.birth_place && (
                 <p className="text-xs text-[#727973] flex items-center gap-1 mt-0.5">
@@ -143,13 +145,13 @@ export default function PersonHero({
             <div className="p-3.5 rounded-2xl bg-[#fff8f4] border border-[#eae1da]">
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#7a5739]">
                 <Clock className="w-4 h-4" />
-                <span>Décès / Statut</span>
+                <span>{t('death_status')}</span>
               </div>
               <p className="text-sm font-medium text-[#1f1b17] mt-1">
                 {person.is_alive ? (
-                  <span className="text-[#173124] font-semibold">En vie</span>
+                  <span className="text-[#173124] font-semibold">{t('alive')}</span>
                 ) : (
-                  formatDate(person.death_date) || 'Décédé(e)'
+                  formatDate(person.death_date) || t('deceased')
                 )}
               </p>
               {person.death_place && (
@@ -164,13 +166,13 @@ export default function PersonHero({
               <div className="p-3.5 rounded-2xl bg-[#fff8f4] border border-[#eae1da]">
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#7a5739]">
                   <Award className="w-4 h-4" />
-                  <span>Âge</span>
+                  <span>{t('age')}</span>
                 </div>
                 <p className="text-sm font-bold text-[#1f1b17] mt-1">
-                  {person.age} ans
+                  {person.age} {t('years_old')}
                   {!person.is_alive && (
                     <span className="text-xs font-normal text-[#727973] ml-1">
-                      (au décès)
+                      {t('at_death')}
                     </span>
                   )}
                 </p>
@@ -191,7 +193,7 @@ export default function PersonHero({
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[#173124] text-white hover:bg-[#2d4739] shadow-xs transition-all"
             >
               <GitFork className="w-3.5 h-3.5 text-[#98b5a3]" />
-              <span>Voir dans l&apos;arbre</span>
+              <span>{t('view_in_tree')}</span>
             </Link>
 
             <Link
@@ -199,7 +201,7 @@ export default function PersonHero({
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[#fdcea9] text-[#795638] hover:bg-[#ebbe99] shadow-xs transition-all"
             >
               <PlusCircle className="w-3.5 h-3.5" />
-              <span>Ajouter un enfant</span>
+              <span>{t('add_child')}</span>
             </Link>
 
             <Link
@@ -207,17 +209,17 @@ export default function PersonHero({
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-white border border-[#eae1da] text-[#424844] hover:bg-[#f5ece5] transition-all"
             >
               <Edit3 className="w-3.5 h-3.5 text-[#7a5739]" />
-              <span>Modifier</span>
+              <span>{t('edit')}</span>
             </Link>
 
             {onDelete && (
               <button
                 onClick={onDelete}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#ba1a1a] hover:bg-[#ffdad6]/40 transition-all ml-auto"
-                title="Supprimer la fiche"
+                title={t('delete')}
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                <span>Supprimer</span>
+                <span>{t('delete')}</span>
               </button>
             )}
           </div>
