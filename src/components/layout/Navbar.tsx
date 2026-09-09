@@ -4,18 +4,22 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { GitFork, Users, PlusCircle, Search, Menu, X, Sparkles, Home, Calendar } from 'lucide-react';
+import { GitFork, PlusCircle, Search, Menu, X, Home, Calendar, HelpCircle } from 'lucide-react';
 import SearchModal from '@/components/search/SearchModal';
+import LanguageToggle from '@/components/common/LanguageToggle';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function Navbar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const { t } = useLanguage();
 
   const navLinks = [
-    { href: '/', label: 'Tableau de bord', icon: Home },
-    { href: '/tree', label: 'Arbre Généalogique', icon: GitFork },
-    { href: '/events', label: 'Événements & Récits', icon: Calendar },
+    { href: '/', label: t('nav_dashboard'), icon: Home },
+    { href: '/tree', label: t('nav_tree'), icon: GitFork },
+    { href: '/events', label: t('nav_events'), icon: Calendar },
+    { href: '/help', label: t('nav_help'), icon: HelpCircle },
   ];
 
   return (
@@ -39,7 +43,7 @@ export default function Navbar() {
                   LCP Archives
                 </span>
                 <p className="text-[11px] sm:text-xs text-[#727973] hidden sm:block truncate">
-                  Arbre Généalogique & Mémoire Familiale
+                  {t('nav_subtitle')}
                 </p>
               </div>
             </Link>
@@ -68,15 +72,18 @@ export default function Navbar() {
 
             {/* Right Action Buttons */}
             <div className="flex items-center gap-2 sm:gap-3">
+              {/* Language Switcher */}
+              <LanguageToggle />
+
               {/* Quick Search Button */}
               <button
                 onClick={() => setSearchOpen(true)}
                 type="button"
                 className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-xs sm:text-sm text-[#727973] bg-[#f5ece5] hover:bg-[#eae1da] hover:text-[#1f1b17] rounded-xl transition-all border border-[#eae1da]"
-                title="Rechercher (Ctrl+K)"
+                title={`${t('nav_search')} (Ctrl+K)`}
               >
                 <Search className="w-4 h-4 text-[#7a5739]" />
-                <span className="hidden sm:inline">Rechercher</span>
+                <span className="hidden sm:inline">{t('nav_search')}</span>
                 <kbd className="hidden lg:inline-block text-[10px] font-mono bg-white text-[#727973] border border-[#c2c8c2] px-1.5 py-0.5 rounded shadow-2xs">
                   ⌘K
                 </kbd>
@@ -88,7 +95,7 @@ export default function Navbar() {
                 className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-[#7a5739] text-white hover:bg-[#5f4024] shadow-xs transition-all active:scale-95 shrink-0"
               >
                 <PlusCircle className="w-4 h-4" />
-                <span className="hidden sm:inline">Ajouter</span>
+                <span className="hidden sm:inline">{t('nav_add_member')}</span>
                 <span className="sm:hidden">+</span>
               </Link>
 

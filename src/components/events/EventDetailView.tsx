@@ -24,10 +24,13 @@ import {
   Maximize2,
   Play,
   Pause,
+  Film,
+  Video
 } from 'lucide-react';
 import { FamilyEvent, EventCategory, Person } from '@/types';
 import EventFormModal from './EventFormModal';
 import { removeLocalStoredEvent } from '@/lib/eventStorage';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function EventDetailView({
   initialEvent,
@@ -37,6 +40,7 @@ export default function EventDetailView({
   allPersons?: Person[];
 }) {
   const router = useRouter();
+  const { t, language } = useLanguage();
   const [event, setEvent] = useState<FamilyEvent>(initialEvent);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -48,6 +52,7 @@ export default function EventDetailView({
     setMounted(true);
   }, []);
 
+  // Photos list
   const photos = useMemo(() => {
     return event.photos && event.photos.length > 0
       ? event.photos
@@ -56,10 +61,18 @@ export default function EventDetailView({
       : [];
   }, [event.photos, event.photo]);
 
-  // 1. Story photos: Select up to 5 random photos (or all available if <= 5)
+  // Videos list
+  const videos = useMemo(() => {
+    return event.videos && event.videos.length > 0
+      ? event.videos
+      : event.video
+      ? [event.video]
+      : [];
+  }, [event.videos, event.video]);
+
+  // 1. Story photos: Strictly pick from PHOTOS only (never videos!)
   const storyPhotos = useMemo(() => {
     if (photos.length <= 5) return photos;
-    // Fisher-Yates sample of 5 items
     const shuffled = [...photos].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, 5);
   }, [photos]);
@@ -78,7 +91,7 @@ export default function EventDetailView({
     return () => clearInterval(timer);
   }, [storyPhotos.length, isStoryPaused]);
 
-  // 3. Lightbox modal state for viewing full-size photo without scroll
+  // 3. Lightbox modal state for viewing full-size photo
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   // Lock body scroll when lightbox is open
@@ -118,7 +131,7 @@ export default function EventDetailView({
   }, [handleKeyDown]);
 
   const eventDate = new Date(event.event_date);
-  const formattedDate = eventDate.toLocaleDateString('fr-FR', {
+  const formattedDate = eventDate.toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -128,19 +141,19 @@ export default function EventDetailView({
   const getCategoryBadge = (category: EventCategory) => {
     switch (category) {
       case 'reunion':
-        return { label: 'Rassemblement Familial', bg: 'bg-[#173124] text-white', icon: Users };
+        return { label: t('evform_cat_reunion'), bg: 'bg-[#173124] text-white', icon: Users };
       case 'commemoration':
-        return { label: 'Commémoration & Hommage', bg: 'bg-[#7a5739] text-white', icon: Award };
+        return { label: t('evform_cat_commemoration'), bg: 'bg-[#7a5739] text-white', icon: Award };
       case 'celebration':
-        return { label: 'Célébration & Fête', bg: 'bg-[#c69214] text-white', icon: Sparkles };
+        return { label: t('evform_cat_celebration'), bg: 'bg-[#c69214] text-white', icon: Sparkles };
       case 'birth':
-        return { label: 'Naissance & Anniversaire', bg: 'bg-[#2980b9] text-white', icon: Baby };
+        return { label: t('evform_cat_birth'), bg: 'bg-[#2980b9] text-white', icon: Baby };
       case 'wedding':
-        return { label: 'Mariage & Alliance', bg: 'bg-[#c0392b] text-white', icon: Heart };
+        return { label: t('evform_cat_wedding'), bg: 'bg-[#c0392b] text-white', icon: Heart };
       case 'cultural':
-        return { label: 'Pèlerinage & Racines', bg: 'bg-[#496455] text-white', icon: Compass };
+        return { label: t('evform_cat_cultural'), bg: 'bg-[#496455] text-white', icon: Compass };
       default:
-        return { label: 'Événement', bg: 'bg-[#727973] text-white', icon: Calendar };
+        return { label: t('evform_cat_other'), bg: 'bg-[#727973] text-white', icon: Calendar };
     }
   };
 
@@ -162,87 +175,89 @@ export default function EventDetailView({
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      const res = await fetch(`/api/events/${event.id}`, { method: 'DELETE' });
-      if (res.ok) {
-        removeLocalStoredEvent(event.id);
-        router.push('/events');
+      const res = await fetch(`/api/events/${event.id}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        throw new Error('?chec de la suppression');
       }
+      removeLocalStoredEvent(event.id);
+      router.push('/events');
+      router.refresh();
     } catch (err) {
-      console.error('Failed to delete event:', err);
+      console.error('Error deleting event:', err);
+      alert('Erreur lors de la suppression de l\'?v?nement.');
       setDeleting(false);
     }
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
-      {/* 1. Top Navigation & Action Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        {/* Breadcrumb Navigation */}
-        <nav className="flex items-center gap-2 text-xs text-[#727973]">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in">
+      {/* Top Breadcrumb & Actions Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#eae1da]">
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-[#727973]">
           <Link href="/" className="hover:text-[#173124] transition-colors">
-            Accueil
+            {t('nav_dashboard')}
           </Link>
           <ChevronRight className="w-3.5 h-3.5" />
           <Link href="/events" className="hover:text-[#173124] transition-colors">
-            Événements
+            {t('nav_events')}
           </Link>
           <ChevronRight className="w-3.5 h-3.5" />
-          <span className="font-semibold text-[#1f1b17] truncate max-w-xs">{event.title}</span>
-        </nav>
+          <span className="font-semibold text-[#173124] truncate max-w-[200px] sm:max-w-xs">
+            {event.title}
+          </span>
+        </div>
 
-        {/* Edit & Delete Action Buttons */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={() => setIsEditModalOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[#173124] text-white hover:bg-[#2d4739] shadow-xs transition-all active:scale-95"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#eae1da] bg-white text-xs font-semibold text-[#424844] hover:bg-[#f5ece5] hover:text-[#173124] shadow-2xs transition-all active:scale-95"
           >
-            <Edit3 className="w-3.5 h-3.5" />
-            <span>Modifier l&apos;événement</span>
+            <Edit3 className="w-3.5 h-3.5 text-[#7a5739]" />
+            <span>{t('edit')}</span>
           </button>
 
           <button
+            type="button"
             onClick={() => setIsDeleteModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#ba1a1a] bg-[#ffdad6]/40 hover:bg-[#ffdad6] transition-all"
-            title="Supprimer l'événement"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#ffdad6] bg-[#fff8f4] text-xs font-semibold text-[#ba1a1a] hover:bg-[#ffdad6] shadow-2xs transition-all active:scale-95"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Supprimer</span>
+            <span>{t('delete')}</span>
           </button>
         </div>
       </div>
 
-      {/* 2. Main Hero Banner with Dynamic 5-Second Story Header */}
-      <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#eae1da] vintage-shadow space-y-6">
-        {/* Category & Date Metadata */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <span className={`inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider px-3.5 py-1 rounded-full shadow-2xs ${badge.bg}`}>
+      {/* Main Header & Story Media Box */}
+      <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#eae1da] vintage-shadow space-y-8">
+        {/* Category Badge & Meta */}
+        <div className="flex flex-wrap items-center gap-3">
+          <span
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-2xs ${badge.bg}`}
+          >
             <BadgeIcon className="w-3.5 h-3.5" />
             <span>{badge.label}</span>
           </span>
 
-          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#f5ece5] text-[#173124] border border-[#eae1da]">
-            <Calendar className="w-3.5 h-3.5 text-[#7a5739]" />
+          <div className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#7a5739] bg-[#faebe0] px-3 py-1.5 rounded-full">
+            <Calendar className="w-3.5 h-3.5" />
             <span className="capitalize">{formattedDate}</span>
-          </span>
+          </div>
 
           {event.location && (
-            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#fff8f4] text-[#7a5739] border border-[#eae1da]">
-              <MapPin className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-1.5 text-xs sm:text-sm text-[#5c645e] bg-[#f5ece5] px-3 py-1.5 rounded-full">
+              <MapPin className="w-3.5 h-3.5 text-[#7a5739]" />
               <span>{event.location}</span>
-            </span>
-          )}
-
-          {!event.is_past && (
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#ccead6] text-[#062014]">
-              {event.days_until === 0 ? "Aujourd'hui !" : `Dans ${event.days_until} jours`}
-            </span>
+            </div>
           )}
         </div>
 
-        {/* Dynamic Story Frame (Auto 5-Second Slideshow with Story Progress Bars) */}
+        {/* 1. Top Story Slideshow (STRICTLY PHOTOS ONLY) */}
         {storyPhotos.length > 0 && (
           <div
-            className="relative w-full h-72 sm:h-96 md:h-[420px] rounded-3xl overflow-hidden bg-[#0e0e0e] border-2 border-[#eae1da] shadow-lg vintage-photo-frame group select-none cursor-pointer"
+            className="relative w-full aspect-16/9 sm:aspect-21/9 rounded-3xl overflow-hidden bg-[#0c0d0c] shadow-lg border border-[#eae1da] group cursor-pointer"
             onMouseEnter={() => setIsStoryPaused(true)}
             onMouseLeave={() => setIsStoryPaused(false)}
             onClick={() => {
@@ -251,7 +266,7 @@ export default function EventDetailView({
               setLightboxIndex(idxInFull >= 0 ? idxInFull : 0);
             }}
           >
-            {/* Story Top Progress Bars (5s per slide) */}
+            {/* Story Top Progress Bars */}
             {storyPhotos.length > 1 && (
               <div className="absolute top-3 left-4 right-4 z-20 flex items-center gap-1.5 pointer-events-none">
                 {storyPhotos.map((_, i) => (
@@ -298,7 +313,7 @@ export default function EventDetailView({
               sizes="(max-width: 1024px) 100vw, 1000px"
             />
 
-            {/* Manual Story Step Controls */}
+            {/* Step Controls */}
             {storyPhotos.length > 1 && (
               <>
                 <button
@@ -308,7 +323,7 @@ export default function EventDetailView({
                     setStoryIndex((prev) => (prev - 1 + storyPhotos.length) % storyPhotos.length);
                   }}
                   className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/80 text-white border border-white/20 transition-all opacity-0 group-hover:opacity-100 z-10"
-                  aria-label="Précédent"
+                  aria-label="Pr?c?dent"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
@@ -327,10 +342,10 @@ export default function EventDetailView({
               </>
             )}
 
-            {/* Tap to View Fullscreen Hint */}
+            {/* Tap hint */}
             <div className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-[11px] text-white font-medium flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
               <Maximize2 className="w-3.5 h-3.5" />
-              <span>Agrandir la photo</span>
+              <span>{language === 'fr' ? 'Agrandir la photo' : 'View full size'}</span>
             </div>
           </div>
         )}
@@ -340,13 +355,13 @@ export default function EventDetailView({
           {event.title}
         </h1>
 
-        {/* Narrative Description with Drop-Cap Styling */}
+        {/* Narrative Description */}
         <div className="pt-2 text-base sm:text-lg text-[#424844] leading-relaxed whitespace-pre-line border-t border-[#f5ece5]">
           <p className="drop-cap">{event.description}</p>
         </div>
       </div>
 
-      {/* 3. Rich Photo Gallery (Up to 20 Photos Grid) */}
+      {/* 2. Rich Photo Gallery */}
       {photos.length > 0 && (
         <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#eae1da] vintage-shadow space-y-6">
           <div className="flex items-center justify-between pb-4 border-b border-[#f5ece5]">
@@ -356,10 +371,10 @@ export default function EventDetailView({
               </div>
               <div>
                 <h2 className="font-serif font-bold text-2xl text-[#173124]">
-                  Galerie de photographies d&apos;archive
+                  {t('events_gallery_photos')}
                 </h2>
                 <p className="text-xs text-[#727973] mt-0.5">
-                  Cliquez sur n&apos;importe quelle photo pour l&apos;afficher en grand.
+                  {language === 'fr' ? 'Cliquez sur une photo pour l\'afficher en grand' : 'Click on any photo to view in full size'}
                 </p>
               </div>
             </div>
@@ -368,11 +383,10 @@ export default function EventDetailView({
               onClick={() => setIsEditModalOpen(true)}
               className="text-xs font-semibold text-[#173124] hover:underline"
             >
-              + Gérer les photos ({photos.length}/20)
+              + {language === 'fr' ? 'G?rer les photos' : 'Manage photos'} ({photos.length}/20)
             </button>
           </div>
 
-          {/* Photos Grid Thumbnails */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {photos.map((photoUrl, idx) => (
               <div
@@ -388,7 +402,6 @@ export default function EventDetailView({
                   sizes="(max-width: 768px) 50vw, 25vw"
                 />
 
-                {/* Hover overlay */}
                 <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
                   <div className="w-9 h-9 rounded-full bg-black/60 flex items-center justify-center backdrop-blur-xs">
                     <Maximize2 className="w-4 h-4" />
@@ -400,7 +413,52 @@ export default function EventDetailView({
         </div>
       )}
 
-      {/* 4. Fullscreen Lightbox Modal (Centered with Portal, Zero Scrolling Required) */}
+      {/* 3. Video Gallery (Vid?os souvenirs compress?es) */}
+      {videos.length > 0 && (
+        <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#eae1da] vintage-shadow space-y-6">
+          <div className="flex items-center justify-between pb-4 border-b border-[#f5ece5]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-[#faebe0] flex items-center justify-center text-[#7a5739]">
+                <Film className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="font-serif font-bold text-2xl text-[#173124]">
+                  {t('events_gallery_videos')}
+                </h2>
+                <p className="text-xs text-[#727973] mt-0.5">
+                  {language === 'fr' ? 'Vid?os de l\'?v?nement optimis?es pour une lecture instantan?e' : 'Event videos optimized for fast streaming'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setIsEditModalOpen(true)}
+              className="text-xs font-semibold text-[#7a5739] hover:underline"
+            >
+              + {language === 'fr' ? 'G?rer les vid?os' : 'Manage videos'} ({videos.length}/5)
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {videos.map((videoUrl, idx) => (
+              <div
+                key={`gallery-video-${idx}`}
+                className="relative rounded-2xl overflow-hidden aspect-video bg-black border-2 border-[#eae1da] shadow-md flex items-center justify-center"
+              >
+                <video
+                  src={videoUrl}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 4. Fullscreen Lightbox Modal */}
       {mounted &&
         lightboxIndex !== null &&
         photos[lightboxIndex] &&
@@ -409,17 +467,15 @@ export default function EventDetailView({
             className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md animate-fade-in select-none"
             onClick={() => setLightboxIndex(null)}
           >
-            {/* Close Button */}
             <button
               type="button"
               onClick={() => setLightboxIndex(null)}
               className="absolute top-4 right-4 p-2.5 rounded-full bg-white/15 hover:bg-white/25 text-white transition-all z-20 shadow-lg cursor-pointer"
-              aria-label="Fermer"
+              aria-label={t('close')}
             >
               <X className="w-5 h-5" />
             </button>
 
-            {/* Centered Image Card */}
             <div
               className="relative max-w-4xl max-h-[85vh] w-full h-full flex items-center justify-center"
               onClick={(e) => e.stopPropagation()}
@@ -435,7 +491,6 @@ export default function EventDetailView({
                 />
               </div>
 
-              {/* Navigation Arrows */}
               {photos.length > 1 && (
                 <>
                   <button
@@ -447,7 +502,7 @@ export default function EventDetailView({
                       );
                     }}
                     className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 hover:bg-black/90 text-white border border-white/20 transition-all shadow-xl z-20"
-                    aria-label="Précédent"
+                    aria-label="Pr?c?dent"
                   >
                     <ChevronLeft className="w-6 h-6" />
                   </button>
@@ -498,40 +553,34 @@ export default function EventDetailView({
                 </div>
                 <div>
                   <h3 className="font-serif font-bold text-lg text-[#1f1b17]">
-                    Supprimer l&apos;événement
+                    {t('events_confirm_delete_title')}
                   </h3>
-                  <p className="text-xs text-[#727973]">
-                    Cette action supprimera définitivement le récit.
+                  <p className="text-xs text-[#727973] mt-0.5">
+                    {event.title}
                   </p>
                 </div>
               </div>
 
-              <p className="text-xs text-[#727973] leading-relaxed">
-                Êtes-vous sûr de vouloir supprimer l&apos;événement <strong>« {event.title} »</strong> de l&apos;archive familiale ?
+              <p className="text-sm text-[#424844] leading-relaxed">
+                {t('events_confirm_delete_desc')}
               </p>
 
               <div className="flex items-center justify-end gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsDeleteModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-[#eae1da] text-xs font-semibold text-[#424844] hover:bg-[#f5ece5]"
+                  disabled={deleting}
+                  className="px-4 py-2.5 rounded-xl border border-[#eae1da] text-xs font-semibold text-[#424844] hover:bg-[#f5ece5] transition-all"
                 >
-                  Annuler
+                  {t('cancel')}
                 </button>
                 <button
                   type="button"
                   onClick={handleDelete}
                   disabled={deleting}
-                  className="px-5 py-2 rounded-xl bg-[#ba1a1a] text-white text-xs font-bold hover:bg-[#93000a] shadow-md transition-all flex items-center gap-2"
+                  className="px-5 py-2.5 rounded-xl bg-[#ba1a1a] text-white text-xs font-bold hover:bg-[#93000a] shadow-md transition-all active:scale-95 disabled:opacity-50"
                 >
-                  {deleting ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <Trash2 className="w-4 h-4" />
-                      <span>Confirmer la suppression</span>
-                    </>
-                  )}
+                  {deleting ? 'Suppression...' : t('events_delete_confirm_btn')}
                 </button>
               </div>
             </div>

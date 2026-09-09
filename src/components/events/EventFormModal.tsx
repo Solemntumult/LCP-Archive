@@ -3,16 +3,33 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
-import { X, Calendar, MapPin, Sparkles, Image as ImageIcon, Upload, Trash2, Check, Loader2, Crop, AlertCircle } from 'lucide-react';
+import {
+  X,
+  Calendar,
+  MapPin,
+  Sparkles,
+  Image as ImageIcon,
+  Upload,
+  Trash2,
+  Check,
+  Loader2,
+  Crop,
+  AlertCircle,
+  Video,
+  Film,
+  Play
+} from 'lucide-react';
 import { FamilyEvent, FamilyEventFormData, EventCategory } from '@/types';
 import ImageAdjusterModal from '@/components/ui/ImageAdjusterModal';
 import { saveLocalStoredEvent } from '@/lib/eventStorage';
+import { compressVideoForWeb } from '@/lib/videoCompression';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 const MAX_PHOTOS = 20;
+const MAX_VIDEOS = 5;
 
 /**
- * Redimensionne et optimise automatiquement une image côté client
- * pour un chargement instantané et un affichage net sans dépasser la mémoire.
+ * Optimizes image on client
  */
 async function autoOptimizeImage(file: File): Promise<string> {
   return new Promise((resolve) => {
@@ -20,7 +37,7 @@ async function autoOptimizeImage(file: File): Promise<string> {
     reader.onload = (e) => {
       const img = new window.Image();
       img.onload = () => {
-        const maxDim = 1000;
+        const maxDim = 1200;
         let w = img.width;
         let h = img.height;
 
@@ -40,7 +57,7 @@ async function autoOptimizeImage(file: File): Promise<string> {
         const ctx = canvas.getContext('2d');
         if (ctx) {
           ctx.drawImage(img, 0, 0, w, h);
-          resolve(canvas.toDataURL('image/jpeg', 0.78));
+          resolve(canvas.toDataURL('image/jpeg', 0.8));
         } else {
           resolve(e.target?.result as string);
         }
@@ -64,8 +81,10 @@ export default function EventFormModal({
   initialEvent?: FamilyEvent | null;
   onSuccess: () => void;
 }) {
+  const { t, language } = useLanguage();
   const isEditing = !!initialEvent;
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -92,9 +111,13 @@ export default function EventFormModal({
     location: '',
     photo: '',
     photos: [],
+    video: '',
+    videos: [],
   });
 
   const [uploading, setUploading] = useState(false);
+  const [videoCompressing, setVideoCompressing] = useState(false);
+  const [compressionProgress, setCompressionProgress] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -112,6 +135,8 @@ export default function EventFormModal({
         location: initialEvent.location || '',
         photo: initialEvent.photo || '',
         photos: initialEvent.photos || (initialEvent.photo ? [initialEvent.photo] : []),
+        video: initialEvent.video || '',
+        videos: initialEvent.videos || (initialEvent.video ? [initialEvent.video] : []),
       });
     } else {
       setFormData({
@@ -122,6 +147,8 @@ export default function EventFormModal({
         location: '',
         photo: '',
         photos: [],
+        video: '',
+        videos: [],
       });
     }
     setError(null);
@@ -130,14 +157,18 @@ export default function EventFormModal({
   if (!isOpen) return null;
 
   const currentPhotosCount = formData.photos?.length || 0;
-  const remainingSlots = MAX_PHOTOS - currentPhotosCount;
+  const remainingPhotoSlots = MAX_PHOTOS - currentPhotosCount;
 
+  const currentVideosCount = formData.videos?.length || 0;
+  const remainingVideoSlots = MAX_VIDEOS - currentVideosCount;
+
+  // Handle Photo selection
   const handleFilesSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
     if (!fileList || fileList.length === 0) return;
 
-    if (remainingSlots <= 0) {
-      setError(`Vous avez déjà atteint la limite maximale de ${MAX_PHOTOS} photos pour cet événement.`);
+    if (remainingPhotoSlots <= 0) {
+      setError(language === 'fr' ? `Limite maximale de ${MAX_PHOTOS} photos atteinte.` : `Maximum limit of ${MAX_PHOTOS} photos reached.`);
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
@@ -146,12 +177,7 @@ export default function EventFormModal({
     setError(null);
 
     try {
-      const selectedFiles = Array.from(fileList).slice(0, remainingSlots);
-      if (fileList.length > remainingSlots) {
-        setError(`Limite de ${MAX_PHOTOS} photos : seules les ${remainingSlots} premières ont été ajoutées.`);
-      }
-
-      // Optimiser et convertir directement les images
+      const selectedFiles = Array.from(fileList).slice(0, remainingPhotoSlots);
       const optimizedUrls: string[] = [];
       for (const file of selectedFiles) {
         const optimized = await autoOptimizeImage(file);
@@ -165,11 +191,90 @@ export default function EventFormModal({
         photos: [...(prev.photos || []), ...optimizedUrls].slice(0, MAX_PHOTOS),
       }));
     } catch (err: any) {
-      setError(err.message || 'Échec du chargement des images');
+      setError(err.message || '?chec du chargement des photos');
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  // Handle Video selection & compression
+  const handleVideosSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files;
+    if (!fileList || fileList.length === 0) return;
+
+    if (remainingVideoSlots <= 0) {
+      setError(language === 'fr' ? `Limite de ${MAX_VIDEOS} vid?os atteinte.` : `Maximum limit of ${MAX_VIDEOS} videos reached.`);
+      if (videoInputRef.current) videoInputRef.current.value = '';
+      return;
+    }
+
+    setVideoCompressing(true);
+    setCompressionProgress(5);
+    setError(null);
+
+    try {
+      const filesToProcess = Array.from(fileList).slice(0, remainingVideoSlots);
+      const compressedVideos: string[] = [];
+
+      for (let i = 0; i < filesToProcess.length; i++) {
+        const file = filesToProcess[i];
+        
+        // Compress video
+        const compressedBlob = await compressVideoForWeb(file, {
+          maxWidth: 1280,
+          maxHeight: 720,
+          videoBitrate: 1_200_000,
+          onProgress: (p) => {
+            const overall = Math.round(((i + p / 100) / filesToProcess.length) * 100);
+            setCompressionProgress(overall);
+          },
+        });
+
+        // Upload compressed video to server
+        const uploadData = new FormData();
+        const compressedFile = new File(
+          [compressedBlob],
+          file.name.replace(/\.[^/.]+$/, '') + '.webm',
+          { type: compressedBlob.type || 'video/webm' }
+        );
+        uploadData.append('file', compressedFile);
+
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: uploadData,
+        });
+
+        if (res.ok) {
+          const resJson = await res.json();
+          if (resJson.url) {
+            compressedVideos.push(resJson.url);
+          }
+        } else {
+          // Fallback convert blob to object URL or data URL
+          const reader = new FileReader();
+          const dataUrl = await new Promise<string>((resRead) => {
+            reader.onload = () => resRead(reader.result as string);
+            reader.readAsDataURL(compressedBlob);
+          });
+          compressedVideos.push(dataUrl);
+        }
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        videos: [...(prev.videos || []), ...compressedVideos].slice(0, MAX_VIDEOS),
+        video: prev.video || compressedVideos[0] || '',
+      }));
+    } catch (err: any) {
+      setError(err.message || 'Erreur lors de la compression de la vid?o');
+    } finally {
+      setVideoCompressing(false);
+      setCompressionProgress(0);
+      if (videoInputRef.current) {
+        videoInputRef.current.value = '';
       }
     }
   };
@@ -179,6 +284,17 @@ export default function EventFormModal({
       ...prev,
       photos: (prev.photos || []).filter((_, idx) => idx !== index),
     }));
+  };
+
+  const removeVideo = (index: number) => {
+    setFormData((prev) => {
+      const newVideos = (prev.videos || []).filter((_, idx) => idx !== index);
+      return {
+        ...prev,
+        videos: newVideos,
+        video: newVideos.length > 0 ? newVideos[0] : null,
+      };
+    });
   };
 
   const openAdjuster = (photoUrl: string, index: number) => {
@@ -208,6 +324,7 @@ export default function EventFormModal({
       const payload = {
         ...formData,
         photo: formData.photos && formData.photos.length > 0 ? formData.photos[0] : formData.photo,
+        video: formData.videos && formData.videos.length > 0 ? formData.videos[0] : formData.video,
       };
 
       const res = await fetch(url, {
@@ -217,30 +334,18 @@ export default function EventFormModal({
       });
 
       if (!res.ok) {
-        let errorMsg = "Erreur lors de l'enregistrement de l'événement";
+        let errorMsg = language === 'fr' ? "Erreur lors de l'enregistrement" : "Error saving event";
         try {
-          const data = await res.json();
-          if (data.error) errorMsg = data.error;
-        } catch {
-          const text = await res.text();
-          if (text.includes('Request Entity Too Large') || res.status === 413) {
-            errorMsg = 'Les photos sélectionnées sont trop volumineuses. Veuillez réduire le nombre de photos ou leur résolution.';
-          } else if (text) {
-            errorMsg = `Erreur serveur (${res.status})`;
-          }
-        }
+          const json = await res.json();
+          if (json.error) errorMsg = json.error;
+        } catch {}
         throw new Error(errorMsg);
       }
 
-      let saved: any;
-      try {
-        saved = await res.json();
-      } catch {
-        saved = payload;
+      const savedData = await res.json();
+      if (savedData) {
+        saveLocalStoredEvent(savedData);
       }
-
-      // Persistent sync in localStorage to prevent production lambda loss
-      saveLocalStoredEvent(saved);
 
       onSuccess();
       onClose();
@@ -251,47 +356,39 @@ export default function EventFormModal({
     }
   };
 
-  if (!isOpen || !mounted) return null;
+  if (!mounted) return null;
 
   return createPortal(
-    <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/25 backdrop-blur-[2px] animate-fade-in overflow-y-auto"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-2xl sm:rounded-3xl border border-[#eae1da] shadow-2xl max-w-2xl w-full p-5 sm:p-7 space-y-5 my-auto max-h-[92vh] overflow-y-auto cursor-default animate-scale-up"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+      <div className="relative w-full max-w-2xl my-8 bg-white rounded-3xl shadow-2xl border border-[#eae1da] p-6 sm:p-8 max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-[#f5ece5]">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-[#173124] text-white flex items-center justify-center shadow-xs">
-              <Calendar className="w-5 h-5 text-[#98b5a3]" />
+        <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#eae1da]">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#f5ece5] flex items-center justify-center text-[#7a5739]">
+              <Calendar className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-serif font-bold text-xl text-[#173124]">
-                {isEditing ? "Modifier l'événement" : "Créer un événement / récit d'histoire"}
-              </h2>
+              <h3 className="font-serif text-xl font-bold text-[#173124]">
+                {isEditing ? t('evform_title_edit') : t('evform_title_create')}
+              </h3>
               <p className="text-xs text-[#727973]">
-                {isEditing
-                  ? "Mettez à jour les détails, photos ou dates de l'archive"
-                  : 'Immortalisez un rassemblement, mariage, hommage ou souvenir familial'}
+                {language === 'fr' ? 'Partagez des r?cits, photos et courtes vid?os avec toute la famille' : 'Share stories, photos, and short videos with the family'}
               </p>
             </div>
           </div>
-
           <button
             type="button"
             onClick={onClose}
             className="p-2 rounded-xl text-[#727973] hover:bg-[#f5ece5] transition-all"
-            aria-label="Fermer"
+            aria-label={t('close')}
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
+        {/* Error notification */}
         {error && (
-          <div className="p-4 rounded-2xl bg-[#ffdad6] border border-[#ba1a1a]/30 text-[#93000a] text-xs flex items-center gap-2.5">
+          <div className="mb-6 p-4 rounded-2xl bg-[#ffdad6] text-[#ba1a1a] flex items-center gap-3 border border-[#ffb4ab] text-xs font-semibold animate-shake">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
@@ -302,12 +399,12 @@ export default function EventFormModal({
           {/* Title */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1.5">
-              Titre de l&apos;événement / Récit *
+              {t('evform_field_title')}
             </label>
             <input
               type="text"
               required
-              placeholder="Ex: Grande Réunion Familiale 2024, Hommage à Paul..."
+              placeholder="Ex: Grande R?union Familiale 2024..."
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               className="w-full px-4 py-2.5 rounded-xl border border-[#eae1da] bg-[#fff8f4] text-sm text-[#1f1b17] focus:outline-hidden focus:ring-2 focus:ring-[#173124]"
@@ -318,7 +415,7 @@ export default function EventFormModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1.5">
-                Date de l&apos;événement *
+                {t('evform_field_date')}
               </label>
               <input
                 type="date"
@@ -331,20 +428,20 @@ export default function EventFormModal({
 
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1.5">
-                Catégorie *
+                {t('evform_field_category')}
               </label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value as EventCategory })}
                 className="w-full px-4 py-2.5 rounded-xl border border-[#eae1da] bg-[#fff8f4] text-sm text-[#1f1b17] focus:outline-hidden focus:ring-2 focus:ring-[#173124]"
               >
-                <option value="reunion">Rassemblement Familial</option>
-                <option value="commemoration">Commémoration & Hommage</option>
-                <option value="celebration">Célébration & Fête</option>
-                <option value="birth">Naissance & Anniversaire</option>
-                <option value="wedding">Mariage & Alliance</option>
-                <option value="cultural">Pèlerinage & Racines</option>
-                <option value="other">Autre Moment Fort</option>
+                <option value="reunion">{t('evform_cat_reunion')}</option>
+                <option value="commemoration">{t('evform_cat_commemoration')}</option>
+                <option value="celebration">{t('evform_cat_celebration')}</option>
+                <option value="birth">{t('evform_cat_birth')}</option>
+                <option value="wedding">{t('evform_cat_wedding')}</option>
+                <option value="cultural">{t('evform_cat_cultural')}</option>
+                <option value="other">{t('evform_cat_other')}</option>
               </select>
             </div>
           </div>
@@ -352,22 +449,22 @@ export default function EventFormModal({
           {/* Location */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1.5">
-              Lieu (Optionnel)
+              {t('evform_field_location')}
             </label>
             <input
               type="text"
-              placeholder="Ex: Cotonou, Ouidah, Paris..."
+              placeholder="Ex: Cotonou, Ouidah, Paris, Abidjan..."
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
               className="w-full px-4 py-2.5 rounded-xl border border-[#eae1da] bg-[#fff8f4] text-sm text-[#1f1b17] focus:outline-hidden focus:ring-2 focus:ring-[#173124]"
             />
           </div>
 
-          {/* Photos Management / Native Multi-selection (Up to 20 photos) */}
+          {/* Photos Management */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <label className="block text-xs font-bold uppercase tracking-wider text-[#424844]">
-                Photos & Galerie de l&apos;événement ({currentPhotosCount}/{MAX_PHOTOS})
+                {t('evform_field_photos')} ({currentPhotosCount}/{MAX_PHOTOS})
               </label>
             </div>
 
@@ -384,13 +481,12 @@ export default function EventFormModal({
                       sizes="150px"
                     />
                     
-                    {/* Action Buttons Overlay */}
                     <div className="absolute top-1 right-1 flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity">
                       <button
                         type="button"
                         onClick={() => openAdjuster(photoUrl, idx)}
                         className="p-1 rounded-md bg-black/75 text-white hover:bg-[#173124] transition-all shadow-xs"
-                        title="Ajuster / Recadrer la photo"
+                        title={t('person_adjust_photo')}
                       >
                         <Crop className="w-3 h-3" />
                       </button>
@@ -399,7 +495,7 @@ export default function EventFormModal({
                         type="button"
                         onClick={() => removePhoto(idx)}
                         className="p-1 rounded-md bg-black/75 text-white hover:bg-[#ba1a1a] transition-all shadow-xs"
-                        title="Supprimer cette photo"
+                        title={t('delete')}
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
@@ -407,7 +503,7 @@ export default function EventFormModal({
 
                     {idx === 0 && (
                       <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-md bg-[#173124] text-white text-[9px] font-bold shadow-xs">
-                        Couverture
+                        {language === 'fr' ? 'Couverture' : 'Cover'}
                       </span>
                     )}
                   </div>
@@ -415,65 +511,143 @@ export default function EventFormModal({
               </div>
             )}
 
-            {/* Hidden Native File Input */}
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
               multiple
-              disabled={remainingSlots <= 0}
+              disabled={remainingPhotoSlots <= 0}
               onChange={handleFilesSelected}
               className="hidden"
               id="event-images-upload"
             />
 
-            {/* Native Gallery Upload Dropzone Button */}
-            {remainingSlots > 0 ? (
+            {remainingPhotoSlots > 0 ? (
               <label
                 htmlFor="event-images-upload"
-                className={`flex flex-col items-center justify-center p-6 border-2 border-dashed border-[#eae1da] rounded-2xl bg-[#fff8f4] hover:bg-[#fbf2eb] hover:border-[#7a5739] cursor-pointer transition-all ${
+                className={`flex flex-col items-center justify-center p-5 border-2 border-dashed border-[#eae1da] rounded-2xl bg-[#fff8f4] hover:bg-[#fbf2eb] hover:border-[#7a5739] cursor-pointer transition-all ${
                   uploading ? 'opacity-60 pointer-events-none' : ''
                 }`}
               >
                 {uploading ? (
                   <div className="flex items-center gap-2 text-sm text-[#7a5739] font-medium">
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Optimisation et téléversement des photos en cours...</span>
+                    <span>{language === 'fr' ? 'Optimisation des photos...' : 'Optimizing photos...'}</span>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center text-center space-y-1.5">
-                    <div className="w-10 h-10 rounded-full bg-[#f5ece5] flex items-center justify-center text-[#7a5739]">
-                      <Upload className="w-5 h-5" />
+                  <div className="flex flex-col items-center text-center space-y-1">
+                    <div className="w-8 h-8 rounded-full bg-[#f5ece5] flex items-center justify-center text-[#7a5739]">
+                      <Upload className="w-4 h-4" />
                     </div>
                     <div>
                       <p className="text-xs font-bold text-[#173124]">
-                        Sélectionner jusqu&apos;à 20 photos depuis votre galerie
+                        {t('events_upload_photos')}
                       </p>
-                      <p className="text-[11px] text-[#727973] mt-0.5">
-                        Sélection multiple disponible • Ajustement automatique du format
+                      <p className="text-[10px] text-[#727973]">
+                        {language === 'fr' ? 'S?lection multiple jusqu\'? 20 photos' : 'Multi-selection up to 20 photos'}
                       </p>
                     </div>
                   </div>
                 )}
               </label>
-            ) : (
-              <div className="p-3 text-center rounded-2xl bg-[#f5ece5] border border-[#eae1da] text-xs font-semibold text-[#7a5739]">
-                ✓ Limite maximale de 20 photos atteinte. Supprimez une photo pour en ajouter une nouvelle.
+            ) : null}
+          </div>
+
+          {/* Videos Management with Compression */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#424844]">
+                {t('evform_field_videos')} ({currentVideosCount}/{MAX_VIDEOS})
+              </label>
+            </div>
+
+            {/* Existing videos preview list */}
+            {formData.videos && formData.videos.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-[#fff8f4] rounded-2xl border border-[#eae1da]">
+                {formData.videos.map((videoUrl, idx) => (
+                  <div key={`video-${idx}`} className="relative group rounded-xl overflow-hidden aspect-video bg-black border border-[#eae1da] shadow-xs flex items-center justify-center">
+                    <video
+                      src={videoUrl}
+                      controls
+                      playsInline
+                      className="w-full h-full object-cover"
+                    />
+                    
+                    <button
+                      type="button"
+                      onClick={() => removeVideo(idx)}
+                      className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/80 text-white hover:bg-[#ba1a1a] transition-all shadow-md z-10"
+                      title={t('delete')}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
+
+            <input
+              ref={videoInputRef}
+              type="file"
+              accept="video/mp4,video/webm,video/quicktime,video/*"
+              multiple
+              disabled={remainingVideoSlots <= 0 || videoCompressing}
+              onChange={handleVideosSelected}
+              className="hidden"
+              id="event-videos-upload"
+            />
+
+            {remainingVideoSlots > 0 ? (
+              <label
+                htmlFor="event-videos-upload"
+                className={`flex flex-col items-center justify-center p-5 border-2 border-dashed border-[#eae1da] rounded-2xl bg-[#fff8f4] hover:bg-[#fbf2eb] hover:border-[#7a5739] cursor-pointer transition-all ${
+                  videoCompressing ? 'opacity-80 pointer-events-none' : ''
+                }`}
+              >
+                {videoCompressing ? (
+                  <div className="flex flex-col items-center gap-2 text-xs text-[#7a5739] font-medium w-full max-w-xs text-center">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin text-[#7a5739]" />
+                      <span>{t('events_compressing_video')} ({compressionProgress}%)</span>
+                    </div>
+                    {/* Progress Bar */}
+                    <div className="w-full bg-[#eae1da] h-2 rounded-full overflow-hidden">
+                      <div
+                        className="bg-[#173124] h-full transition-all duration-300 rounded-full"
+                        style={{ width: `${compressionProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center text-center space-y-1">
+                    <div className="w-8 h-8 rounded-full bg-[#f5ece5] flex items-center justify-center text-[#7a5739]">
+                      <Film className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-[#173124]">
+                        {t('events_upload_videos')}
+                      </p>
+                      <p className="text-[10px] text-[#727973]">
+                        {t('events_max_video_hint')}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </label>
+            ) : null}
           </div>
 
           {/* Description / Storytelling */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1.5">
-              Récit complet ou détails du programme *
+              {t('evform_field_desc')}
             </label>
             <textarea
               required
-              rows={5}
+              rows={4}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Racontez les moments marquants, anecdotes, personnes présentes, discours..."
+              placeholder={language === 'fr' ? 'Racontez les moments marquants, discours, souvenirs...' : 'Share memories, speeches, moments...'}
               className="w-full px-4 py-2.5 rounded-xl border border-[#eae1da] bg-[#fff8f4] text-sm text-[#1f1b17] focus:outline-hidden focus:ring-2 focus:ring-[#173124] leading-relaxed"
             />
           </div>
@@ -485,14 +659,14 @@ export default function EventFormModal({
               onClick={onClose}
               className="px-5 py-2.5 rounded-xl border border-[#eae1da] text-xs font-semibold text-[#424844] hover:bg-[#f5ece5] transition-all"
             >
-              Annuler
+              {t('cancel')}
             </button>
             <button
               type="submit"
-              disabled={submitting || uploading}
+              disabled={submitting || uploading || videoCompressing}
               className="px-6 py-2.5 rounded-xl bg-[#173124] text-white text-xs font-bold hover:bg-[#2d4739] shadow-md transition-all active:scale-95 disabled:opacity-50"
             >
-              {submitting ? 'Enregistrement...' : isEditing ? 'Mettre à jour' : "Créer l'événement"}
+              {submitting ? t('evform_submitting') : isEditing ? t('evform_submit_edit') : t('evform_submit_create')}
             </button>
           </div>
         </form>

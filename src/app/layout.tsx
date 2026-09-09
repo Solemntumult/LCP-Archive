@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 
 export const metadata: Metadata = {
   title: "LCP Archives — Arbre Généalogique & Mémoire Familiale",
@@ -26,9 +27,11 @@ export default function RootLayout({
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
       </head>
       <body className="min-h-screen flex flex-col bg-[#fff8f4] text-[#1f1b17] font-sans selection:bg-[#fdcea9] selection:text-[#795638]">
-        <Navbar />
-        <main className="flex-1 w-full">{children}</main>
-        <Footer />
+        <LanguageProvider>
+          <Navbar />
+          <main className="flex-1 w-full">{children}</main>
+          <Footer />
+        </LanguageProvider>
       </body>
     </html>
   );

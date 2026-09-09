@@ -99,6 +99,8 @@ function initSqliteSchema(db: any) {
         location TEXT,
         photo TEXT,
         photos TEXT,
+        video TEXT,
+        videos TEXT,
         related_person_ids TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
         updated_at TEXT DEFAULT CURRENT_TIMESTAMP
@@ -113,6 +115,13 @@ function initSqliteSchema(db: any) {
         created_at TEXT DEFAULT CURRENT_TIMESTAMP
       );
     `);
+
+    try {
+      db.prepare("ALTER TABLE family_events ADD COLUMN video TEXT").run();
+    } catch {}
+    try {
+      db.prepare("ALTER TABLE family_events ADD COLUMN videos TEXT").run();
+    } catch {}
 
     const count = db.prepare('SELECT COUNT(*) as count FROM persons').get().count;
     if (count === 0) {
@@ -244,11 +253,18 @@ async function ensurePgSchema() {
         location TEXT,
         photo TEXT,
         photos TEXT,
+        video TEXT,
+        videos TEXT,
         related_person_ids TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
+
+    try {
+      await sql`ALTER TABLE family_events ADD COLUMN IF NOT EXISTS video TEXT`;
+      await sql`ALTER TABLE family_events ADD COLUMN IF NOT EXISTS videos TEXT`;
+    } catch {}
 
     await sql`
       CREATE TABLE IF NOT EXISTS activity_logs (
@@ -681,17 +697,22 @@ export async function createEvent(data: FamilyEventFormData): Promise<FamilyEven
   if (photosList.length === 0 && data.photo) {
     photosList = [data.photo];
   }
+  let videosList = data.videos || [];
+  if (videosList.length === 0 && data.video) {
+    videosList = [data.video];
+  }
 
   if (checkIsPostgres()) {
     await ensurePgSchema();
     const sql = getPg();
     const rows = await sql`
       INSERT INTO family_events (
-        title, description, event_date, category, location, photo, photos, related_person_ids
+        title, description, event_date, category, location, photo, photos, video, videos, related_person_ids
       ) VALUES (
         ${data.title}, ${data.description}, ${data.event_date}, ${data.category || 'reunion'},
         ${data.location || null}, ${data.photo || (photosList.length > 0 ? photosList[0] : null)},
-        ${JSON.stringify(photosList)}, ${JSON.stringify(data.related_person_ids || [])}
+        ${JSON.stringify(photosList)}, ${data.video || (videosList.length > 0 ? videosList[0] : null)},
+        ${JSON.stringify(videosList)}, ${JSON.stringify(data.related_person_ids || [])}
       )
       RETURNING *
     `;
@@ -712,6 +733,8 @@ export async function createEvent(data: FamilyEventFormData): Promise<FamilyEven
         location: data.location || null,
         photo: data.photo || (photosList.length > 0 ? photosList[0] : null),
         photos: photosList,
+        video: data.video || (videosList.length > 0 ? videosList[0] : null),
+        videos: videosList,
         related_person_ids: data.related_person_ids || [],
         is_past: new Date(data.event_date) < new Date(),
       };
@@ -720,15 +743,16 @@ export async function createEvent(data: FamilyEventFormData): Promise<FamilyEven
     }
     const stmt = db.prepare(`
       INSERT INTO family_events (
-        title, description, event_date, category, location, photo, photos, related_person_ids
+        title, description, event_date, category, location, photo, photos, video, videos, related_person_ids
       ) VALUES (
-        ?, ?, ?, ?, ?, ?, ?, ?
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
       )
     `);
     const info = stmt.run(
       data.title, data.description, data.event_date, data.category || 'reunion',
       data.location || null, data.photo || (photosList.length > 0 ? photosList[0] : null),
-      JSON.stringify(photosList), JSON.stringify(data.related_person_ids || [])
+      JSON.stringify(photosList), data.video || (videosList.length > 0 ? videosList[0] : null),
+      JSON.stringify(videosList), JSON.stringify(data.related_person_ids || [])
     );
     const newId = Number(info.lastInsertRowid);
     await logActivity('CREATE', `Création de l'événement familial "${data.title}"`, undefined, data.title);
@@ -746,6 +770,12 @@ export async function updateEvent(id: number, data: Partial<FamilyEventFormData>
     photo = photosList[0];
   }
 
+  let videosList = data.videos !== undefined ? data.videos : existing.videos;
+  let video = data.video !== undefined ? data.video : existing.video;
+  if (!video && videosList && videosList.length > 0) {
+    video = videosList[0];
+  }
+
   if (checkIsPostgres()) {
     await ensurePgSchema();
     const sql = getPg();
@@ -758,6 +788,8 @@ export async function updateEvent(id: number, data: Partial<FamilyEventFormData>
         location = ${data.location !== undefined ? data.location : existing.location},
         photo = ${photo},
         photos = ${JSON.stringify(photosList || [])},
+        video = ${video},
+        videos = ${JSON.stringify(videosList || [])},
         related_person_ids = ${JSON.stringify(data.related_person_ids !== undefined ? data.related_person_ids : existing.related_person_ids)},
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ${id}
@@ -774,6 +806,8 @@ export async function updateEvent(id: number, data: Partial<FamilyEventFormData>
         ...data,
         photo,
         photos: photosList,
+        video,
+        videos: videosList,
       };
       inMemoryEventsCache = all.map((e) => (e.id === id ? updated : e));
       return updated;
@@ -787,6 +821,8 @@ export async function updateEvent(id: number, data: Partial<FamilyEventFormData>
         location = ?,
         photo = ?,
         photos = ?,
+        video = ?,
+        videos = ?,
         related_person_ids = ?,
         updated_at = datetime('now')
       WHERE id = ?
@@ -799,6 +835,8 @@ export async function updateEvent(id: number, data: Partial<FamilyEventFormData>
       data.location !== undefined ? data.location : existing.location,
       photo,
       JSON.stringify(photosList || []),
+      video,
+      JSON.stringify(videosList || []),
       JSON.stringify(data.related_person_ids !== undefined ? data.related_person_ids : existing.related_person_ids),
       id
     );
@@ -838,11 +876,13 @@ export async function syncEvents(eventsList: FamilyEvent[]): Promise<FamilyEvent
     for (const ev of eventsList) {
       await sql`
         INSERT INTO family_events (
-          id, title, description, event_date, category, location, photo, photos, related_person_ids, updated_at
+          id, title, description, event_date, category, location, photo, photos, video, videos, related_person_ids, updated_at
         ) VALUES (
           ${ev.id}, ${ev.title}, ${ev.description}, ${ev.event_date}, ${ev.category || 'reunion'},
           ${ev.location || null}, ${ev.photo || (ev.photos && ev.photos.length > 0 ? ev.photos[0] : null)},
           ${JSON.stringify(ev.photos || (ev.photo ? [ev.photo] : []))},
+          ${ev.video || (ev.videos && ev.videos.length > 0 ? ev.videos[0] : null)},
+          ${JSON.stringify(ev.videos || (ev.video ? [ev.video] : []))},
           ${JSON.stringify(ev.related_person_ids || [])},
           CURRENT_TIMESTAMP
         )
@@ -854,6 +894,8 @@ export async function syncEvents(eventsList: FamilyEvent[]): Promise<FamilyEvent
           location = EXCLUDED.location,
           photo = EXCLUDED.photo,
           photos = EXCLUDED.photos,
+          video = EXCLUDED.video,
+          videos = EXCLUDED.videos,
           related_person_ids = EXCLUDED.related_person_ids,
           updated_at = CURRENT_TIMESTAMP
       `;
@@ -863,9 +905,9 @@ export async function syncEvents(eventsList: FamilyEvent[]): Promise<FamilyEvent
     if (db) {
       const insertStmt = db.prepare(`
         INSERT OR REPLACE INTO family_events (
-          id, title, description, event_date, category, location, photo, photos, related_person_ids, updated_at
+          id, title, description, event_date, category, location, photo, photos, video, videos, related_person_ids, updated_at
         ) VALUES (
-          @id, @title, @description, @event_date, @category, @location, @photo, @photos, @related_person_ids, datetime('now')
+          @id, @title, @description, @event_date, @category, @location, @photo, @photos, @video, @videos, @related_person_ids, datetime('now')
         )
       `);
       const syncAll = db.transaction((list: FamilyEvent[]) => {
@@ -879,6 +921,8 @@ export async function syncEvents(eventsList: FamilyEvent[]): Promise<FamilyEvent
             location: ev.location || null,
             photo: ev.photo || (ev.photos && ev.photos.length > 0 ? ev.photos[0] : null),
             photos: JSON.stringify(ev.photos || (ev.photo ? [ev.photo] : [])),
+            video: ev.video || (ev.videos && ev.videos.length > 0 ? ev.videos[0] : null),
+            videos: JSON.stringify(ev.videos || (ev.video ? [ev.video] : [])),
             related_person_ids: JSON.stringify(ev.related_person_ids || []),
           });
         }
@@ -977,6 +1021,18 @@ function formatEventRow(row: any): FamilyEvent {
     }
   } catch {}
 
+  let videosList: string[] = [];
+  try {
+    if (typeof row.videos === 'string') {
+      videosList = JSON.parse(row.videos);
+    } else if (Array.isArray(row.videos)) {
+      videosList = row.videos;
+    }
+  } catch {}
+  if (videosList.length === 0 && row.video) {
+    videosList = [row.video];
+  }
+
   let relatedIds: number[] = [];
   try {
     if (typeof row.related_person_ids === 'string') {
@@ -998,6 +1054,8 @@ function formatEventRow(row: any): FamilyEvent {
     ...row,
     photo: row.photo || (photosList.length > 0 ? photosList[0] : null),
     photos: photosList,
+    video: row.video || (videosList.length > 0 ? videosList[0] : null),
+    videos: videosList,
     related_person_ids: relatedIds,
     is_past: isPast,
     days_until: daysUntil >= 0 ? daysUntil : undefined,

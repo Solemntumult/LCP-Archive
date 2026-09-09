@@ -19,47 +19,56 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Aucun fichier fourni' }, { status: 400 });
     }
 
-    const uploadsDir = path.join(process.cwd(), 'public', 'media', 'photos');
-    let canWriteToDisk = true;
+    const photosDir = path.join(process.cwd(), 'public', 'media', 'photos');
+    const videosDir = path.join(process.cwd(), 'public', 'media', 'videos');
 
     try {
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
+      if (!fs.existsSync(photosDir)) {
+        fs.mkdirSync(photosDir, { recursive: true });
       }
-    } catch {
-      canWriteToDisk = false;
-    }
+      if (!fs.existsSync(videosDir)) {
+        fs.mkdirSync(videosDir, { recursive: true });
+      }
+    } catch {}
 
-    const results: { url: string; filename: string }[] = [];
+    const results: { url: string; filename: string; isVideo: boolean }[] = [];
 
     for (const file of allFiles) {
+      const isVideo = file.type?.startsWith('video/') || /\.(mp4|webm|mov|mkv|avi)$/i.test(file.name);
+      const targetDir = isVideo ? videosDir : photosDir;
+      const urlPrefix = isVideo ? '/media/videos' : '/media/photos';
+      const filePrefix = isVideo ? 'video' : 'photo';
+
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
       const timestamp = Date.now() + Math.floor(Math.random() * 1000);
       const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-      const filename = `photo_${timestamp}_${sanitizedName}`;
+      const filename = `${filePrefix}_${timestamp}_${sanitizedName}`;
 
-      if (canWriteToDisk) {
-        try {
-          const filePath = path.join(uploadsDir, filename);
-          fs.writeFileSync(filePath, buffer);
-          results.push({
-            url: `/media/photos/${filename}`,
-            filename,
-          });
-          continue;
-        } catch {
-          canWriteToDisk = false;
-        }
+      let writtenToDisk = false;
+      try {
+        const filePath = path.join(targetDir, filename);
+        fs.writeFileSync(filePath, buffer);
+        results.push({
+          url: `${urlPrefix}/${filename}`,
+          filename,
+          isVideo,
+        });
+        writtenToDisk = true;
+      } catch {
+        writtenToDisk = false;
       }
 
-      // Fallback for Vercel / serverless: Data URL format
-      const mimeType = file.type || 'image/jpeg';
-      const base64Data = `data:${mimeType};base64,${buffer.toString('base64')}`;
-      results.push({
-        url: base64Data,
-        filename,
-      });
+      if (!writtenToDisk) {
+        // Fallback for Vercel / serverless: Data URL format
+        const mimeType = file.type || (isVideo ? 'video/mp4' : 'image/jpeg');
+        const base64Data = `data:${mimeType};base64,${buffer.toString('base64')}`;
+        results.push({
+          url: base64Data,
+          filename,
+          isVideo,
+        });
+      }
     }
 
     return NextResponse.json({
@@ -67,9 +76,10 @@ export async function POST(req: NextRequest) {
       files: results,
       url: results[0]?.url,
       filename: results[0]?.filename,
+      isVideo: results[0]?.isVideo,
     });
   } catch (error) {
     console.error('Error uploading files:', error);
-    return NextResponse.json({ error: "Échec de l'upload des photos" }, { status: 500 });
+    return NextResponse.json({ error: "Échec de l'upload des fichiers" }, { status: 500 });
   }
 }

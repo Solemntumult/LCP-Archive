@@ -174,6 +174,8 @@ export interface FamilyEvent {
   location?: string | null;
   photo?: string | null;
   photos?: string[];
+  video?: string | null;
+  videos?: string[];
   related_person_ids?: number[];
   is_past: boolean;
   days_until?: number;
@@ -189,6 +191,8 @@ export interface FamilyEventFormData {
   location?: string;
   photo?: string;
   photos?: string[];
+  video?: string | null;
+  videos?: string[];
   related_person_ids?: number[];
 }
 
