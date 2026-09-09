@@ -9,13 +9,15 @@ import PersonTimeline from '@/components/person/PersonTimeline';
 import FamilyRelationships from '@/components/person/FamilyRelationships';
 import PersonDetailClientActions from '@/components/person/PersonDetailClientActions';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { translatePersonData } from '@/lib/i18n/dbTranslation';
 
 export default function PersonDetailViewClient({
-  person,
+  person: initialPerson,
 }: {
   person: PersonDetail;
 }) {
   const { t, language } = useLanguage();
+  const person = translatePersonData(initialPerson, language);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in">

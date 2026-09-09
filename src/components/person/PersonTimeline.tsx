@@ -14,10 +14,11 @@ import {
 } from 'lucide-react';
 import { TimelineEvent } from '@/types';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
-import { translateDbText } from '@/lib/i18n/dbTranslation';
+import { translateTimelineEvent } from '@/lib/i18n/dbTranslation';
 
 export default function PersonTimeline({ timeline }: { timeline: TimelineEvent[] }) {
   const { t, language } = useLanguage();
+  const translatedTimeline = (timeline || []).map((event) => translateTimelineEvent(event, language));
 
   const getIcon = (type: TimelineEvent['type']) => {
     switch (type) {
@@ -53,7 +54,7 @@ export default function PersonTimeline({ timeline }: { timeline: TimelineEvent[]
     }
   };
 
-  if (timeline.length === 0) {
+  if (translatedTimeline.length === 0) {
     return null;
   }
 
@@ -67,7 +68,7 @@ export default function PersonTimeline({ timeline }: { timeline: TimelineEvent[]
       </div>
 
       <div className="relative pl-6 sm:pl-8 border-l-2 border-[#eae1da] space-y-8 my-2">
-        {timeline.map((event) => (
+        {translatedTimeline.map((event) => (
           <div key={event.id} className="relative group">
             <div
               className={`absolute -left-[33px] sm:-left-[41px] top-1 w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-white flex items-center justify-center shadow-md transition-transform group-hover:scale-110 ${getMarkerBg(
@@ -86,18 +87,18 @@ export default function PersonTimeline({ timeline }: { timeline: TimelineEvent[]
                 {event.location && (
                   <span className="text-xs text-[#727973] flex items-center gap-1">
                     <MapPin className="w-3 h-3 text-[#7a5739]" />
-                    {translateDbText(event.location, language)}
+                    {event.location}
                   </span>
                 )}
               </div>
 
               <h4 className="font-serif font-bold text-base text-[#1f1b17] mt-1">
-                {translateDbText(event.title, language)}
+                {event.title}
               </h4>
 
               {event.description && (
                 <p className="text-sm text-[#424844] mt-1 leading-relaxed">
-                  {translateDbText(event.description, language)}
+                  {event.description}
                 </p>
               )}
             </div>

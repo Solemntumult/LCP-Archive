@@ -207,6 +207,15 @@ const EXACT_PHRASES: Record<string, string> = {
   "Initialisation de l'arbre avec 52 membres de la famille LISSANON.": "Initialized family tree with 52 members of the LISSANON family.",
   "Mise à jour de l'arbre généalogique.": "Updated family tree records.",
   "Ajout d'un nouveau membre dans la lignée.": "Added a new member to the family lineage.",
+
+  // Vital Status & Milestones
+  "Décédé": "Passed away",
+  "Décédée": "Passed away",
+  "Décédé(e)": "Passed away",
+  "Décès": "Passing",
+  "Naissance": "Birth",
+  "Vivant": "Living",
+  "Vivante": "Living",
 };
 
 /**
@@ -353,33 +362,36 @@ const PATTERN_REPLACEMENTS: [RegExp, string][] = [
   [/au domicile du patriarche/gi, "at the patriarch's residence"],
   [/au domicile familial/gi, "at the family home"],
 
-  // Timeline generated sentence patterns
-  [/^Naissance d['’]un enfant\s*:\s*(.*)$/i, "Birth of a child: $1"],
-  [/^Naissance de son fils\s+(.*)$/i, "Birth of their son $1"],
-  [/^Naissance de sa fille\s+(.*)$/i, "Birth of their daughter $1"],
-  [/^Naissance de\s+(.*)$/i, "Birth of $1"],
-  [/^Naissance\s+à\s+(.*)$/i, "Birth in $1"],
-  [/^Naissance\s+au\s+(.*)$/i, "Birth in $1"],
-  [/^Naissance\s+en\s+(.*)$/i, "Birth in $1"],
-  [/^Naissance$/i, "Birth"],
-  [/^Formation & Études$/i, "Education & Studies"],
-  [/^Formation & Etudes$/i, "Education & Studies"],
-  [/^Activité professionnelle$/i, "Professional Career"],
-  [/^Activite professionnelle$/i, "Professional Career"],
-  [/^Exercice du métier de\s+(.*)$/i, "Working as $1"],
-  [/^Exercice du metier de\s+(.*)$/i, "Working as $1"],
-  [/^Décédé\(e\)\s+à l['’]âge de\s+(\d+)\s+ans\s+à\s+(.*)$/i, "Passed away at the age of $1 years old in $2"],
-  [/^Décédée\s+à l['’]âge de\s+(\d+)\s+ans\s+à\s+(.*)$/i, "Passed away at the age of $1 years old in $2"],
-  [/^Décédé\s+à l['’]âge de\s+(\d+)\s+ans\s+à\s+(.*)$/i, "Passed away at the age of $1 years old in $2"],
-  [/^Décédé\(e\)\s+à l['’]âge de\s+(\d+)\s+ans$/i, "Passed away at the age of $1 years old"],
-  [/^Décédée\s+à l['’]âge de\s+(\d+)\s+ans$/i, "Passed away at the age of $1 years old"],
-  [/^Décédé\s+à l['’]âge de\s+(\d+)\s+ans$/i, "Passed away at the age of $1 years old"],
-  [/^Décédé\(e\)$/i, "Passed away"],
-  [/^Décédée$/i, "Passed away"],
-  [/^Décédé$/i, "Passed away"],
-  [/^Décès\s+à\s+(.*)$/i, "Passed away in $1"],
-  [/^Décès$/i, "Passed away"],
-  [/^Enfants avec\s+(.*)$/i, "Children with $1"],
+  // Timeline generated sentence patterns (with optional trailing dots/punctuations)
+  [/^Naissance d['’]un enfant\s*:\s*(.*?)\.?$/i, "Birth of a child: $1"],
+  [/^Naissance de son fils\s+(.*?)\.?$/i, "Birth of their son $1"],
+  [/^Naissance de sa fille\s+(.*?)\.?$/i, "Birth of their daughter $1"],
+  [/^Naissance de\s+(.*?)\.?$/i, "Birth of $1"],
+  [/^Naissance\s+à\s+(.*?)\.?$/i, "Birth in $1"],
+  [/^Naissance\s+au\s+(.*?)\.?$/i, "Birth in $1"],
+  [/^Naissance\s+en\s+(.*?)\.?$/i, "Birth in $1"],
+  [/^Naissance\.?$/i, "Birth"],
+  [/^Formation & Études\.?$/i, "Education & Studies"],
+  [/^Formation & Etudes\.?$/i, "Education & Studies"],
+  [/^Activité professionnelle\.?$/i, "Professional Career"],
+  [/^Activite professionnelle\.?$/i, "Professional Career"],
+  [/^Exercice du métier de\s+(.*?)\.?$/i, "Working as $1"],
+  [/^Exercice du metier de\s+(.*?)\.?$/i, "Working as $1"],
+  [/^Décédé\(e\)\s+à l['’]âge de\s+(\d+)\s+ans\s+à\s+(.*?)\.?$/i, "Passed away at the age of $1 years old in $2"],
+  [/^Décédée\s+à l['’]âge de\s+(\d+)\s+ans\s+à\s+(.*?)\.?$/i, "Passed away at the age of $1 years old in $2"],
+  [/^Décédé\s+à l['’]âge de\s+(\d+)\s+ans\s+à\s+(.*?)\.?$/i, "Passed away at the age of $1 years old in $2"],
+  [/^Décédé\(e\)\s+à l['’]âge de\s+(\d+)\s+ans\.?$/i, "Passed away at the age of $1 years old"],
+  [/^Décédée\s+à l['’]âge de\s+(\d+)\s+ans\.?$/i, "Passed away at the age of $1 years old"],
+  [/^Décédé\s+à l['’]âge de\s+(\d+)\s+ans\.?$/i, "Passed away at the age of $1 years old"],
+  [/^Décédé\(e\)\s+à\s+(.*?)\.?$/i, "Passed away in $1"],
+  [/^Décédée\s+à\s+(.*?)\.?$/i, "Passed away in $1"],
+  [/^Décédé\s+à\s+(.*?)\.?$/i, "Passed away in $1"],
+  [/^Décédé\(e\)\.?$/i, "Passed away"],
+  [/^Décédée\.?$/i, "Passed away"],
+  [/^Décédé\.?$/i, "Passed away"],
+  [/^Décès\s+à\s+(.*?)\.?$/i, "Passed away in $1"],
+  [/^Décès\.?$/i, "Passing"],
+  [/^Enfants avec\s+(.*?)\.?$/i, "Children with $1"],
 
   // Location string patterns in sentences / titles
   [/\s+à\s+Cotonou,\s*Bénin/gi, " in Cotonou, Benin"],
@@ -494,6 +506,106 @@ export function translateEventData(event: FamilyEvent, lang: Language): FamilyEv
 }
 
 /**
+ * Translates timeline events into English cleanly
+ */
+export function translateTimelineEvent(event: TimelineEvent, lang: Language): TimelineEvent {
+  if (!event || lang === 'fr') return event;
+
+  let title = event.title;
+  let description = event.description;
+  let location = event.location ? translateDbText(event.location, lang) : event.location;
+
+  // 1. Process Event Title
+  if (title) {
+    const trimmedTitle = title.trim();
+    if (trimmedTitle === 'Naissance') {
+      title = 'Birth';
+    } else if (trimmedTitle === 'Décès' || trimmedTitle === 'Décédé' || trimmedTitle === 'Décédée') {
+      title = 'Passing';
+    } else if (trimmedTitle === 'Formation & Études' || trimmedTitle === 'Formation & Etudes') {
+      title = 'Education & Studies';
+    } else if (trimmedTitle === 'Activité professionnelle' || trimmedTitle === 'Activite professionnelle') {
+      title = 'Professional Career';
+    } else if (/^Naissance d['’]un enfant\s*:\s*(.*)$/i.test(trimmedTitle)) {
+      title = trimmedTitle.replace(/^Naissance d['’]un enfant\s*:\s*(.*)$/i, 'Birth of a child: $1');
+    } else {
+      title = translateDbText(title, lang);
+    }
+  }
+
+  // 2. Process Event Description
+  if (description) {
+    const d = description.trim();
+
+    // Death / Passing patterns
+    const deathAgeLocMatch = d.match(/^Décéd[ée]\(?e?\)?\s+à l['’]âge de\s+(\d+)\s+ans\s+à\s+([^.]+)\.?$/i);
+    if (deathAgeLocMatch) {
+      const age = deathAgeLocMatch[1];
+      const loc = translateDbText(deathAgeLocMatch[2].trim(), lang);
+      description = `Passed away at the age of ${age} years old in ${loc}.`;
+    } else {
+      const deathAgeMatch = d.match(/^Décéd[ée]\(?e?\)?\s+à l['’]âge de\s+(\d+)\s+ans\.?$/i);
+      if (deathAgeMatch) {
+        description = `Passed away at the age of ${deathAgeMatch[1]} years old.`;
+      } else {
+        const deathLocMatch = d.match(/^(?:Décéd[ée]\(?e?\)?|Décès)\s+à\s+([^.]+)\.?$/i);
+        if (deathLocMatch) {
+          const loc = translateDbText(deathLocMatch[1].trim(), lang);
+          description = `Passed away in ${loc}.`;
+        } else if (/^(?:Décéd[ée]\(?e?\)?|Décès)\.?$/i.test(d)) {
+          description = `Passed away.`;
+        } else {
+          // Career pattern: "Exercice du métier de Enseignant."
+          const careerMatch = d.match(/^Exercice du m[ée]tier de\s+([^.]+)\.?$/i);
+          if (careerMatch) {
+            const prof = translateDbText(careerMatch[1].trim(), lang);
+            description = `Working as ${prof}.`;
+          } else {
+            // Child birth pattern: "Naissance de son fils Alexis à Abomey." or "Naissance de sa fille Clara à Cotonou."
+            const childBirthLocMatch = d.match(/^Naissance de s(?:on|a)\s+(fils|fille)\s+(.*?)\s+à\s+([^.]+)\.?$/i);
+            if (childBirthLocMatch) {
+              const genderNoun = childBirthLocMatch[1].toLowerCase() === 'fils' ? 'son' : 'daughter';
+              const childName = childBirthLocMatch[2].trim();
+              const loc = translateDbText(childBirthLocMatch[3].trim(), lang);
+              description = `Birth of their ${genderNoun} ${childName} in ${loc}.`;
+            } else {
+              const childBirthMatch = d.match(/^Naissance de s(?:on|a)\s+(fils|fille)\s+([^.]+)\.?$/i);
+              if (childBirthMatch) {
+                const genderNoun = childBirthMatch[1].toLowerCase() === 'fils' ? 'son' : 'daughter';
+                const childName = childBirthMatch[2].trim();
+                description = `Birth of their ${genderNoun} ${childName}.`;
+              } else {
+                // General birth pattern: "Naissance de Paul Comlan LISSANON à Cotonou."
+                const birthLocMatch = d.match(/^Naissance de\s+(.*?)\s+à\s+([^.]+)\.?$/i);
+                if (birthLocMatch) {
+                  const personName = birthLocMatch[1].trim();
+                  const loc = translateDbText(birthLocMatch[2].trim(), lang);
+                  description = `Birth of ${personName} in ${loc}.`;
+                } else {
+                  const birthMatch = d.match(/^Naissance de\s+([^.]+)\.?$/i);
+                  if (birthMatch) {
+                    description = `Birth of ${birthMatch[1].trim()}.`;
+                  } else {
+                    description = translateDbText(description, lang);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return {
+    ...event,
+    title,
+    description,
+    location,
+  };
+}
+
+/**
  * Translates a Person record dynamically (supports Person, PersonDetail, TreeNodeData)
  */
 export function translatePersonData<T extends Person | PersonDetail | TreeNodeData>(
@@ -518,7 +630,7 @@ export function translatePersonData<T extends Person | PersonDetail | TreeNodeDa
     education = PAUL_LISSANON_EN.education;
   }
 
-  return {
+  const result: any = {
     ...person,
     profession,
     birth_place,
@@ -526,19 +638,34 @@ export function translatePersonData<T extends Person | PersonDetail | TreeNodeDa
     ...(biography !== undefined ? { biography } : {}),
     ...(accomplishments !== undefined ? { accomplishments } : {}),
     ...(education !== undefined ? { education } : {}),
-  } as T;
-}
-
-/**
- * Translates timeline events
- */
-export function translateTimelineEvent(event: TimelineEvent, lang: Language): TimelineEvent {
-  if (!event || lang === 'fr') return event;
-
-  return {
-    ...event,
-    title: translateDbText(event.title, lang),
-    description: translateDbText(event.description, lang),
-    location: event.location ? translateDbText(event.location, lang) : event.location,
   };
+
+  // If PersonDetail, recursively translate timeline, parents, spouses, siblings, children
+  if (Array.isArray((person as any).timeline)) {
+    result.timeline = (person as any).timeline.map((ev: TimelineEvent) => translateTimelineEvent(ev, lang));
+  }
+
+  if ((person as any).father) {
+    result.father = translatePersonData((person as any).father, lang);
+  }
+  if ((person as any).mother) {
+    result.mother = translatePersonData((person as any).mother, lang);
+  }
+  if (Array.isArray((person as any).spouses)) {
+    result.spouses = (person as any).spouses.map((s: Person) => translatePersonData(s, lang));
+  }
+  if (Array.isArray((person as any).siblings)) {
+    result.siblings = (person as any).siblings.map((s: Person) => translatePersonData(s, lang));
+  }
+  if (Array.isArray((person as any).children)) {
+    result.children = (person as any).children.map((c: Person) => translatePersonData(c, lang));
+  }
+  if (Array.isArray((person as any).children_by_spouse)) {
+    result.children_by_spouse = (person as any).children_by_spouse.map((group: any) => ({
+      spouse: group.spouse ? translatePersonData(group.spouse, lang) : null,
+      children: Array.isArray(group.children) ? group.children.map((c: Person) => translatePersonData(c, lang)) : [],
+    }));
+  }
+
+  return result as T;
 }
