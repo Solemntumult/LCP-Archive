@@ -404,7 +404,7 @@ export default function EventFormModal({
             <input
               type="text"
               required
-              placeholder={language === 'fr' ? 'Ex: Grande R?union Familiale 2024...' : 'e.g. Grand Family Reunion 2024...'}
+              placeholder={language === 'fr' ? 'Ex: Grande Réunion Familiale 2024...' : 'e.g. Grand Family Reunion 2024...'}
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               className="w-full px-4 py-2.5 rounded-xl border border-[#eae1da] bg-[#fff8f4] text-sm text-[#1f1b17] focus:outline-hidden focus:ring-2 focus:ring-[#173124]"
@@ -544,7 +544,7 @@ export default function EventFormModal({
                         {t('events_upload_photos')}
                       </p>
                       <p className="text-[10px] text-[#727973]">
-                        {language === 'fr' ? "S?lection multiple jusqu'? 20 photos" : 'Multi-selection up to 20 photos'}
+                        {language === 'fr' ? 'Sélection multiple jusqu’à 20 photos' : 'Multi-selection up to 20 photos'}
                       </p>
                     </div>
                   </div>

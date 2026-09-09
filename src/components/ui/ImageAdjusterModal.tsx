@@ -12,6 +12,7 @@ import {
   Move,
   Crop,
 } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface ImageAdjusterModalProps {
   isOpen: boolean;
@@ -30,6 +31,7 @@ export default function ImageAdjusterModal({
   onClose,
   onApply,
 }: ImageAdjusterModalProps) {
+  const { t, language } = useLanguage();
   const [mounted, setMounted] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0); // 0, 90, 180, 270
@@ -214,10 +216,10 @@ export default function ImageAdjusterModal({
             </div>
             <div>
               <h3 className="font-serif font-bold text-base text-[#173124] leading-none">
-                Recadrer la photo
+                {language === 'en' ? 'Crop Photograph' : 'Recadrer la photo'}
               </h3>
               <p className="text-[10px] text-[#727973] mt-0.5">
-                Glissez pour centrer, zoomez au besoin
+                {language === 'en' ? 'Drag to center, zoom as needed' : 'Glissez pour centrer, zoomez au besoin'}
               </p>
             </div>
           </div>
@@ -225,7 +227,7 @@ export default function ImageAdjusterModal({
           <button
             onClick={onClose}
             className="p-1.5 rounded-xl text-[#727973] hover:bg-[#f5ece5] transition-all"
-            aria-label="Fermer"
+            aria-label={t('close')}
           >
             <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
@@ -259,7 +261,7 @@ export default function ImageAdjusterModal({
           {/* Center Guide Crosshair Hint */}
           <div className="absolute top-1.5 right-1.5 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-xs text-[9px] sm:text-[10px] text-white font-medium flex items-center gap-1 pointer-events-none">
             <Move className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-            <span>Glisser</span>
+            <span>{language === 'en' ? 'Drag' : 'Glisser'}</span>
           </div>
         </div>
 
@@ -271,7 +273,7 @@ export default function ImageAdjusterModal({
               type="button"
               onClick={() => setZoom((z) => Math.max(0.6, z - 0.15))}
               className="p-1 rounded-lg bg-white border border-[#eae1da] text-[#7a5739] hover:bg-[#f5ece5]"
-              title="Dézoomer"
+              title={language === 'en' ? 'Zoom Out' : 'Dézoomer'}
             >
               <ZoomOut className="w-3.5 h-3.5" />
             </button>
@@ -290,7 +292,7 @@ export default function ImageAdjusterModal({
               type="button"
               onClick={() => setZoom((z) => Math.min(3, z + 0.15))}
               className="p-1 rounded-lg bg-white border border-[#eae1da] text-[#7a5739] hover:bg-[#f5ece5]"
-              title="Zoomer"
+              title={language === 'en' ? 'Zoom In' : 'Zoomer'}
             >
               <ZoomIn className="w-3.5 h-3.5" />
             </button>
@@ -308,7 +310,7 @@ export default function ImageAdjusterModal({
               className="flex-1 flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#f5ece5] hover:bg-[#eae1da] text-[#1f1b17] text-xs font-semibold transition-all"
             >
               <RotateCw className="w-3 h-3 text-[#7a5739]" />
-              <span>Pivoter 90°</span>
+              <span>{language === 'en' ? 'Rotate 90°' : 'Pivoter 90°'}</span>
             </button>
 
             <button
@@ -317,7 +319,7 @@ export default function ImageAdjusterModal({
               className="flex-1 flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white border border-[#eae1da] hover:bg-[#f5ece5] text-[#727973] text-xs font-semibold transition-all"
             >
               <RefreshCw className="w-3 h-3" />
-              <span>Réinitialiser</span>
+              <span>{language === 'en' ? 'Reset' : 'Réinitialiser'}</span>
             </button>
           </div>
         </div>
@@ -329,7 +331,7 @@ export default function ImageAdjusterModal({
             onClick={onClose}
             className="px-3.5 py-1.5 rounded-xl border border-[#eae1da] text-xs font-semibold text-[#424844] hover:bg-[#f5ece5] transition-all"
           >
-            Annuler
+            {t('cancel')}
           </button>
           <button
             type="button"
@@ -337,7 +339,7 @@ export default function ImageAdjusterModal({
             className="px-4 py-1.5 rounded-xl bg-[#173124] text-white text-xs font-bold hover:bg-[#2d4739] shadow-md transition-all flex items-center gap-1.5 active:scale-95"
           >
             <Check className="w-3.5 h-3.5" />
-            <span>Valider</span>
+            <span>{language === 'en' ? 'Apply' : 'Valider'}</span>
           </button>
         </div>
       </div>

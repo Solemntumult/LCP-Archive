@@ -178,20 +178,20 @@ export default function PersonForm({
         </div>
       )}
 
-      {/* 1. Identity & Civil Status */}
+      {/* 1. Identity & Vital Status */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#eae1da] vintage-shadow space-y-6">
         <div className="flex items-center gap-2.5 pb-4 border-b border-[#f5ece5]">
           <User className="w-5 h-5 text-[#173124]" />
           <h2 className="font-serif font-bold text-xl text-[#173124]">
-            {language === 'en' ? '1. Identity & Vital Records' : '1. Identit? & ?tat Civil'}
+            {language === 'en' ? '1. Identity & Vital Records' : '1. Identité & État Civil'}
           </h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          {/* prénom */}
+          {/* Prénom */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1.5">
-              {language === 'en' ? 'First Name *' : 'prénom *'}
+              {language === 'en' ? 'First Name *' : 'Prénom *'}
             </label>
             <input
               type="text"
@@ -328,7 +328,7 @@ export default function PersonForm({
                 )}
               </div>
               <p className="text-xs text-[#727973]">
-                {language === 'en' ? 'You can zoom, pan and center the photo before saving.' : 'Vous pourrez zoomer, d?placer et cadrer la photo avant de valider.'}
+                {language === 'en' ? 'You can zoom, pan and center the photo before saving.' : 'Vous pourrez zoomer, déplacer et cadrer la photo avant de valider.'}
               </p>
             </div>
           </div>
@@ -413,10 +413,10 @@ export default function PersonForm({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          {/* père */}
+          {/* Père */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1.5">
-              {language === 'en' ? 'Father (Men)' : 'père (Hommes)'}
+              {language === 'en' ? 'Father (Men)' : 'Père (Hommes)'}
             </label>
             <select
               name="father_id"
@@ -424,7 +424,7 @@ export default function PersonForm({
               onChange={handleChange}
               className="w-full px-4 py-2.5 rounded-xl bg-[#fff8f4] border border-[#eae1da] text-sm font-medium"
             >
-              <option value="">-- {language === 'en' ? 'No father selected' : 'Aucun père s?lectionn?'} --</option>
+              <option value="">-- {language === 'en' ? 'No father selected' : 'Aucun père sélectionné'} --</option>
               {fatherOptions.map((f) => (
                 <option key={f.id} value={f.id}>
                   {getFullName(f)} {f.birth_date ? `(${new Date(f.birth_date).getFullYear()})` : ''}
@@ -433,10 +433,10 @@ export default function PersonForm({
             </select>
           </div>
 
-          {/* mère */}
+          {/* Mère */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-1.5">
-              {language === 'en' ? 'Mother (Women)' : 'mère (Femmes)'}
+              {language === 'en' ? 'Mother (Women)' : 'Mère (Femmes)'}
             </label>
             <select
               name="mother_id"
@@ -444,7 +444,7 @@ export default function PersonForm({
               onChange={handleChange}
               className="w-full px-4 py-2.5 rounded-xl bg-[#fff8f4] border border-[#eae1da] text-sm font-medium"
             >
-              <option value="">-- {language === 'en' ? 'No mother selected' : 'Aucune mère s?lectionn?e'} --</option>
+              <option value="">-- {language === 'en' ? 'No mother selected' : 'Aucune mère sélectionnée'} --</option>
               {motherOptions.map((m) => (
                 <option key={m.id} value={m.id}>
                   {getFullName(m)} {m.birth_date ? `(${new Date(m.birth_date).getFullYear()})` : ''}
@@ -474,7 +474,7 @@ export default function PersonForm({
             <p className="text-[11px] text-[#727973] mt-1">
               {language === 'en'
                 ? 'Fill only if this person married a direct bloodline member.'
-                : 'Remplir uniquement si cette personne a ?pous? un membre de la lignée de sang.'}
+                : 'Remplir uniquement si cette personne a épousé un membre de la lignée de sang.'}
             </p>
           </div>
         </div>
@@ -485,7 +485,7 @@ export default function PersonForm({
         <div className="flex items-center gap-2.5 pb-4 border-b border-[#f5ece5]">
           <BookOpen className="w-5 h-5 text-[#7a5739]" />
           <h2 className="font-serif font-bold text-xl text-[#173124]">
-            {language === 'en' ? '4. Life Story, Accomplishments & Education' : '4. Histoire de Vie, Accomplissements & ?ducation'}
+            {language === 'en' ? '4. Life Story, Accomplishments & Education' : '4. Histoire de Vie, Accomplissements & Éducation'}
           </h2>
         </div>
 
@@ -527,7 +527,7 @@ export default function PersonForm({
               rows={3}
               value={formData.education || ''}
               onChange={handleChange}
-              placeholder={language === 'en' ? 'Degrees, universities, academic career...' : 'Dipl?mes, ?coles, parcours acad?mique...'}
+              placeholder={language === 'en' ? 'Degrees, universities, academic career...' : 'Diplômes, écoles, parcours académique...'}
               className="w-full p-4 rounded-2xl bg-[#fff8f4] border border-[#eae1da] focus:border-[#173124] outline-hidden text-sm leading-relaxed"
             />
           </div>

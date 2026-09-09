@@ -85,7 +85,7 @@ export default function Navbar() {
                 <Search className="w-4 h-4 text-[#7a5739] shrink-0" />
                 <span className="hidden md:inline whitespace-nowrap">{t('nav_search')}</span>
                 <kbd className="hidden xl:inline-block text-[10px] font-mono bg-white text-[#727973] border border-[#c2c8c2] px-1.5 py-0.5 rounded shadow-2xs">
-                  ?K
+                  Ctrl+K
                 </kbd>
               </button>
 

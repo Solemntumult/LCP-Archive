@@ -19,6 +19,7 @@ import ActivityFeed from '@/components/dashboard/ActivityFeed';
 import HintCard from '@/components/dashboard/HintCard';
 import RecentGallery from '@/components/dashboard/RecentGallery';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { translateDbText } from '@/lib/i18n/dbTranslation';
 
 export default function DashboardClientView({
   stats,
@@ -112,7 +113,7 @@ export default function DashboardClientView({
         <StatCard
           title={t('dash_stat_places')}
           value={stats.originPlaces.length}
-          subtitle={stats.originPlaces.slice(0, 2).join(', ') || (language === 'fr' ? 'Bénin, Afrique' : 'Benin, Africa')}
+          subtitle={stats.originPlaces.slice(0, 2).map(p => translateDbText(p, language)).join(', ') || (language === 'fr' ? 'Bénin, Afrique' : 'Benin, Africa')}
           icon={MapPin}
           colorTheme="blue"
         />

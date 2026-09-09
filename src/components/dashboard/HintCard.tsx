@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Lightbulb, ArrowRight, Camera, Calendar, BookOpen, UserPlus } from 'lucide-react';
 import { DashboardStats } from '@/types';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { translateDbText } from '@/lib/i18n/dbTranslation';
 
 export default function HintCard({ hints }: { hints: DashboardStats['missingDataHints'] }) {
   const { t, language } = useLanguage();
@@ -54,10 +55,10 @@ export default function HintCard({ hints }: { hints: DashboardStats['missingData
                 </div>
                 <div className="min-w-0">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-[#7a5739]">
-                    {hint.title}
+                    {translateDbText(hint.title, language)}
                   </h4>
                   <p className="text-sm text-[#1f1b17] font-medium line-clamp-1 mt-0.5">
-                    {hint.description}
+                    {translateDbText(hint.description, language)}
                   </p>
                 </div>
               </div>
