@@ -44,7 +44,7 @@ export default function EventsClientView({
 
   return (
     <div className="space-y-12 animate-fade-in">
-      {/* 1. Grande Section : D?fil? des R?cits des ?v?nements Pass?s */}
+      {/* 1. Grande Section : Défilé des récits des événements passés */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
@@ -71,7 +71,7 @@ export default function EventsClientView({
         <EventCarousel events={events} onOpenCreateModal={() => setIsModalOpen(true)} />
       </div>
 
-      {/* 2. Deuxi?me Section : D?fil? des ?v?nements ? ? venir ? */}
+      {/* 2. Deuxième Section : Défilé des événements « À venir » */}
       <div className="space-y-4 pt-6 border-t border-[#eae1da]">
         <div>
           <div className="flex items-center gap-2">

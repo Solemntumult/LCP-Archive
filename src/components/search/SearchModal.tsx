@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Search, X, User, Calendar, MapPin, Briefcase, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { translateDbText } from '@/lib/i18n/dbTranslation';
 
 interface SearchResult {
   id: number;
@@ -111,14 +112,14 @@ export default function SearchModal({
                 setQuery('');
                 fetchResults('');
               }}
-              className="p-1 text-[#727973] hover:text-[#1f1b17]"
+              className="p-1 text-[#727973] hover:text-[#1f1b17] cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
           )}
           <button
             onClick={onClose}
-            className="ml-2 text-xs bg-[#eae1da] text-[#424844] px-2 py-1 rounded hover:bg-[#e1d8d2]"
+            className="ml-2 text-xs bg-[#eae1da] text-[#424844] px-2 py-1 rounded hover:bg-[#e1d8d2] cursor-pointer"
           >
             ESC
           </button>
@@ -136,7 +137,7 @@ export default function SearchModal({
               <User className="w-10 h-10 mx-auto text-[#c2c8c2] mb-2" />
               <p className="font-serif text-lg text-[#1f1b17]">{t('no_results')}</p>
               <p className="text-xs text-[#727973] mt-1">
-                {language === 'fr' ? 'Essayez un autre mot-cl? ou parcourez l\'arbre.' : 'Try another keyword or browse the tree.'}
+                {language === 'fr' ? "Essayez un autre mot-clé ou parcourez l'arbre." : 'Try another keyword or browse the tree.'}
               </p>
             </div>
           ) : (
@@ -188,21 +189,21 @@ export default function SearchModal({
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3.5 h-3.5 text-[#7a5739]" />
                             {person.birth_year || '?'}
-                            {person.death_year ? ` ? ${person.death_year}` : (language === 'fr' ? ' ? pr?sent' : ' ? present')}
+                            {person.death_year ? ` — ${person.death_year}` : (language === 'fr' ? ' — présent' : ' — present')}
                           </span>
                         )}
 
                         {person.profession && (
                           <span className="flex items-center gap-1 truncate">
                             <Briefcase className="w-3.5 h-3.5 text-[#7a5739]" />
-                            {person.profession}
+                            {translateDbText(person.profession, language)}
                           </span>
                         )}
 
                         {person.birth_place && (
                           <span className="flex items-center gap-1 truncate">
                             <MapPin className="w-3.5 h-3.5 text-[#7a5739]" />
-                            {person.birth_place}
+                            {translateDbText(person.birth_place, language)}
                           </span>
                         )}
                       </div>
@@ -218,8 +219,8 @@ export default function SearchModal({
 
         {/* Footer info */}
         <div className="px-4 py-2.5 bg-[#fbf2eb] border-t border-[#eae1da] text-xs text-[#727973] flex justify-between items-center">
-          <span>{results.length} {language === 'fr' ? (results.length > 1 ? 'r?sultats' : 'r?sultat') : (results.length > 1 ? 'results' : 'result')}</span>
-          <span>{language === 'fr' ? 'Appuyez sur Entr?e pour s?lectionner' : 'Press Enter to select'}</span>
+          <span>{results.length} {language === 'fr' ? (results.length > 1 ? 'résultats' : 'résultat') : (results.length > 1 ? 'results' : 'result')}</span>
+          <span>{language === 'fr' ? 'Appuyez sur Entrée pour sélectionner' : 'Press Enter to select'}</span>
         </div>
       </div>
     </div>

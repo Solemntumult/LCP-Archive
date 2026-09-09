@@ -4,9 +4,12 @@ import React from 'react';
 import { BookOpen, Award, GraduationCap } from 'lucide-react';
 import { PersonDetail } from '@/types';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { translatePersonData } from '@/lib/i18n/dbTranslation';
 
-export default function PersonBio({ person }: { person: PersonDetail }) {
+export default function PersonBio({ person: rawPerson }: { person: PersonDetail }) {
   const { t, language } = useLanguage();
+  const person = translatePersonData(rawPerson, language);
+
   const hasBio = Boolean(person.biography && person.biography.trim().length > 0);
   const hasAccomplishments = Boolean(person.accomplishments && person.accomplishments.trim().length > 0);
   const hasEducation = Boolean(person.education && person.education.trim().length > 0);
@@ -16,11 +19,11 @@ export default function PersonBio({ person }: { person: PersonDetail }) {
       <div className="bg-white rounded-3xl p-8 border border-[#eae1da] vintage-shadow text-center text-[#727973]">
         <BookOpen className="w-12 h-12 mx-auto text-[#c2c8c2] mb-3" />
         <h3 className="font-serif font-bold text-lg text-[#1f1b17]">
-          {language === 'fr' ? 'Histoire de vie ? documenter' : 'Life story to document'}
+          {language === 'fr' ? 'Histoire de vie à documenter' : 'Life story to document'}
         </h3>
         <p className="text-sm text-[#727973] mt-1 max-w-md mx-auto">
           {language === 'fr'
-            ? `Aucun r?cit biographique n'est encore r?dig? pour ${person.full_name}. Ajoutez son histoire, ses ?tudes et ses r?alisations.`
+            ? `Aucun récit biographique n'est encore rédigé pour ${person.full_name}. Ajoutez son histoire, ses études et ses réalisations.`
             : `No biography recorded yet for ${person.full_name}. Add their story, education, and achievements.`}
         </p>
       </div>

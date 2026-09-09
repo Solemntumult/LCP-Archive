@@ -7,9 +7,10 @@ import { X, BookOpen, Plus, User } from 'lucide-react';
 import { TreeNodeData } from '@/types';
 import { isDeceased } from '@/lib/genealogy';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { translatePersonData } from '@/lib/i18n/dbTranslation';
 
 export default function PersonDetailDrawer({
-  person,
+  person: rawPerson,
   allPersons,
   onClose,
   onAddRelative,
@@ -23,6 +24,7 @@ export default function PersonDetailDrawer({
 }) {
   const drawerRef = useRef<HTMLDivElement>(null);
   const { t, language } = useLanguage();
+  const person = translatePersonData(rawPerson, language);
 
   const isMale = person.gender === 'M';
   const birthYear = person.birth_date ? new Date(person.birth_date).getFullYear() : null;
@@ -76,12 +78,12 @@ export default function PersonDetailDrawer({
             }`}
           />
           <span className="text-[10px] font-bold uppercase tracking-wider text-[#7a5739]">
-            {t('badge_overview')} ? {t('drawer_gen')} {person.generation + 1}
+            {t('badge_overview')} • {t('drawer_gen')} {person.generation + 1}
           </span>
         </div>
         <button
           onClick={onClose}
-          className="p-1 rounded-lg hover:bg-[#f5ece5] text-[#727973] transition-colors"
+          className="p-1 rounded-lg hover:bg-[#f5ece5] text-[#727973] transition-colors cursor-pointer"
           aria-label={t('close')}
         >
           <X className="w-4 h-4" />
@@ -113,7 +115,7 @@ export default function PersonDetailDrawer({
               className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#1f1b17] text-white text-[11px] font-black flex items-center justify-center border-2 border-white shadow-md leading-none select-none z-20"
               title={t('deceased')}
             >
-              ?
+              ✝
             </span>
           )}
         </div>
@@ -121,19 +123,19 @@ export default function PersonDetailDrawer({
         <div className="min-w-0 flex-1">
           <h3 className="font-serif font-bold text-sm text-[#1f1b17] leading-tight truncate flex items-center gap-1">
             <span>{person.name}</span>
-            {isDeceased(person) && <span className="text-[#173124] font-black text-sm">?</span>}
+            {isDeceased(person) && <span className="text-[#173124] font-black text-sm">✝</span>}
           </h3>
           {deathYear ? (
             <p className="text-[11px] text-[#727973] font-medium mt-0.5">
-              {birthYear ? `${birthYear} ? ${deathYear}` : `${t('died_in_year')} ${deathYear}`}
+              {birthYear ? `${birthYear} — ${deathYear}` : `${t('died_in_year')} ${deathYear}`}
             </p>
           ) : isDeceased(person) ? (
             <p className="text-[11px] text-[#727973] font-medium mt-0.5">
-              {birthYear ? `${t('born_in_year')} ${birthYear} ? ${t('deceased')}` : t('deceased')}
+              {birthYear ? `${t('born_in_year')} ${birthYear} — ${t('deceased')}` : t('deceased')}
             </p>
           ) : birthYear ? (
             <p className="text-[11px] text-[#727973] font-medium mt-0.5">
-              {birthYear} ? {t('alive')}
+              {birthYear} — {t('alive')}
             </p>
           ) : (
             <p className="text-[10px] text-[#727973] italic">{t('dates_not_specified')}</p>
@@ -151,7 +153,7 @@ export default function PersonDetailDrawer({
         <div className="flex items-center justify-between">
           <span className="text-[#727973]">{t('drawer_parents')}</span>
           <span className="font-medium truncate max-w-[170px]">
-            {father ? father.first_name : '?'} & {mother ? mother.first_name : '?'}
+            {father ? father.first_name : '—'} & {mother ? mother.first_name : '—'}
           </span>
         </div>
         <div className="flex items-center justify-between">
@@ -166,7 +168,7 @@ export default function PersonDetailDrawer({
       <div className="grid grid-cols-2 gap-2 pt-1">
         <button
           onClick={onAddRelative}
-          className="py-2 px-2 rounded-xl bg-[#fff8f4] hover:bg-[#f5ece5] border border-[#eae1da] text-[#7a5739] text-[11px] font-bold transition-all flex items-center justify-center gap-1 active:scale-95"
+          className="py-2 px-2 rounded-xl bg-[#fff8f4] hover:bg-[#f5ece5] border border-[#eae1da] text-[#7a5739] text-[11px] font-bold transition-all flex items-center justify-center gap-1 active:scale-95 cursor-pointer"
         >
           <Plus className="w-3 h-3" />
           <span>{t('drawer_add')}</span>

@@ -88,7 +88,7 @@ export default function DashboardClientView({
         <StatCard
           title={t('dash_stat_members')}
           value={stats.totalMembers}
-          subtitle={`${stats.bloodCount} ${t('dash_stat_members_sub').split(' ? ')[0]} ? ${stats.spousesCount} ${t('dash_stat_members_sub').split(' ? ')[1] || ''}`}
+          subtitle={`${stats.bloodCount} ${t('dash_stat_members_sub').split(' • ')[0]} • ${stats.spousesCount} ${t('dash_stat_members_sub').split(' • ')[1] || ''}`}
           icon={Users}
           colorTheme="green"
         />
@@ -112,7 +112,7 @@ export default function DashboardClientView({
         <StatCard
           title={t('dash_stat_places')}
           value={stats.originPlaces.length}
-          subtitle={stats.originPlaces.slice(0, 2).join(', ') || (language === 'fr' ? 'B?nin, Afrique' : 'Benin, Africa')}
+          subtitle={stats.originPlaces.slice(0, 2).join(', ') || (language === 'fr' ? 'Bénin, Afrique' : 'Benin, Africa')}
           icon={MapPin}
           colorTheme="blue"
         />

@@ -6,6 +6,7 @@ import { Heart } from 'lucide-react';
 import { FoyerSpouseData } from '@/types';
 import { isDeceased } from '@/lib/genealogy';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { translatePersonData } from '@/lib/i18n/dbTranslation';
 
 export interface SpouseCardProps {
   spouse: FoyerSpouseData;
@@ -16,13 +17,14 @@ export interface SpouseCardProps {
 }
 
 export default function SpouseCard({
-  spouse,
+  spouse: rawSpouse,
   unionIndex,
   childrenCount,
   onSelect,
   className = '',
 }: SpouseCardProps) {
   const { t, language } = useLanguage();
+  const spouse = translatePersonData(rawSpouse as any, language) as FoyerSpouseData;
   const isMale = spouse.gender === 'M';
 
   const getYear = (dateStr?: string | null): string | number | null => {
@@ -48,12 +50,12 @@ export default function SpouseCard({
     (spouse.name && spouse.name.includes(' ')
       ? spouse.name.split(' ').pop()?.[0] || ''
       : '');
-  const initials = `${firstInitial}${lastInitial}`.toUpperCase() || '?';
+  const initials = `${firstInitial}${lastInitial}`.toUpperCase() || '•';
 
   const getUnionLabel = (index: number): string => {
     if (language === 'fr') {
-      if (index === 0) return '1?re union';
-      return `${index + 1}?me union`;
+      if (index === 0) return '1ère union';
+      return `${index + 1}ème union`;
     }
     if (index === 0) return '1st Union';
     if (index === 1) return '2nd Union';
@@ -101,7 +103,7 @@ export default function SpouseCard({
               className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#1f1b17] text-white text-[11px] font-black flex items-center justify-center border-2 border-white shadow-md leading-none select-none z-20"
               title={t('deceased')}
             >
-              ?
+              ✝
             </span>
           )}
         </div>
@@ -109,20 +111,20 @@ export default function SpouseCard({
         <div className="min-w-0 flex-1">
           <h4 className="font-serif font-bold text-sm text-[#1f1b17] truncate leading-snug flex items-center gap-1">
             <span>{fullName}</span>
-            {dead && <span className="text-[#173124] font-black text-sm">?</span>}
+            {dead && <span className="text-[#173124] font-black text-sm">✝</span>}
           </h4>
 
           {deathYear ? (
             <p className="text-xs text-[#727973] font-medium mt-0.5">
-              {birthYear ? `${birthYear} ? ${deathYear}` : `${t('died_in_year')} ${deathYear}`}
+              {birthYear ? `${birthYear} — ${deathYear}` : `${t('died_in_year')} ${deathYear}`}
             </p>
           ) : dead ? (
             <p className="text-xs text-[#727973] font-medium mt-0.5">
-              {birthYear ? `${birthYear} ? ${t('deceased')}` : t('deceased')}
+              {birthYear ? `${birthYear} — ${t('deceased')}` : t('deceased')}
             </p>
           ) : birthYear ? (
             <p className="text-xs text-[#727973] font-medium mt-0.5">
-              {birthYear} ? {t('alive')}
+              {birthYear} — {t('alive')}
             </p>
           ) : null}
 

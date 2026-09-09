@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { TimelineEvent } from '@/types';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { translateDbText } from '@/lib/i18n/dbTranslation';
 
 export default function PersonTimeline({ timeline }: { timeline: TimelineEvent[] }) {
   const { t, language } = useLanguage();
@@ -85,29 +86,19 @@ export default function PersonTimeline({ timeline }: { timeline: TimelineEvent[]
                 {event.location && (
                   <span className="text-xs text-[#727973] flex items-center gap-1">
                     <MapPin className="w-3 h-3 text-[#7a5739]" />
-                    {event.location}
+                    {translateDbText(event.location, language)}
                   </span>
                 )}
               </div>
 
               <h4 className="font-serif font-bold text-base text-[#1f1b17] mt-1">
-                {event.title}
+                {translateDbText(event.title, language)}
               </h4>
 
               {event.description && (
                 <p className="text-sm text-[#424844] mt-1 leading-relaxed">
-                  {event.description}
+                  {translateDbText(event.description, language)}
                 </p>
-              )}
-
-              {event.relatedPersonId && (
-                <Link
-                  href={`/person/${event.relatedPersonId}`}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-[#173124] hover:underline mt-2"
-                >
-                  <span>{t('view_profile')}</span>
-                  <span>?</span>
-                </Link>
               )}
             </div>
           </div>

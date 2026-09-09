@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Clock, PlusCircle, Edit3, Image as ImageIcon, Sparkles, User } from 'lucide-react';
 import { ActivityEvent } from '@/types';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { translateDbText } from '@/lib/i18n/dbTranslation';
 
 export default function ActivityFeed({ activities }: { activities: ActivityEvent[] }) {
   const { t, language } = useLanguage();
@@ -66,15 +67,15 @@ export default function ActivityFeed({ activities }: { activities: ActivityEvent
 
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-[#1f1b17] font-medium leading-snug">
-                  {act.description}
+                  {translateDbText(act.description, language)}
                 </p>
                 <div className="flex items-center gap-2 mt-1 text-xs text-[#727973]">
                   <span>{act.user}</span>
-                  <span>?</span>
+                  <span>•</span>
                   <span>{formatTimestamp(act.timestamp)}</span>
                   {act.person_id && (
                     <>
-                      <span>?</span>
+                      <span>•</span>
                       <Link
                         href={`/person/${act.person_id}`}
                         className="text-[#173124] hover:underline font-medium inline-flex items-center gap-0.5"

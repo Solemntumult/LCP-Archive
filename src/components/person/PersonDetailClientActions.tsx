@@ -59,7 +59,7 @@ export default function PersonDetailClientActions({
               <p className="text-sm text-[#727973] leading-relaxed">
                 {language === 'en'
                   ? 'This action will permanently remove this member from the family tree. Parent and child links will be adjusted.'
-                  : "Cette action retirera d?finitivement ce membre de l'arbre g?n?alogique. Les liens avec ses parents et enfants seront r?ajust?s."}
+                  : "Cette action retirera définitivement ce membre de l'arbre généalogique. Les liens avec ses parents et enfants seront réajustés."}
               </p>
             </div>
 

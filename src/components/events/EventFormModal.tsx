@@ -206,7 +206,7 @@ export default function EventFormModal({
     if (!fileList || fileList.length === 0) return;
 
     if (remainingVideoSlots <= 0) {
-      setError(language === 'fr' ? `Limite de ${MAX_VIDEOS} vid?os atteinte.` : `Maximum limit of ${MAX_VIDEOS} videos reached.`);
+      setError(language === 'fr' ? `Limite de ${MAX_VIDEOS} vidéos atteinte.` : `Maximum limit of ${MAX_VIDEOS} videos reached.`);
       if (videoInputRef.current) videoInputRef.current.value = '';
       return;
     }
@@ -269,7 +269,7 @@ export default function EventFormModal({
         video: prev.video || compressedVideos[0] || '',
       }));
     } catch (err: any) {
-      setError(err.message || (language === 'en' ? 'Error compressing video' : 'Erreur lors de la compression de la vid?o'));
+      setError(err.message || (language === 'en' ? 'Error compressing video' : 'Erreur lors de la compression de la vidéo'));
     } finally {
       setVideoCompressing(false);
       setCompressionProgress(0);
@@ -372,7 +372,7 @@ export default function EventFormModal({
                 {isEditing ? t('evform_title_edit') : t('evform_title_create')}
               </h3>
               <p className="text-xs text-[#727973]">
-                {language === 'fr' ? 'Partagez des r?cits, photos et courtes vid?os avec toute la famille' : 'Share stories, photos, and short videos with the family'}
+                {language === 'fr' ? 'Partagez des récits, photos et courtes vidéos avec toute la famille' : 'Share stories, photos, and short videos with the family'}
               </p>
             </div>
           </div>

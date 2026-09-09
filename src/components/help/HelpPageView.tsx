@@ -3,21 +3,15 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  GitFork,
   HelpCircle,
   Play,
   Pause,
   RotateCcw,
   ChevronRight,
   ChevronLeft,
-  Search,
   Sparkles,
-  Film,
-  Calendar,
-  Layers,
   Info,
   ArrowRight,
-  Bookmark,
   User,
   Heart,
   Baby,
@@ -36,113 +30,113 @@ export default function HelpPageView() {
       id: 1,
       title: language === 'fr' ? '1. Le Foyer Racine du Patriarche' : '1. Root Household of the Patriarch',
       desc: language === 'fr'
-        ? "L'arbre commence par le patriarche Paul Comlan LISSANON et ses ?pouses (Lucienne DEGBO & Rosalie SEGBEDJI). Les enfants de l'union Paul-Lucienne suivent l'ordre chronologique exact : Claude, Val?re, Alexis, Eric (?), Herv?, Salomon, L?ticia, R?gina."
-        : 'The tree begins with the patriarch Paul Comlan LISSANON and his spouses (Lucienne DEGBO & Rosalie SEGBEDJI). The children of the Paul-Lucienne union follow the authentic chronological order: Claude, Val?re, Alexis, Eric (?), Herv?, Salomon, L?ticia, Regina.',
-      badge: language === 'fr' ? 'G?N?RATION 1 ? LES RACINES' : 'GENERATION 1 ? THE ROOTS',
+        ? "L'arbre commence par le patriarche Paul Comlan LISSANON et ses épouses (Lucienne DEGBO & Rosalie SEGBEDJI). Les enfants de l'union Paul-Lucienne suivent l'ordre chronologique exact : Claude, Valère, Alexis, Eric (✝), Hervé, Salomon, Léticia, Régina."
+        : 'The tree begins with the patriarch Paul Comlan LISSANON and his spouses (Lucienne DEGBO & Rosalie SEGBEDJI). The children of the Paul-Lucienne union follow the authentic chronological order: Claude, Valère, Alexis, Eric (✝), Hervé, Salomon, Léticia, Regina.',
+      badge: language === 'fr' ? 'GÉNÉRATION 1 • LES RACINES' : 'GENERATION 1 • THE ROOTS',
       foyerName: 'Foyer Paul & Lucienne LISSANON',
       centerPerson: { id: 1, name: 'Paul Comlan LISSANON', role: language === 'fr' ? 'Patriarche' : 'Patriarch', isDeceased: true, gender: 'M', gen: 1 },
       spouses: [
-        { id: 2, name: 'Lucienne DEGBO (Dida)', role: language === 'fr' ? '?pouse' : 'Spouse', isDeceased: false, gender: 'F' },
-        { id: 3, name: 'Rosalie SEGBEDJI (Daassi)', role: language === 'fr' ? '?pouse' : 'Spouse', isDeceased: false, gender: 'F' },
+        { id: 2, name: 'Lucienne DEGBO (Dida)', role: language === 'fr' ? 'Épouse' : 'Spouse', isDeceased: false, gender: 'F' },
+        { id: 3, name: 'Rosalie SEGBEDJI (Daassi)', role: language === 'fr' ? 'Épouse' : 'Spouse', isDeceased: false, gender: 'F' },
       ],
       children: [
-        { id: 7, name: 'Claude Gb?nan', isDeceased: false, gender: 'M', hasDescendants: true },
-        { id: 8, name: 'Val?re Andr?', isDeceased: false, gender: 'M', hasDescendants: true },
+        { id: 7, name: 'Claude Gbênan', isDeceased: false, gender: 'M', hasDescendants: true },
+        { id: 8, name: 'Valère André', isDeceased: false, gender: 'M', hasDescendants: true },
         { id: 9, name: 'Alexis', isDeceased: false, gender: 'M', hasDescendants: true },
         { id: 10, name: 'Eric', isDeceased: true, gender: 'M', hasDescendants: false },
-        { id: 11, name: 'Herv?', isDeceased: false, gender: 'M', hasDescendants: true },
+        { id: 11, name: 'Hervé', isDeceased: false, gender: 'M', hasDescendants: true },
         { id: 12, name: 'Salomon', isDeceased: false, gender: 'M', hasDescendants: true },
-        { id: 13, name: 'L?ticia', isDeceased: false, gender: 'F', hasDescendants: false },
-        { id: 14, name: 'R?gina', isDeceased: false, gender: 'F', hasDescendants: true },
+        { id: 13, name: 'Léticia', isDeceased: false, gender: 'F', hasDescendants: false },
+        { id: 14, name: 'Régina', isDeceased: false, gender: 'F', hasDescendants: true },
       ],
       actionTip: language === 'fr'
-        ? 'Cliquez sur le bouton ? D?ployer ? sous Claude pour ouvrir sa branche familiale.'
+        ? 'Cliquez sur le bouton « Déployer » sous Claude pour ouvrir sa branche familiale.'
         : 'Click on the "Deploy" button under Claude to open his family branch.',
     },
     {
       id: 2,
-      title: language === 'fr' ? '2. D?ploiement du Foyer Claude & Rachelle' : '2. Deploying Claude & Rachelle Household',
+      title: language === 'fr' ? '2. Déploiement du Foyer Claude & Rachelle' : '2. Deploying Claude & Rachelle Household',
       desc: language === 'fr'
-        ? "En d?ployant la branche de Claude Gb?nan LISSANON et de son ?pouse Rachelle GBAGUIDI, vous d?couvrez leurs 7 enfants dans l'ordre chronologique fixe : Clara, Donald, Jubil?, Jean-Eudes, Jolidon, Paola, Paula."
-        : 'Deploying the branch of Claude Gb?nan LISSANON and his spouse Rachelle GBAGUIDI reveals their 7 children in fixed chronological order: Clara, Donald, Jubil?, Jean-Eudes, Jolidon, Paola, Paula.',
-      badge: language === 'fr' ? 'G?N?RATION 2 ? BRANCHE CLAUDE' : 'GENERATION 2 ? CLAUDE BRANCH',
+        ? "En déployant la branche de Claude Gbênan LISSANON et de son épouse Rachelle GBAGUIDI, vous découvrez leurs 7 enfants dans l'ordre chronologique fixe : Clara, Donald, Jubilé, Jean-Eudes, Jolidon, Paola, Paula."
+        : 'Deploying the branch of Claude Gbênan LISSANON and his spouse Rachelle GBAGUIDI reveals their 7 children in fixed chronological order: Clara, Donald, Jubilé, Jean-Eudes, Jolidon, Paola, Paula.',
+      badge: language === 'fr' ? 'GÉNÉRATION 2 • BRANCHE CLAUDE' : 'GENERATION 2 • CLAUDE BRANCH',
       foyerName: 'Foyer Claude & Rachelle LISSANON',
-      centerPerson: { id: 7, name: 'Claude Gb?nan LISSANON', role: language === 'fr' ? 'Chef de foyer' : 'Head of Household', isDeceased: false, gender: 'M', gen: 2 },
+      centerPerson: { id: 7, name: 'Claude Gbênan LISSANON', role: language === 'fr' ? 'Chef de foyer' : 'Head of Household', isDeceased: false, gender: 'M', gen: 2 },
       spouses: [
-        { id: 19, name: 'Rachelle GBAGUIDI', role: language === 'fr' ? '?pouse' : 'Spouse', isDeceased: false, gender: 'F' },
+        { id: 19, name: 'Rachelle GBAGUIDI', role: language === 'fr' ? 'Épouse' : 'Spouse', isDeceased: false, gender: 'F' },
       ],
       children: [
         { id: 20, name: 'Clara', isDeceased: false, gender: 'F', hasDescendants: true },
         { id: 21, name: 'Donald', isDeceased: false, gender: 'M', hasDescendants: false },
-        { id: 22, name: 'Jubil?', isDeceased: false, gender: 'M', hasDescendants: false },
+        { id: 22, name: 'Jubilé', isDeceased: false, gender: 'M', hasDescendants: false },
         { id: 23, name: 'Jean-Eudes', isDeceased: false, gender: 'M', hasDescendants: false },
         { id: 24, name: 'Jolidon', isDeceased: false, gender: 'M', hasDescendants: false },
         { id: 25, name: 'Paola', isDeceased: false, gender: 'F', hasDescendants: false },
         { id: 26, name: 'Paula', isDeceased: false, gender: 'F', hasDescendants: false },
       ],
       actionTip: language === 'fr'
-        ? 'Le bouton ? ? Retour (Paul) ? permet de remonter instantan?ment au foyer parent.'
-        : 'The "? Back (Paul)" button allows you to instantly navigate back to the parent household.',
+        ? 'Le bouton « ← Retour (Paul) » permet de remonter instantanément au foyer parent.'
+        : 'The "← Back (Paul)" button allows you to instantly navigate back to the parent household.',
     },
     {
       id: 3,
       title: language === 'fr' ? '3. Foyer Alexis & Patricia LISSANON' : '3. Alexis & Patricia Household',
       desc: language === 'fr'
-        ? 'Autre branche de la 2e g?n?ration : Alexis LISSANON et Patricia AHIHA avec leurs enfants Fridzel, Fifam? et Espoir. Chaque membre poss?de une fiche biographique d?taill?e.'
-        : 'Another 2nd generation branch: Alexis LISSANON and Patricia AHIHA with their children Fridzel, Fifam?, and Espoir. Every member features a dedicated biography record.',
-      badge: language === 'fr' ? 'G?N?RATION 2 ? BRANCHE ALEXIS' : 'GENERATION 2 ? ALEXIS BRANCH',
+        ? 'Autre branche de la 2e génération : Alexis LISSANON et Patricia AHIHA avec leurs enfants Fridzel, Fifamè et Espoir. Chaque membre possède une fiche biographique détaillée.'
+        : 'Another 2nd generation branch: Alexis LISSANON and Patricia AHIHA with their children Fridzel, Fifamè, and Espoir. Every member features a dedicated biography record.',
+      badge: language === 'fr' ? 'GÉNÉRATION 2 • BRANCHE ALEXIS' : 'GENERATION 2 • ALEXIS BRANCH',
       foyerName: 'Foyer Alexis & Patricia LISSANON',
       centerPerson: { id: 9, name: 'Alexis LISSANON', role: language === 'fr' ? 'Chef de foyer' : 'Head of Household', isDeceased: false, gender: 'M', gen: 2 },
       spouses: [
-        { id: 31, name: 'Patricia AHIHA', role: language === 'fr' ? '?pouse' : 'Spouse', isDeceased: false, gender: 'F' },
+        { id: 31, name: 'Patricia AHIHA', role: language === 'fr' ? 'Épouse' : 'Spouse', isDeceased: false, gender: 'F' },
       ],
       children: [
         { id: 32, name: 'Fridzel', isDeceased: false, gender: 'M', hasDescendants: false },
-        { id: 33, name: 'Fifam?', isDeceased: false, gender: 'F', hasDescendants: false },
+        { id: 33, name: 'Fifamè', isDeceased: false, gender: 'F', hasDescendants: false },
         { id: 34, name: 'Espoir', isDeceased: false, gender: 'M', hasDescendants: false },
       ],
       actionTip: language === 'fr'
-        ? "Cliquez sur n'importe quel portrait pour afficher la fen?tre d'aper?u et acc?der ? sa biographie."
+        ? "Cliquez sur n'importe quel portrait pour afficher le volet d'aperçu et accéder à sa biographie."
         : 'Click on any portrait avatar to open the quick preview drawer and view their full biography.',
     },
     {
       id: 4,
-      title: language === 'fr' ? '4. Foyer Salomon & D?borah LISSANON' : '4. Salomon & D?borah Household',
+      title: language === 'fr' ? '4. Foyer Salomon & Déborah LISSANON' : '4. Salomon & Déborah Household',
       desc: language === 'fr'
-        ? 'Branche de Salomon LISSANON et de D?borah AKOUTOU avec leurs enfants Houef?, Roche et Chancelle. Le syst?me g?re les unions multiples et les descendances crois?es avec fluidit?.'
-        : 'Branch of Salomon LISSANON and D?borah AKOUTOU with their children Houef?, Roche, and Chancelle. The system seamlessly handles multiple unions and lineage trees.',
-      badge: language === 'fr' ? 'G?N?RATION 2 ? BRANCHE SALOMON' : 'GENERATION 2 ? SALOMON BRANCH',
-      foyerName: 'Foyer Salomon & D?borah LISSANON',
+        ? 'Branche de Salomon LISSANON et de Déborah AKOUTOU avec leurs enfants Houefè, Roche et Chancelle. Le système gère les unions et les descendances avec fluidité.'
+        : 'Branch of Salomon LISSANON and Déborah AKOUTOU with their children Houefè, Roche, and Chancelle. The system seamlessly handles multiple unions and lineage trees.',
+      badge: language === 'fr' ? 'GÉNÉRATION 2 • BRANCHE SALOMON' : 'GENERATION 2 • SALOMON BRANCH',
+      foyerName: 'Foyer Salomon & Déborah LISSANON',
       centerPerson: { id: 12, name: 'Salomon LISSANON', role: language === 'fr' ? 'Chef de foyer' : 'Head of Household', isDeceased: false, gender: 'M', gen: 2 },
       spouses: [
-        { id: 40, name: 'D?borah AKOUTOU', role: language === 'fr' ? '?pouse' : 'Spouse', isDeceased: false, gender: 'F' },
+        { id: 40, name: 'Déborah AKOUTOU', role: language === 'fr' ? 'Épouse' : 'Spouse', isDeceased: false, gender: 'F' },
       ],
       children: [
-        { id: 41, name: 'Houef?', isDeceased: false, gender: 'F', hasDescendants: false },
+        { id: 41, name: 'Houefè', isDeceased: false, gender: 'F', hasDescendants: false },
         { id: 42, name: 'Roche', isDeceased: false, gender: 'M', hasDescendants: false },
         { id: 43, name: 'Chancelle', isDeceased: false, gender: 'F', hasDescendants: false },
       ],
       actionTip: language === 'fr'
-        ? 'Le marqueur ? signale avec respect les membres d?funts de la famille.'
-        : 'The ? mark respectfully indicates deceased family members.',
+        ? 'Le marqueur ✝ signale avec respect les membres défunts de la famille.'
+        : 'The ✝ mark respectfully indicates deceased family members.',
     },
     {
       id: 5,
-      title: language === 'fr' ? '5. Foyer 3e G?n?ration : Clara & Oscar SOGLO' : '5. 3rd Generation Household: Clara & Oscar SOGLO',
+      title: language === 'fr' ? '5. Foyer 3e génération : Clara & Oscar SOGLO' : '5. 3rd Generation Household: Clara & Oscar SOGLO',
       desc: language === 'fr'
-        ? "La descendance se poursuit sur la 3e g?n?ration avec Clara LISSANON et son ?poux Oscar SOGLO, parents de Yanis SOGLO (G?n?ration 4). Vous pouvez naviguer sans fin d'une g?n?ration ? l'autre."
+        ? "La descendance se poursuit sur la 3e génération avec Clara LISSANON et son époux Oscar SOGLO, parents de Yanis SOGLO (génération 4). Vous pouvez naviguer d'une génération à l'autre."
         : 'Lineage continues into the 3rd generation with Clara LISSANON and her spouse Oscar SOGLO, parents of Yanis SOGLO (Generation 4). You can explore smoothly from generation to generation.',
-      badge: language === 'fr' ? 'G?N?RATION 3 ? BRANCHE CLARA' : 'GENERATION 3 ? CLARA BRANCH',
+      badge: language === 'fr' ? 'GÉNÉRATION 3 • BRANCHE CLARA' : 'GENERATION 3 • CLARA BRANCH',
       foyerName: 'Foyer Clara & Oscar SOGLO',
       centerPerson: { id: 20, name: 'Clara LISSANON', role: language === 'fr' ? 'Chef de foyer' : 'Head of Household', isDeceased: false, gender: 'F', gen: 3 },
       spouses: [
-        { id: 49, name: 'Oscar SOGLO', role: language === 'fr' ? '?poux' : 'Spouse', isDeceased: false, gender: 'M' },
+        { id: 49, name: 'Oscar SOGLO', role: language === 'fr' ? 'Époux' : 'Spouse', isDeceased: false, gender: 'M' },
       ],
       children: [
         { id: 50, name: 'Yanis SOGLO', isDeceased: false, gender: 'M', hasDescendants: false },
       ],
       actionTip: language === 'fr'
-        ? 'Toutes les donn?es sont r?elles et issues de la base g?n?alogique du projet.'
+        ? 'Toutes les données sont réelles et issues de la base généalogique du projet.'
         : 'All data displayed is authentic and loaded from the project genealogical archive.',
     },
   ];
@@ -165,7 +159,7 @@ export default function HelpPageView() {
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#faebe0] text-[#7a5739] text-xs font-semibold tracking-wide uppercase">
             <HelpCircle className="w-4 h-4" />
-            <span>{language === 'fr' ? 'Guide Pratique & D?monstration' : 'User Guide & Interactive Demo'}</span>
+            <span>{language === 'fr' ? 'Guide Pratique & Démonstration' : 'User Guide & Interactive Demo'}</span>
           </div>
           <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#173124] tracking-tight">
             {t('help_title')}
@@ -215,7 +209,7 @@ export default function HelpPageView() {
                   setIsPlaying(false);
                 }}
                 className="p-2 rounded-xl border border-[#eae1da] text-[#727973] hover:bg-[#f5ece5] hover:text-[#173124] transition-all cursor-pointer"
-                title={language === 'fr' ? 'Recommencer la d?mo' : 'Restart demo'}
+                title={language === 'fr' ? 'Recommencer la démo' : 'Restart demo'}
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
@@ -275,7 +269,7 @@ export default function HelpPageView() {
                     </div>
                     {activeStep.centerPerson.isDeceased && (
                       <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#1f1b17] text-white text-[11px] font-black flex items-center justify-center border-2 border-white">
-                        ?
+                        ✝
                       </span>
                     )}
                   </div>
@@ -300,7 +294,7 @@ export default function HelpPageView() {
                       </div>
                       {sp.isDeceased && (
                         <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#1f1b17] text-white text-[11px] font-black flex items-center justify-center border-2 border-white">
-                          ?
+                          ✝
                         </span>
                       )}
                     </div>
@@ -339,7 +333,7 @@ export default function HelpPageView() {
                         </div>
                         {child.isDeceased && (
                           <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#1f1b17] text-white text-[9px] font-black flex items-center justify-center border border-white">
-                            ?
+                            ✝
                           </span>
                         )}
                       </div>

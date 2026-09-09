@@ -20,9 +20,10 @@ import {
 import { FamilyEvent, EventCategory, Person } from '@/types';
 import { getFullName } from '@/lib/genealogy';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { translateEventData } from '@/lib/i18n/dbTranslation';
 
 export default function EventCard({
-  event,
+  event: rawEvent,
   allPersons,
   onEdit,
   onDelete,
@@ -33,6 +34,7 @@ export default function EventCard({
   onDelete?: (id: number) => void;
 }) {
   const { t, language } = useLanguage();
+  const event = translateEventData(rawEvent, language);
   const eventDate = new Date(event.event_date);
   const day = eventDate.getDate();
   const month = eventDate.toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { month: 'short' });
@@ -175,7 +177,7 @@ export default function EventCard({
         {relatedPersons.length > 0 && (
           <div className="pt-3 border-t border-[#f5ece5] space-y-1.5">
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#727973] block">
-              {language === 'en' ? 'Concerned members :' : 'Membres concern?s :'}
+              {language === 'en' ? 'Concerned members :' : 'Membres concernés :'}
             </span>
             <div className="flex flex-wrap items-center gap-1.5">
               {relatedPersons.map((p) => (

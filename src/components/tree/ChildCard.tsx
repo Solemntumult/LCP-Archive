@@ -6,14 +6,16 @@ import { GitFork, User } from 'lucide-react';
 import { FoyerChildData } from '@/types';
 import { isDeceased } from '@/lib/genealogy';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { translatePersonData } from '@/lib/i18n/dbTranslation';
 
 export interface ChildCardProps {
   child: FoyerChildData;
   onDeploy: (childId: number) => void;
 }
 
-export default function ChildCard({ child, onDeploy }: ChildCardProps) {
+export default function ChildCard({ child: rawChild, onDeploy }: ChildCardProps) {
   const { t, language } = useLanguage();
+  const child = translatePersonData(rawChild as any, language) as FoyerChildData;
   const isMale = child.gender === 'M';
 
   const getYear = (dateStr?: string | null): number | null => {
@@ -32,12 +34,12 @@ export default function ChildCard({ child, onDeploy }: ChildCardProps) {
 
   const yearDisplay = birthYear
     ? deathYear
-      ? `${t('born_in_year')} ${birthYear} ? ?${deathYear}`
+      ? `${t('born_in_year')} ${birthYear} — ✝${deathYear}`
       : dead
-      ? `${t('born_in_year')} ${birthYear} ? ${t('deceased')}`
+      ? `${t('born_in_year')} ${birthYear} — ${t('deceased')}`
       : `${t('born_in_year')} ${birthYear}`
     : deathYear
-    ? `?${deathYear}`
+    ? `✝${deathYear}`
     : dead
     ? t('deceased')
     : t('unknown_date');
@@ -76,7 +78,7 @@ export default function ChildCard({ child, onDeploy }: ChildCardProps) {
               className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full bg-[#1f1b17] text-white text-[10px] font-black flex items-center justify-center border-1.5 border-white shadow-md leading-none select-none z-20"
               title={t('deceased')}
             >
-              ?
+              ✝
             </span>
           )}
         </div>
@@ -84,7 +86,7 @@ export default function ChildCard({ child, onDeploy }: ChildCardProps) {
         <div className="min-w-0 flex-1 leading-tight">
           <h4 className="font-serif font-bold text-sm text-[#1f1b17] group-hover:text-[#173124] transition-colors truncate flex items-center gap-1">
             <span>{child.name}</span>
-            {dead && <span className="text-[#173124] font-black text-xs">?</span>}
+            {dead && <span className="text-[#173124] font-black text-xs">✝</span>}
           </h4>
           <p className="text-[10px] text-[#727973] font-medium mt-0.5">
             {yearDisplay}
@@ -136,7 +138,7 @@ export default function ChildCard({ child, onDeploy }: ChildCardProps) {
         ) : (
           <div className="py-1">
             <p className="text-xs text-[#727973] italic">
-              {language === 'fr' ? 'Aucun descendant r?pertori?' : 'No descendants recorded'}
+              {language === 'fr' ? 'Aucun descendant répertorié' : 'No descendants recorded'}
             </p>
           </div>
         )}

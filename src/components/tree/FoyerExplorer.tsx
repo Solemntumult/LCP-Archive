@@ -199,7 +199,7 @@ export default function FoyerExplorer({
           {t('no_results')}
         </h2>
         <p className="text-sm text-[#727973] max-w-md mx-auto">
-          {language === 'fr' ? 'Impossible de charger le graphe. V?rifiez que des membres sont enregistr?s.' : 'Unable to load graph. Ensure members are recorded in database.'}
+          {language === 'fr' ? 'Impossible de charger le graphe. Vérifiez que des membres sont enregistrés.' : 'Unable to load graph. Ensure members are recorded in database.'}
         </p>
       </div>
     );
@@ -269,7 +269,7 @@ export default function FoyerExplorer({
                       </p>
                     </div>
                     <span className="text-[10px] text-[#7a5739] font-medium shrink-0 ml-2">
-                      {t('explore_foyer')} ?
+                      {t('explore_foyer')} →
                     </span>
                   </button>
                 ))}
@@ -288,7 +288,7 @@ export default function FoyerExplorer({
         </div>
       </div>
 
-      {/* ?? Foyer Header Banner ?? */}
+      {/* Foyer Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-3xl bg-gradient-to-br from-[#173124] via-[#234332] to-[#2d4739] text-white shadow-lg">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center text-[#fdcea9] border border-white/20 shadow-md shrink-0">
@@ -297,7 +297,7 @@ export default function FoyerExplorer({
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/15 text-[10px] font-bold text-[#b0cdbb] mb-0.5">
               <Sparkles className="w-3 h-3 text-[#fdcea9]" />
-              <span>{language === 'fr' ? `Arbre G?n?alogique ? Foyer de G?n?ration ${person.generation + 1}` : `Family Tree ? Generation ${person.generation + 1} Household`}</span>
+              <span>{language === 'fr' ? `Arbre généalogique • Foyer de génération ${person.generation + 1}` : `Family Tree • Generation ${person.generation + 1} Household`}</span>
             </div>
             <h2 className="font-serif font-black text-lg sm:text-2xl tracking-tight text-white">
               {language === 'fr' ? `Arbre de la Famille ${person.last_name} (${person.first_name})` : `${person.last_name} Family Tree (${person.first_name})`}
@@ -307,9 +307,9 @@ export default function FoyerExplorer({
 
         <div className="text-xs text-[#eae1da]/80 font-medium">
           {language === 'fr' ? (
-            <>Cliquez sur <strong className="text-[#fdcea9]">D?ployer</strong> sous un enfant pour faire appara?tre son propre arbre.</>
+            <>Cliquez sur <strong className="text-[#fdcea9]">Déployer</strong> sous un enfant pour faire apparaître son propre foyer.</>
           ) : (
-            <>Click <strong className="text-[#fdcea9]">Expand</strong> below a child to open their family tree.</>
+            <>Click <strong className="text-[#fdcea9]">Deploy</strong> below a child to open their family branch.</>
           )}
         </div>
       </div>

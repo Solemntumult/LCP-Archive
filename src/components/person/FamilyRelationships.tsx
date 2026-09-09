@@ -13,11 +13,14 @@ import {
 import { Person, PersonDetail } from '@/types';
 import { getFullName } from '@/lib/genealogy';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { translatePersonData } from '@/lib/i18n/dbTranslation';
 
-export default function FamilyRelationships({ person }: { person: PersonDetail }) {
+export default function FamilyRelationships({ person: rawPerson }: { person: PersonDetail }) {
   const { t, language } = useLanguage();
+  const person = translatePersonData(rawPerson, language);
 
-  const renderMemberMiniCard = (member: Person, relationLabel: string) => {
+  const renderMemberMiniCard = (memberRaw: Person, relationLabel: string) => {
+    const member = translatePersonData(memberRaw, language);
     const isMale = member.gender === 'M';
     const initials = `${member.first_name[0] || ''}${member.last_name[0] || ''}`;
     const name = getFullName(member);
@@ -86,7 +89,7 @@ export default function FamilyRelationships({ person }: { person: PersonDetail }
 
         {!person.father && !person.mother ? (
           <p className="text-xs text-[#727973] italic p-3 bg-[#fff8f4] rounded-xl border border-[#eae1da]">
-            {language === 'fr' ? 'Aucun parent direct renseign? (G?n?ration racine).' : 'No direct parents recorded (Root generation).'}
+            {language === 'fr' ? 'Aucun parent direct renseigné (génération racine).' : 'No direct parents recorded (Root generation).'}
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -106,7 +109,7 @@ export default function FamilyRelationships({ person }: { person: PersonDetail }
             {person.siblings.map((sib) =>
               renderMemberMiniCard(
                 sib,
-                language === 'fr' ? (sib.gender === 'M' ? 'Fr?re' : 'S?ur') : (sib.gender === 'M' ? 'Brother' : 'Sister')
+                language === 'fr' ? (sib.gender === 'M' ? 'Frère' : 'Sœur') : (sib.gender === 'M' ? 'Brother' : 'Sister')
               )
             )}
           </div>
@@ -147,7 +150,7 @@ export default function FamilyRelationships({ person }: { person: PersonDetail }
         {person.children_by_spouse.length === 0 ? (
           <div className="p-6 text-center bg-[#fff8f4] rounded-2xl border border-[#eae1da]">
             <p className="text-xs text-[#727973]">
-              {language === 'fr' ? 'Aucun enfant enregistr? pour cette personne.' : 'No children recorded for this person.'}
+              {language === 'fr' ? 'Aucun enfant enregistré pour cette personne.' : 'No children recorded for this person.'}
             </p>
             <Link
               href={`/person/add?parent_id=${person.id}&parent_gender=${person.gender}`}

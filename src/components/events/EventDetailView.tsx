@@ -31,6 +31,7 @@ import { FamilyEvent, EventCategory, Person } from '@/types';
 import EventFormModal from './EventFormModal';
 import { removeLocalStoredEvent } from '@/lib/eventStorage';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { translateEventData } from '@/lib/i18n/dbTranslation';
 
 export default function EventDetailView({
   initialEvent,
@@ -42,6 +43,7 @@ export default function EventDetailView({
   const router = useRouter();
   const { t, language } = useLanguage();
   const [event, setEvent] = useState<FamilyEvent>(initialEvent);
+  const displayEvent = translateEventData(event, language);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -186,7 +188,7 @@ export default function EventDetailView({
       router.refresh();
     } catch (err) {
       console.error('Error deleting event:', err);
-      alert(language === 'en' ? 'Error deleting event.' : "Erreur lors de la suppression de l'?v?nement.");
+      alert(language === 'en' ? 'Error deleting event.' : "Erreur lors de la suppression de l'événement.");
       setDeleting(false);
     }
   };
@@ -205,7 +207,7 @@ export default function EventDetailView({
           </Link>
           <ChevronRight className="w-3.5 h-3.5" />
           <span className="font-semibold text-[#173124] truncate max-w-[200px] sm:max-w-xs">
-            {event.title}
+            {displayEvent.title}
           </span>
         </div>
 
@@ -246,10 +248,10 @@ export default function EventDetailView({
             <span className="capitalize">{formattedDate}</span>
           </div>
 
-          {event.location && (
+          {displayEvent.location && (
             <div className="flex items-center gap-1.5 text-xs sm:text-sm text-[#5c645e] bg-[#f5ece5] px-3 py-1.5 rounded-full">
               <MapPin className="w-3.5 h-3.5 text-[#7a5739]" />
-              <span>{event.location}</span>
+              <span>{displayEvent.location}</span>
             </div>
           )}
         </div>
@@ -323,7 +325,7 @@ export default function EventDetailView({
                     setStoryIndex((prev) => (prev - 1 + storyPhotos.length) % storyPhotos.length);
                   }}
                   className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/80 text-white border border-white/20 transition-all opacity-0 group-hover:opacity-100 z-10"
-                  aria-label={language === 'en' ? 'Previous' : 'Pr?c?dent'}
+                  aria-label={language === 'en' ? 'Previous' : 'précédent'}
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
@@ -352,12 +354,12 @@ export default function EventDetailView({
 
         {/* Event Title */}
         <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-black text-[#173124] tracking-tight leading-tight">
-          {event.title}
+          {displayEvent.title}
         </h1>
 
         {/* Narrative Description */}
         <div className="pt-2 text-base sm:text-lg text-[#424844] leading-relaxed whitespace-pre-line border-t border-[#f5ece5]">
-          <p className="drop-cap">{event.description}</p>
+          <p className="drop-cap">{displayEvent.description}</p>
         </div>
       </div>
 
@@ -413,7 +415,7 @@ export default function EventDetailView({
         </div>
       )}
 
-      {/* 3. Video Gallery (Vid?os souvenirs compress?es) */}
+      {/* 3. Video Gallery (vidéos souvenirs compressées) */}
       {videos.length > 0 && (
         <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#eae1da] vintage-shadow space-y-6">
           <div className="flex items-center justify-between pb-4 border-b border-[#f5ece5]">
@@ -426,7 +428,7 @@ export default function EventDetailView({
                   {t('events_gallery_videos')}
                 </h2>
                 <p className="text-xs text-[#727973] mt-0.5">
-                  {language === 'en' ? 'Event videos optimized for instant streaming' : "Vid?os de l'?v?nement optimis?es pour une lecture instantan?e"}
+                  {language === 'en' ? 'Event videos optimized for instant streaming' : "vidéos de l'événement optimisées pour une lecture instantanée"}
                 </p>
               </div>
             </div>
@@ -502,7 +504,7 @@ export default function EventDetailView({
                       );
                     }}
                     className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 hover:bg-black/90 text-white border border-white/20 transition-all shadow-xl z-20"
-                    aria-label={language === 'en' ? 'Previous' : 'Pr?c?dent'}
+                    aria-label={language === 'en' ? 'Previous' : 'précédent'}
                   >
                     <ChevronLeft className="w-6 h-6" />
                   </button>

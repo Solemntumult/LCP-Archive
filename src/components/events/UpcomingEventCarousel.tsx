@@ -17,13 +17,15 @@ import {
 } from 'lucide-react';
 import { FamilyEvent, EventCategory } from '@/types';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { translateEventData } from '@/lib/i18n/dbTranslation';
 
 export default function UpcomingEventCarousel({
-  events,
+  events: rawEvents,
 }: {
   events: FamilyEvent[];
 }) {
   const { t, language } = useLanguage();
+  const events = rawEvents.map((e) => translateEventData(e, language));
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
 

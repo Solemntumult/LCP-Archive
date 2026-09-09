@@ -154,7 +154,7 @@ export default function ContextualAddMemberModal({
           {/* Relation Choice Buttons */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#424844] mb-2">
-              {language === 'en' ? `Relationship to ${targetPerson.first_name} *` : `Lien de parent? avec ${targetPerson.first_name} *`}
+              {language === 'en' ? `Relationship to ${targetPerson.first_name} *` : `Lien de parenté avec ${targetPerson.first_name} *`}
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <button
@@ -206,7 +206,7 @@ export default function ContextualAddMemberModal({
                 }`}
               >
                 <GitFork className="w-4 h-4" />
-                <span>{language === 'en' ? 'Sibling' : 'Fr?re/S?ur'}</span>
+                <span>{language === 'en' ? 'Sibling' : 'Frère/Sœur'}</span>
               </button>
             </div>
           </div>
@@ -215,7 +215,7 @@ export default function ContextualAddMemberModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-[#424844] mb-1">
-                {language === 'en' ? 'First Name *' : 'Pr?nom *'}
+                {language === 'en' ? 'First Name *' : 'Prénom *'}
               </label>
               <input
                 type="text"
@@ -295,7 +295,7 @@ export default function ContextualAddMemberModal({
               type="text"
               value={profession}
               onChange={(e) => setProfession(e.target.value)}
-              placeholder={language === 'en' ? 'e.g. Teacher, Engineer...' : 'Ex: Enseignant, Ing?nieur...'}
+              placeholder={language === 'en' ? 'e.g. Teacher, Engineer...' : 'Ex: Enseignant, Ingénieur...'}
               className="w-full px-3.5 py-2.5 bg-[#fff8f4] border border-[#eae1da] rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#173124]"
             />
           </div>

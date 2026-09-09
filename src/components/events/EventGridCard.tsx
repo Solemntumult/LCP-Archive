@@ -17,13 +17,15 @@ import {
 } from 'lucide-react';
 import { FamilyEvent, EventCategory } from '@/types';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { translateEventData } from '@/lib/i18n/dbTranslation';
 
 export default function EventGridCard({
-  event,
+  event: rawEvent,
 }: {
   event: FamilyEvent;
 }) {
   const { t, language } = useLanguage();
+  const event = translateEventData(rawEvent, language);
   const photoUrl = event.photo || (event.photos && event.photos.length > 0 ? event.photos[0] : null);
 
   const eventDate = new Date(event.event_date);

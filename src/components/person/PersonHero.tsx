@@ -16,15 +16,17 @@ import {
 } from 'lucide-react';
 import { PersonDetail } from '@/types';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { translatePersonData } from '@/lib/i18n/dbTranslation';
 
 export default function PersonHero({
-  person,
+  person: rawPerson,
   onDelete,
 }: {
   person: PersonDetail;
   onDelete?: () => void;
 }) {
   const { t, language } = useLanguage();
+  const person = translatePersonData(rawPerson, language);
   const isMale = person.gender === 'M';
   const initials = `${person.first_name[0] || ''}${person.last_name[0] || ''}`;
 
@@ -73,7 +75,7 @@ export default function PersonHero({
                 className="absolute bottom-0 right-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#1f1b17] text-white text-base sm:text-lg font-black flex items-center justify-center border-2.5 border-white shadow-lg leading-none select-none z-20"
                 title={t('deceased')}
               >
-                ?
+                ✝
               </span>
             )}
           </div>
@@ -104,7 +106,7 @@ export default function PersonHero({
                 <span>{person.full_name}</span>
                 {!person.is_alive && (
                   <span className="text-[#173124] text-2xl sm:text-3xl font-black select-none" title={t('deceased')}>
-                    ?
+                    ✝
                   </span>
                 )}
               </h1>

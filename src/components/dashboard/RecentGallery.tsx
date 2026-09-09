@@ -6,9 +6,10 @@ import Image from 'next/image';
 import { Camera, ArrowRight, BookOpen } from 'lucide-react';
 import { FamilyEvent } from '@/types';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { translateDbText } from '@/lib/i18n/dbTranslation';
 
 export default function RecentGallery({ events }: { events: FamilyEvent[] }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const archivePhotos: { url: string; title: string; eventId: number; date: string }[] = [];
   events.forEach((ev) => {
@@ -17,7 +18,7 @@ export default function RecentGallery({ events }: { events: FamilyEvent[] }) {
       if (url) {
         archivePhotos.push({
           url,
-          title: ev.title,
+          title: translateDbText(ev.title, language),
           eventId: ev.id,
           date: ev.event_date,
         });
