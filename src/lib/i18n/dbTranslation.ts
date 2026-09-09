@@ -216,34 +216,118 @@ const EXACT_PHRASES: Record<string, string> = {
   "Naissance": "Birth",
   "Vivant": "Living",
   "Vivante": "Living",
+
+  // Specific Celebration Titles
+  "CELEBRATION DE L'AN IV DU DECES DE LISSANON COMLAN PAUL (LCP)": "CELEBRATION OF THE 4TH ANNIVERSARY OF THE PASSING OF LISSANON COMLAN PAUL (LCP)",
+  "Célébration de l'an IV du décès de LISSANON Comlan Paul (LCP)": "Celebration of the 4th Anniversary of the Passing of LISSANON Comlan Paul (LCP)",
+  "Célébration de l'an IV du décès de Paul Comlan LISSANON": "Celebration of the 4th Anniversary of the Passing of Paul Comlan LISSANON",
+  "Hommage et Célébration de l'an IV": "Tribute and Celebration of the 4th Anniversary",
 };
 
 /**
- * Paul Comlan LISSANON's full bilingual biographies
+ * Paul Comlan LISSANON's full bilingual biographies & Historical Anniversary Narrative
  */
+export const PAUL_LISSANON_MEMORIAL_EN = `CELEBRATION OF THE 4TH ANNIVERSARY OF THE PASSING OF LISSANON COMLAN PAUL (LCP)
+
+BRIEF HISTORY OF THE LIFE OF LCP
+
+Born in the village of Lissazounmé in Abomey, to mother Nanvo, a homemaker, and father Alamandoganha Mataguessi, 1st Dah of the LISSANON family. A former Tax Collector in Allada, Alamandoganha Mataguessi was the reformer of the organizational and governance structure of the AHANGNAN - SACLA - ADIKO and LISSANON communities.
+
+Comlan Paul was born after several miscarriages and stillbirths suffered by his mother. At birth, he was seriously ill for a prolonged period and was nearly given up for dead when his mother's guardian, AGBLA, visiting his friend Alamandoganha Mataguessi, prophesied that this child would not share the fate of the seven (7) previous siblings who had all passed away shortly after birth. AGBLA committed himself tirelessly through traditional healing treatments, and the child miraculously survived.
+Comlan Paul was therefore an Abiku child in accordance with our ancestral traditions.
+
+It must be recalled that his mother was for a long time caught in a leadership struggle and dispute between her biological father and the guardian who raised her, AGBLA, such that the matter was eventually resolved before the traditional customary court. When asked by the judge who her true father was, she went and embraced her biological father and progenitor. Her birth certificate was then officially issued under her biological father, to the detriment of her guardian.
+This created deep resentment, and when she later married, her guardian placed a curse upon her, which according to local tradition accounted for the successive miscarriages and stillbirths she experienced.
+As for his son Comlan Paul, miraculously snatched from the jaws of death, his father designated him as the child chosen to attend modern formal schooling and bring back great blessings for the family. In the words of Alamandoganha Mataguessi to his son: "With this school pen, you shall climb mountains and you shall become the pride and envy of all your brothers."
+
+Thus, he was sent to take his first steps in formal education in Calavi under the care of a maternal uncle.
+Domestic hardships in the uncle's household resulted in young Paul finding himself on the streets, sleeping in a makeshift garage. Nearby in Calavi, an elderly night watchman took notice of him and helped him as best as he could.
+
+One day, a relative from the village of Lissazounmé, a traditional practitioner commonly known as Houssato, spotted him and informed his parents upon returning to the village. Alerted, they dispatched Comlan Paul's elder sister, Aunt Sahèton, to his rescue. She boarded the very first train to fetch her younger brother, who was languishing on the streets of Calavi.
+Convinced that his destiny lay in formal education, his father Alamandoganha Mataguessi sent him back to resume his schooling in Abomey, where he completed primary school a few years later, earning the Primary School Certificate (CEP).
+Unaware of administrative enrollment procedures, he returned to Lissazounmé and resumed farming. By a fortunate turn of events, one of his former schoolmasters passing through Lissazounmé saw him playing soccer and called out: "Comlan, come here! Don't you know classes have already resumed at Collège Père Aupiais where you have been admitted?"
+He was astonished and naive in the face of this news. The teacher patiently explained the admission process to him. He then rushed to explain everything to his mother, as his father had already passed away and been laid to rest.
+The next morning, his mother took him to the train station, where he boarded the train alone towards Gbégamey station in Cotonou. Thus began his new academic life. During vacations, he returned to the village to visit his mother, placed under the care of his elder brother Canut, with whom he worked in the fields. School terms in Cotonou and holidays in Lissazounmé: this was Comlan's routine until he earned his Scientific Baccalaureate (Series S) with honors.
+Destiny steered his life towards education: after a venture to Senegal where he sat for the West African Regional Bank exam, he joined Benin's teaching corps. He retired in 1992 after thirty (30) years of dedicated service and was awarded the Grand Knight Medal of the National Order of Merit of Benin.
+One morning in June 2022, following intense emotional stress, he suffered a transient ischemic attack followed by a stroke the next day. He spent three (3) months in a deep coma, including two (2) months in the hospital and one (1) month at his residence in Logbozounkpa.
+On August 31, 2022, he drew his last breath around 11:15 AM in his living room.
+
+His Career & The Turning Point
+LISSANON Comlan Paul was the first State Representative and former Deputy of the Agbangnizoun Municipality.
+He taught notably in Kandi (North), Abomey (Zou), Adjohoun (Porto-Novo), Wankon (Abomey), Akpakpa-Centre (Cotonou), Gbégamey (Cotonou), and concluded his career at Collège Père Aupiais (Cotonou).
+His appointment as the founding Principal of CEG WANKON proved to be the fateful turning point of his entire life.
+At Wankon, he served simultaneously as Principal, Dean of Studies, Accountant, and General Supervisor for the newly established school.
+He had purchased a new automobile that he drove himself or with his driver—a distinguished intellectual executive leading an orderly life.
+One day, traveling on a motorcycle with his brother-in-law Minkpetin Sènou Alphonse on the way back from school after distributing merit scholarship funds, he lost the handbag containing the remaining scholarship money for deserving pupils.
+This was the start of the ordeal.
+What humiliation did he not endure?
+Intense stress, threats of dismissal and imprisonment, mockery from jealous colleagues, slander of all kinds, unwarranted condemnation by some village peers, suspicion of theft against himself and his young wife... It was the beginning of a long ordeal.
+What customary sanctuary, Bokonon, or traditional shrine did he not consult to recover the lost bag or calm the storm?
+It felt as if the sky had fallen on his head, and ironically, he had virtually no literate advisor to come to his aid.
+Driven by jealousy, some students who had already received their stipend dishonestly claimed they had received nothing, knowing the sign-off sheets had been lost with the bag.
+
+Though severely shaken, he weathered the storm thanks to his schoolmate from Collège Père Aupiais, Crinot Lazarre, an official in the Ministry of Education who helped him navigate the legal proceedings.
+Paul liquidated assets, pawned possessions, and borrowed heavily to repay every single student scholarship from his own pocket.
+He even abandoned his car with a local mechanic in Lissazounmé and never claimed it back until his dying day. He managed the repayments over several years following the crisis.
+He eventually transferred to Cotonou to teach Mathematics at Akpakpa Centre, later serving at CEG Gbégamey and ultimately returning to the institution that educated him, Collège Père Aupiais.
+
+After official investigations fully cleared and exonerated him, the State invited him to lead the CEG of Agbangnizoun, but scarred by his painful experience, he declined and chose to dedicate himself exclusively to classroom teaching, declining subsequent political and administrative appointments.
+
+His arrival in Cotonou in 1974 was among the most grueling chapters of his life as he continually serviced debts while supporting his family. His young wife Guézinton was heavily pregnant with a challenging pregnancy. The family found shelter at the residence of François ZOHOUN (C/769) in Gbégamey, owned by the father of his close classmate, Professor Isidore ZOHOUN.
+Paul Comlan was a revered educator of immense erudition who taught without notes, mastering his subjects completely. He taught and mentored many of Benin's foremost leaders, including former President Thomas Boni YAYI, Minister Abdoulaye BIO TCHANE, National Assembly President Joseph DJOGBENOU, numerous ministry directors, army generals, judges, and physicians—many of whom gathered to pay their final respects at Cocotomey Catholic Church on October 21, 2022.
+
+Comlan Paul embodied profound generosity and selfless altruism, housing and supporting dozens of underprivileged youth from Lissazounmé throughout his life. He walked miles across Cotonou neighborhoods (Tokpa, Gbégamey, Cadjèhoun, Sainte-Rita, Fifadji, Ganhito) to deliver home tutoring to support his extended dependents and prioritize his children's education above all personal comfort.
+For the record, here are the affectionate nicknames he gave his children:
+
+SOME NICKNAMES FOR HIS CHILDREN:
+January for Janvier
+Laure Melaure de mekolaure - Laure de Laurette for Laure
+Genin Djèckogè, Djèmindjè de Mekodjè for Angèle
+Claudou douclo, Claudio Gentillé de Yougoslavie for Claude
+Vaquhoun Loum Valoum for Valère
+Simequosoeu for Alexis
+Elevepi for Eric
+Hervevor des Hervévores for Hervé
+Leahountitire for Laetitia
+Salomonco de Saloum for Salomon
+Attaquin for Regina
+To name but a few, as the nicknames evolved with his affectionate moods...
+
+The tribulations of life tested his seven (7) years of Catholic devotion at Collège Père Aupiais where he was baptized and confirmed. Over two decades, he sought traditional spiritual paths across local sanctuaries.
+
+Marriages and Family Life
+In his family life, Paul's first wife was Rosalie SEGBEDJI (Maman Daassi), with whom he had three (3) children: Janvier, Laure, and late Angèle.
+
+He separated from his second wife, Antoinette ACAKPO (a certified midwife), following marital difficulties, with no children from the union.
+
+He united with his third wife, Lucienne Lokossi DEGBO (Guézinton of Dègbocodji), with whom he had eight (8) children, in order: Claude, Valère, Alexis, late Eric, Hervé, Salomon, Laetitia, and Régina.
+
+Regarding his spiritual life,
+Divine grace touched him once again after two decades, and he renewed his deep Christian faith. He celebrated a legal and religious marriage with his wife Lucienne (Guézinton) in 2002, dedicating his life fully to God and declining traditional chieftaincy (Dah) enstoolment in Lissazounmé in accordance with his Christian convictions.
+
+He was laid to rest on October 21, 2022, at his residence in Fifadji, Lissazounmé, according to Catholic funeral rites.
+These are some key milestones from the life of Patriarch Paul Comlan LISSANON.
+May he rest in peace and his inspiring legacy continue to shine upon all our lives.
+May blessings abound!
+
+Editor's Notes:
+A person's life is an infinite book and not everything can be captured. We thank everyone for their kind understanding. This biography will continue to be enriched by memories and testimonies for future generations. Text proposed by Alexis LISSANON; reviewed by Valère, Claude, and Janvier LISSANON; formatted and published by Claude LISSANON on 28/08/2026.
+
+Program of the 4th Anniversary Commemoration of LCP's Passing in Logbozounkpa
+7:00 AM - 8:30 AM: Memorial Mass at the Catholic Church of Logbozounkpa
+8:30 AM - 9:00 AM: Fellowship at church exit
+9:30 AM - 10:00 AM: Arrival and reception at the family residence in Logbozounkpa
+10:00 AM - 10:15 AM: Welcome address by Janvier LISSANON
+10:15 AM - 10:30 AM: Musical interlude
+10:30 AM - 10:45 AM: Traditional blessing & remembrance by Janvier LISSANON
+10:45 AM - 11:15 AM: Projection and commemorative discussion on the life of LCP presented by Hervé assisted by the grandchildren
+11:15 AM - 11:45 AM: Refreshment break
+11:45 AM - 12:05 PM: Prayers and praise session led by the Charismatic Renewal of Agla Akplome under the direction of Shepherd Hervé LISSANON
+12:05 PM - 12:10 PM: Closing remarks by Janvier LISSANON
+Media and photo coverage coordinated by Paola and Fridzel`;
+
 const PAUL_LISSANON_EN = {
-  biography: `Paul LISSANON is an iconic figure in education in Benin, renowned for his exemplary career since the 1960s. Following brilliant academic studies and training in the country's first teacher training colleges, he devoted more than four decades to educating young Beninese. Renowned for his innovative pedagogical methods and his lifelong commitment to continuous teacher training, he contributed significantly to modernizing Beninese schooling and mentoring several generations of educators.
-
-Biography — Paul LISSANON
-
-Born in 1942 in Abomey, Paul LISSANON completed his primary and secondary schooling in his home region.
-
-In 1962, he entered the École Normale Supérieure of Porto-Novo, where he earned the secondary education teaching certification (CAPES).
-
-He began his distinguished career as a mathematics teacher at the Collège de Cotonou, and subsequently taught across multiple prestigious institutions in Benin.
-
-Passionate about educational reform, Paul LISSANON participated actively in numerous professional seminars and contributed to authoring the first local school textbooks in Benin starting in the 1980s.
-
-Throughout his career, he served as a senior pedagogical advisor and trained aspiring teachers at the National Teachers College.
-
-Retiring in 2005, he remained highly active in the national association of former educators, delivering lectures on educational development in Benin.
-
-Officially recognized by the State, Paul LISSANON was awarded the title of Knight of the National Order of Benin in 2010 for outstanding service rendered to the Nation.
-
-Selected Bibliography
-Lissanon, P. (1985). Active methods for teaching mathematics in Benin. Porto-Novo: National Editions.
-Lissanon, P. (1992). The evolution of the Beninese educational system since independence. African Education Review, 14(2), 45-60.
-Lissanon, P. & National Association of Teachers of Benin. (2008). Continuing professional development guide for secondary teachers. Cotonou: ANEB.`,
+  biography: PAUL_LISSANON_MEMORIAL_EN,
 
   accomplishments: `Introduction of innovative pedagogical methods tailored to the Beninese context, significantly enhancing student understanding and achievement in scientific disciplines.
 
@@ -496,10 +580,29 @@ export function translateEventCategory(category: string | undefined | null, lang
 export function translateEventData(event: FamilyEvent, lang: Language): FamilyEvent {
   if (!event || lang === 'fr') return event;
 
+  const titleRaw = (event.title || '').trim();
+  const descRaw = (event.description || '').trim();
+
+  // Check if this event is the memorial / anniversary of Paul LISSANON
+  const isPaulMemorial =
+    titleRaw.toUpperCase().includes("AN IV") ||
+    titleRaw.toUpperCase().includes("LISSANON COMLAN PAUL") ||
+    titleRaw.toUpperCase().includes("LCP") ||
+    descRaw.includes("Alamandoganha") ||
+    descRaw.includes("BREF HISTORIQUE SUR LA VIE DE LCP");
+
+  let title = translateDbText(event.title, lang);
+  let description = translateDbText(event.description, lang);
+
+  if (isPaulMemorial) {
+    title = "Celebration of the 4th Anniversary of the Passing of Paul Comlan LISSANON (LCP)";
+    description = PAUL_LISSANON_MEMORIAL_EN;
+  }
+
   return {
     ...event,
-    title: translateDbText(event.title, lang),
-    description: translateDbText(event.description, lang),
+    title,
+    description,
     location: event.location ? translateDbText(event.location, lang) : event.location,
     category: event.category,
   };

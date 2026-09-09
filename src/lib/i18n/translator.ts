@@ -4,7 +4,7 @@ import { FamilyEvent, Person, PersonDetail, TreeNodeData } from '@/types';
 import { Language } from './translations';
 import { translateDbText } from './dbTranslation';
 
-const CLIENT_CACHE_KEY = 'lcp_translations_cache_v2';
+const CLIENT_CACHE_KEY = 'lcp_translations_cache_v5';
 const memoryCache = new Map<string, string>();
 
 // Initialize memory cache from localStorage if on client
