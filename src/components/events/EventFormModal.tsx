@@ -191,7 +191,7 @@ export default function EventFormModal({
         photos: [...(prev.photos || []), ...optimizedUrls].slice(0, MAX_PHOTOS),
       }));
     } catch (err: any) {
-      setError(err.message || (language === 'en' ? 'Error loading photos' : '?chec du chargement des photos'));
+      setError(err.message || (language === 'en' ? 'Error loading photos' : 'Échec du chargement des photos'));
     } finally {
       setUploading(false);
       if (fileInputRef.current) {

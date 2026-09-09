@@ -118,7 +118,7 @@ export default function PersonForm({
       setUploadingPhoto(false);
     };
     reader.onerror = () => {
-      setErrorMsg(language === 'en' ? 'Failed to read image file.' : "?chec de lecture du fichier image.");
+      setErrorMsg(language === 'en' ? 'Failed to read image file.' : 'Échec de lecture du fichier image.');
       setUploadingPhoto(false);
     };
     reader.readAsDataURL(file);
@@ -376,7 +376,7 @@ export default function PersonForm({
           {/* décès */}
           <div className="space-y-3 p-4.5 rounded-2xl bg-[#fff8f4] border border-[#eae1da]">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#7a5739]">
-              {language === 'en' ? 'Death (leave empty if living)' : 'décès (laisser vide si en vie)'}
+              {language === 'en' ? 'Death (leave empty if living)' : 'Décès (laisser vide si en vie)'}
             </h3>
             <div>
               <label className="block text-xs text-[#727973] mb-1">Date</label>

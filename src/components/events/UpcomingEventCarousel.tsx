@@ -68,7 +68,8 @@ export default function UpcomingEventCarousel({
     );
   }
 
-  const current = upcomingEvents[currentIndex];
+  const rawCurrent = upcomingEvents[currentIndex];
+  const current = translateEventData(rawCurrent, language);
   const photoUrl = current.photo || (current.photos && current.photos.length > 0 ? current.photos[0] : null);
 
   const formattedDate = new Date(current.event_date).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', {
