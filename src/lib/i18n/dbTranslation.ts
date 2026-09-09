@@ -343,13 +343,23 @@ Distinguished keynote speaker on the evolution of African educational systems, r
 
 Recipient of national honors for exceptional service to education, notably the Medal of Knight of the National Order of Benin in 2010.`,
 
-  education: `From the 1940s onwards, teacher education in Benin underwent pivotal transformations shaped by historical and post-independence milestones.
+  education: `Since the 1940s, teacher training and education in Benin have undergone pivotal transformations shaped by specific historical and political contexts, notably tied to the colonial and post-independence periods.
 
-During this era, teacher training primarily took place in normal schools that prepared primary educators. With Benin's independence in 1960, formalized higher institutions were established to train secondary teachers (ENS Porto-Novo).
+During this era, teacher training primarily took place in normal schools that prepared primary educators. With Benin's independence (formerly Dahomey) in 1960, the country progressively established formalized structures for teacher training in the national educational system. Primary Teacher Training Colleges (ENI) handled training for nursery and primary levels, while Higher Teacher Training Colleges (ENS) trained secondary school teachers.
 
-Paul LISSANON underwent rigorous academic and professional training, obtaining secondary teaching credentials (CAPES) in Mathematics.
+Between the 1980s and 2000s, the Beninese educational system experienced severe challenges, including an erosion of educational quality and a lack of formal initial training for an entire generation of educators (1987–2010). This represented a major hurdle to teacher professionalization and teaching standards.
 
-His lifelong dedication to continuous learning and academic mentorship positioned him as a pillar of professional excellence in Benin's educational history.`
+Initial teacher training in Benin aims to provide comprehensive academic and professional preparation, awarding specialized diplomas such as the Secondary Teaching Aptitude Certificate (BAPES) and the Secondary Education Teaching Certification (CAPES) for secondary school educators. The training typically spans several years following the Baccalaureate.
+
+Furthermore, continuous professional development plays a vital role in upgrading the skills of practicing teachers to bridge initial training gaps and meet the evolving needs of the Beninese educational system.
+
+In summary, the journey of a Beninese teacher from 1940 to graduation is characterized by:
+- Initial training in normal schools (ENI for primary and ENS for secondary).
+- A challenging period from 1987 to 2010 where many teachers were not officially trained.
+- Awarding of professional teaching credentials such as BAPES or CAPES.
+- Growing importance of continuing professional development for teacher upskilling.
+
+This trajectory reflects continuous efforts to professionalize Beninese educators despite socioeconomic and institutional challenges.`
 };
 
 /**
@@ -640,8 +650,12 @@ export function translateTimelineEvent(event: TimelineEvent, lang: Language): Ti
   if (description) {
     const d = description.trim();
 
-    // Death / Passing patterns
-    const deathAgeLocMatch = d.match(/^Décéd[ée]\(?e?\)?\s+à l['’]âge de\s+(\d+)\s+ans\s+à\s+([^.]+)\.?$/i);
+    // Education event pattern
+    if (event.type === 'education' || d.includes("Depuis les années 1940") || d.includes("formation et l'éducation des enseignants")) {
+      description = PAUL_LISSANON_EN.education;
+    } else {
+      // Death / Passing patterns
+      const deathAgeLocMatch = d.match(/^Décéd[ée]\(?e?\)?\s+à l['’]âge de\s+(\d+)\s+ans\s+à\s+([^.]+)\.?$/i);
     if (deathAgeLocMatch) {
       const age = deathAgeLocMatch[1];
       const loc = translateDbText(deathAgeLocMatch[2].trim(), lang);
@@ -699,6 +713,7 @@ export function translateTimelineEvent(event: TimelineEvent, lang: Language): Ti
       }
     }
   }
+}
 
   return {
     ...event,

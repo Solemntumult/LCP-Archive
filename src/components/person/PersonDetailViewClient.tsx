@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import { PersonDetail } from '@/types';
@@ -10,6 +10,7 @@ import FamilyRelationships from '@/components/person/FamilyRelationships';
 import PersonDetailClientActions from '@/components/person/PersonDetailClientActions';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { translatePersonData } from '@/lib/i18n/dbTranslation';
+import { translatePersonAsync } from '@/lib/i18n/translator';
 
 export default function PersonDetailViewClient({
   person: initialPerson,
@@ -17,7 +18,26 @@ export default function PersonDetailViewClient({
   person: PersonDetail;
 }) {
   const { t, language } = useLanguage();
-  const person = translatePersonData(initialPerson, language);
+  const [person, setPerson] = useState<PersonDetail>(() =>
+    translatePersonData(initialPerson, language)
+  );
+
+  useEffect(() => {
+    let active = true;
+    if (language === 'fr') {
+      setPerson(initialPerson);
+    } else {
+      setPerson(translatePersonData(initialPerson, 'en'));
+      translatePersonAsync(initialPerson, 'en').then((translated) => {
+        if (active) {
+          setPerson(translated);
+        }
+      });
+    }
+    return () => {
+      active = false;
+    };
+  }, [initialPerson, language]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in">

@@ -2,7 +2,7 @@
 
 import { FamilyEvent, Person, PersonDetail, TreeNodeData } from '@/types';
 import { Language } from './translations';
-import { translateDbText } from './dbTranslation';
+import { translateDbText, translatePersonData } from './dbTranslation';
 
 const CLIENT_CACHE_KEY = 'lcp_translations_cache_v5';
 const memoryCache = new Map<string, string>();
@@ -199,4 +199,47 @@ export async function translateEventsAsync(events: FamilyEvent[], lang: Language
       location,
     };
   });
+}
+
+/**
+ * Fully translates a Person / PersonDetail object asynchronously into English.
+ */
+export async function translatePersonAsync<T extends Person | PersonDetail | TreeNodeData>(
+  person: T,
+  lang: Language
+): Promise<T> {
+  if (!person || lang === 'fr') return person;
+
+  // 1. Synchronous dictionary & biographical mapping (instant)
+  const syncPerson = translatePersonData(person, lang);
+
+  const isPaul = person.id === 1 || (person.first_name === 'Paul' && person.last_name === 'LISSANON');
+  if (isPaul) {
+    return syncPerson;
+  }
+
+  // 2. Dynamic batch translation for any newly uploaded / edited family member
+  const p = person as any;
+  const textsToTranslate: string[] = [];
+
+  if (p.profession) textsToTranslate.push(p.profession);
+  if (p.birth_place) textsToTranslate.push(p.birth_place);
+  if (p.death_place) textsToTranslate.push(p.death_place);
+  if (p.biography) textsToTranslate.push(p.biography);
+  if (p.accomplishments) textsToTranslate.push(p.accomplishments);
+  if (p.education) textsToTranslate.push(p.education);
+
+  if (Array.isArray(p.timeline)) {
+    p.timeline.forEach((ev: any) => {
+      if (ev.title) textsToTranslate.push(ev.title);
+      if (ev.description) textsToTranslate.push(ev.description);
+      if (ev.location) textsToTranslate.push(ev.location);
+    });
+  }
+
+  if (textsToTranslate.length > 0) {
+    await translateBatchAsync(textsToTranslate, lang);
+  }
+
+  return translatePersonData(person, lang);
 }
