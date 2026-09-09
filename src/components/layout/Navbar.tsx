@@ -25,11 +25,11 @@ export default function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-[#eae1da] bg-[#fff8f4]/95 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20 gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 sm:h-20 gap-2 sm:gap-4">
             {/* Brand Logo */}
-            <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0 min-w-[190px] sm:min-w-[240px]">
-              <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-xl overflow-hidden shadow-md group-hover:scale-105 transition-all shrink-0">
+            <Link href="/" className="flex items-center gap-2 sm:gap-3 group shrink min-w-0">
+              <div className="relative w-9 h-9 sm:w-11 sm:h-11 rounded-xl overflow-hidden shadow-md group-hover:scale-105 transition-all shrink-0">
                 <Image
                   src="/icon.svg"
                   alt="LCP Archives Logo"
@@ -39,10 +39,10 @@ export default function Navbar() {
                 />
               </div>
               <div className="min-w-0">
-                <span className="font-serif text-lg sm:text-xl font-bold tracking-tight text-[#173124] block truncate">
+                <span className="font-serif text-base sm:text-xl font-bold tracking-tight text-[#173124] block truncate">
                   LCP Archives
                 </span>
-                <p className="text-[11px] sm:text-xs text-[#727973] hidden sm:block truncate">
+                <p className="text-[10px] sm:text-xs text-[#727973] hidden md:block truncate">
                   {t('nav_subtitle')}
                 </p>
               </div>
@@ -70,8 +70,8 @@ export default function Navbar() {
               })}
             </nav>
 
-            {/* Right Action Buttons */}
-            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* Right Action Toolbar */}
+            <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
               {/* Language Switcher */}
               <LanguageToggle />
 
@@ -79,8 +79,9 @@ export default function Navbar() {
               <button
                 onClick={() => setSearchOpen(true)}
                 type="button"
-                className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-2 text-xs sm:text-sm text-[#727973] bg-[#f5ece5] hover:bg-[#eae1da] hover:text-[#1f1b17] rounded-xl transition-all border border-[#eae1da]"
+                className="flex items-center gap-1.5 p-2 sm:px-3 sm:py-2 text-xs sm:text-sm text-[#727973] bg-[#f5ece5] hover:bg-[#eae1da] hover:text-[#1f1b17] rounded-xl transition-all border border-[#eae1da] shrink-0"
                 title={`${t('nav_search')} (Ctrl+K)`}
+                aria-label={t('nav_search')}
               >
                 <Search className="w-4 h-4 text-[#7a5739] shrink-0" />
                 <span className="hidden md:inline whitespace-nowrap">{t('nav_search')}</span>
@@ -89,23 +90,22 @@ export default function Navbar() {
                 </kbd>
               </button>
 
-              {/* Add Member Button */}
+              {/* Add Member Button (Desktop & Tablet) */}
               <Link
                 href="/person/add"
-                className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-[#7a5739] text-white hover:bg-[#5f4024] shadow-xs transition-all active:scale-95 shrink-0"
+                className="hidden sm:flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-[#7a5739] text-white hover:bg-[#5f4024] shadow-xs transition-all active:scale-95 shrink-0"
               >
                 <PlusCircle className="w-4 h-4 shrink-0" />
-                <span className="hidden sm:inline whitespace-nowrap">{t('nav_add_member')}</span>
-                <span className="sm:hidden">+</span>
+                <span className="whitespace-nowrap">{t('nav_add_member')}</span>
               </Link>
 
               {/* Mobile menu toggle */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-2 rounded-xl text-[#424844] hover:bg-[#f5ece5]"
+                className="lg:hidden p-2 rounded-xl text-[#424844] hover:bg-[#f5ece5] transition-colors shrink-0"
                 aria-label="Menu"
               >
-                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
           </div>
@@ -113,26 +113,40 @@ export default function Navbar() {
 
         {/* Mobile menu dropdown */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-[#eae1da] bg-[#fff8f4] px-4 pt-3 pb-5 space-y-1.5 animate-fade-in shadow-xl">
-            {navLinks.map((link) => {
-              const Icon = link.icon;
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
-                    isActive
-                      ? 'bg-[#173124] text-white shadow-xs'
-                      : 'text-[#424844] hover:bg-[#f5ece5]'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  {link.label}
-                </Link>
-              );
-            })}
+          <div className="lg:hidden border-t border-[#eae1da] bg-[#fff8f4] px-4 pt-3 pb-5 space-y-2 animate-fade-in shadow-xl">
+            <div className="space-y-1">
+              {navLinks.map((link) => {
+                const Icon = link.icon;
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                      isActive
+                        ? 'bg-[#173124] text-white shadow-xs'
+                        : 'text-[#424844] hover:bg-[#f5ece5]'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{link.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Quick Add Member button in mobile drawer */}
+            <div className="pt-2 border-t border-[#eae1da]">
+              <Link
+                href="/person/add"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl text-sm font-bold bg-[#7a5739] text-white hover:bg-[#5f4024] shadow-xs transition-all active:scale-95"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>{t('nav_add_member')}</span>
+              </Link>
+            </div>
           </div>
         )}
       </header>
