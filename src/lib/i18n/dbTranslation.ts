@@ -532,15 +532,77 @@ export function translateDbText(text: string | null | undefined, lang: Language)
   }
 
   let result = text;
-  let matched = false;
   for (const [pattern, repl] of PATTERN_REPLACEMENTS) {
+    pattern.lastIndex = 0;
     if (pattern.test(result)) {
+      pattern.lastIndex = 0;
       result = result.replace(pattern, repl);
-      matched = true;
     }
   }
 
-  return matched ? result : text;
+  return result;
+}
+
+/**
+ * Translates activity log descriptions into clean English
+ */
+export function translateActivityDescription(desc: string | null | undefined, lang: Language): string {
+  if (!desc || typeof desc !== 'string') return '';
+  if (lang === 'fr') return desc;
+
+  const d = desc.trim();
+
+  // Pattern: "Ajout de [Nom] à l'arbre"
+  const addMatch = d.match(/^Ajout de\s+(.*?)\s+à l['’]arbre\.?$/i);
+  if (addMatch) {
+    return `Added ${addMatch[1].trim()} to the family tree`;
+  }
+
+  // Pattern: "Mise à jour des informations de [Nom]"
+  const updateMatch = d.match(/^Mise à jour des informations de\s+(.*?)\.?$/i);
+  if (updateMatch) {
+    return `Updated records of ${updateMatch[1].trim()}`;
+  }
+
+  // Pattern: "Suppression de [Nom] de l'arbre"
+  const deleteMatch = d.match(/^Suppression de\s+(.*?)\s+de l['’]arbre\.?$/i);
+  if (deleteMatch) {
+    return `Removed ${deleteMatch[1].trim()} from the family tree`;
+  }
+
+  // Pattern: "Création de l'événement familial "[Titre]""
+  const createEvMatch = d.match(/^Cr[ée]ation de l['’][ée]v[ée]nement familial\s+["«](.*?)["»]\.?$/i);
+  if (createEvMatch) {
+    const evTitle = translateDbText(createEvMatch[1].trim(), lang);
+    return `Created family event "${evTitle}"`;
+  }
+
+  // Pattern: "Mise à jour de l'événement "[Titre]""
+  const updateEvMatch = d.match(/^Mise à jour de l['’][ée]v[ée]nement\s+["«](.*?)["»]\.?$/i);
+  if (updateEvMatch) {
+    const evTitle = translateDbText(updateEvMatch[1].trim(), lang);
+    return `Updated event "${evTitle}"`;
+  }
+
+  // Pattern: "Suppression de l'événement "[Titre]""
+  const deleteEvMatch = d.match(/^Suppression de l['’][ée]v[ée]nement\s+["«](.*?)["»]\.?$/i);
+  if (deleteEvMatch) {
+    const evTitle = translateDbText(deleteEvMatch[1].trim(), lang);
+    return `Deleted event "${evTitle}"`;
+  }
+
+  // Specific Seeds
+  if (d.includes("Initialisation de l'arbre avec 52 membres")) {
+    return 'Initialized family tree with 52 members of the LISSANON family.';
+  }
+  if (d.includes("Mise à jour de l'arbre généalogique")) {
+    return 'Updated family tree records.';
+  }
+  if (d.includes("Ajout d'un nouveau membre dans la lignée")) {
+    return 'Added a new member to the family lineage.';
+  }
+
+  return translateDbText(d, lang);
 }
 
 /**
