@@ -32,6 +32,7 @@ import EventFormModal from './EventFormModal';
 import { removeLocalStoredEvent } from '@/lib/eventStorage';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { translateEventData, getCategoryBadgeData } from '@/lib/i18n/dbTranslation';
+import { translateEventAsync } from '@/lib/i18n/translator';
 
 export default function EventDetailView({
   initialEvent,
@@ -43,10 +44,29 @@ export default function EventDetailView({
   const router = useRouter();
   const { t, language } = useLanguage();
   const [event, setEvent] = useState<FamilyEvent>(initialEvent);
-  const displayEvent = translateEventData(event, language);
+  const [displayEvent, setDisplayEvent] = useState<FamilyEvent>(() =>
+    translateEventData(initialEvent, language)
+  );
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    if (language === 'fr') {
+      setDisplayEvent(event);
+    } else {
+      setDisplayEvent(translateEventData(event, 'en'));
+      translateEventAsync(event, 'en').then((translated) => {
+        if (active) {
+          setDisplayEvent(translated);
+        }
+      });
+    }
+    return () => {
+      active = false;
+    };
+  }, [event, language]);
 
   // Portal mount flag
   const [mounted, setMounted] = useState(false);

@@ -13,14 +13,19 @@ import UpcomingEventCarousel from './UpcomingEventCarousel';
 import EventFormModal from './EventFormModal';
 import { syncClientAndServerEvents } from '@/lib/eventStorage';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
+import { translateEventsAsync } from '@/lib/i18n/translator';
+import { translateEventData } from '@/lib/i18n/dbTranslation';
 
 export default function EventsClientView({
   initialEvents,
 }: {
   initialEvents: FamilyEvent[];
 }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [events, setEvents] = useState<FamilyEvent[]>(initialEvents);
+  const [displayEvents, setDisplayEvents] = useState<FamilyEvent[]>(() =>
+    initialEvents.map((e) => translateEventData(e, language))
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
@@ -28,6 +33,26 @@ export default function EventsClientView({
       setEvents(synced);
     });
   }, [initialEvents]);
+
+  // Translate events whenever raw events change or language changes
+  useEffect(() => {
+    let active = true;
+    if (language === 'fr') {
+      setDisplayEvents(events);
+    } else {
+      // Instant synchronous fallback
+      setDisplayEvents(events.map((e) => translateEventData(e, 'en')));
+      // Full dynamic async translation (neural translation of custom titles & descriptions)
+      translateEventsAsync(events, 'en').then((translated) => {
+        if (active) {
+          setDisplayEvents(translated);
+        }
+      });
+    }
+    return () => {
+      active = false;
+    };
+  }, [events, language]);
 
   const refreshEvents = async () => {
     try {
@@ -68,7 +93,7 @@ export default function EventsClientView({
           </button>
         </div>
 
-        <EventCarousel events={events} onOpenCreateModal={() => setIsModalOpen(true)} />
+        <EventCarousel events={displayEvents} onOpenCreateModal={() => setIsModalOpen(true)} />
       </div>
 
       {/* 2. Deuxième Section : Défilé des événements « À venir » */}
@@ -85,7 +110,7 @@ export default function EventsClientView({
           </p>
         </div>
 
-        <UpcomingEventCarousel events={events} />
+        <UpcomingEventCarousel events={displayEvents} />
       </div>
 
       {/* Form Modal for Creating/Adding an Event */}
