@@ -539,7 +539,7 @@ export default function EventDetailView({
                     {t('events_confirm_delete_title')}
                   </h3>
                   <p className="text-xs text-[#727973] mt-0.5">
-                    {event.title}
+                    {displayEvent.title}
                   </p>
                 </div>
               </div>

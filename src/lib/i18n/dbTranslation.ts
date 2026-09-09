@@ -260,23 +260,98 @@ His lifelong dedication to continuous learning and academic mentorship positione
 };
 
 /**
- * Regex pipeline to transform standard generated system patterns into clean English
+ * Regex pipeline to transform event titles, standard narratives, and timeline patterns into clean English
  */
 const PATTERN_REPLACEMENTS: [RegExp, string][] = [
-  // Specific Event Names
-  [/^Célébration de l['’]indépendance$/i, "Independence Day Celebration"],
-  [/^Celebration de l['’]independance$/i, "Independence Day Celebration"],
-  [/^Fête de l['’]indépendance$/i, "Independence Day Celebration"],
-  [/^Grande Réunion Familiale$/i, "Grand Family Reunion"],
-  [/^Grande Reunion Familiale$/i, "Grand Family Reunion"],
-  [/^Réunion Familiale$/i, "Family Reunion"],
-  [/^Reunion Familiale$/i, "Family Reunion"],
-  [/^Retrouvailles Familiales$/i, "Family Reunion Gathering"],
-  [/^Retrouvailles$/i, "Family Gathering"],
-  [/^Célébration Familiale$/i, "Family Celebration"],
-  [/^Commémoration des Ancêtres$/i, "Ancestors Commemoration"],
-  [/^Hommage au Patriarche$/i, "Tribute to the Patriarch"],
-  [/^Pèlerinage aux Sources$/i, "Pilgrimage to Ancestral Roots"],
+  // Full Event Titles & Occasions (non-anchored for flexibility with dates/places)
+  [/Célébration de l['’]indépendance/gi, "Independence Day Celebration"],
+  [/Celebration de l['’]independance/gi, "Independence Day Celebration"],
+  [/Fête de l['’]indépendance/gi, "Independence Day Celebration"],
+  [/Fete de l['’]independance/gi, "Independence Day Celebration"],
+  [/Fête nationale/gi, "National Holiday Celebration"],
+  [/Grande Réunion Familiale/gi, "Grand Family Reunion"],
+  [/Grande Reunion Familiale/gi, "Grand Family Reunion"],
+  [/Grande réunion familiale/gi, "Grand Family Reunion"],
+  [/Réunion Familiale/gi, "Family Reunion"],
+  [/Reunion Familiale/gi, "Family Reunion"],
+  [/Réunion de famille/gi, "Family Reunion"],
+  [/Retrouvailles Familiales/gi, "Family Reunion Gathering"],
+  [/Retrouvailles annuelles/gi, "Annual Family Reunion"],
+  [/Retrouvailles Annuelles/gi, "Annual Family Reunion"],
+  [/Retrouvailles/gi, "Family Gathering"],
+  [/Célébration Familiale/gi, "Family Celebration"],
+  [/Célébration de Mariage/gi, "Wedding Celebration"],
+  [/Anniversaire de mariage/gi, "Wedding Anniversary"],
+  [/Anniversaire des (\d+) ans/gi, "$1th Birthday Celebration"],
+  [/Célébration des (\d+) ans/gi, "$1th Anniversary Celebration"],
+  [/Jubilé d['’]or/gi, "Golden Jubilee"],
+  [/Jubilé d['’]argent/gi, "Silver Jubilee"],
+  [/Hommage au Patriarche\s+Paul/gi, "Tribute to Patriarch Paul"],
+  [/Hommage au Patriarche/gi, "Tribute to the Patriarch"],
+  [/Hommage aux Ancêtres/gi, "Tribute to the Ancestors"],
+  [/Hommage aux ancêtres/gi, "Tribute to the Ancestors"],
+  [/Commémoration des Ancêtres/gi, "Ancestors Commemoration"],
+  [/Commémoration des ancêtres/gi, "Ancestors Commemoration"],
+  [/Pèlerinage aux Sources/gi, "Pilgrimage to Ancestral Roots"],
+  [/Pèlerinage aux sources/gi, "Pilgrimage to Ancestral Roots"],
+  [/Sortie de Nouveau-né/gi, "Newborn Outing & Blessing Ceremony"],
+  [/Sortie de nouveau-né/gi, "Newborn Outing & Blessing Ceremony"],
+  [/Sortie de nouveau-ne/gi, "Newborn Outing & Blessing Ceremony"],
+  [/Sortie d['’]enfant/gi, "Child Presentation & Blessing Ceremony"],
+  [/Baptême Traditionnel/gi, "Traditional Christening Ceremony"],
+  [/Baptême traditionnel/gi, "Traditional Christening Ceremony"],
+  [/Présentation du nouveau-né/gi, "Presentation of the Newborn"],
+  [/Présentation du nouveau-ne/gi, "Presentation of the Newborn"],
+  [/Rassemblement des descendants/gi, "Descendants Gathering"],
+  [/Arbre de Noël Familial/gi, "Family Christmas Gathering"],
+  [/Arbre de Noël/gi, "Christmas Gathering"],
+  [/Arbre de Noel/gi, "Christmas Gathering"],
+  [/Fête des Moissons/gi, "Harvest Festival"],
+  [/Fête de Fin d['’]Année/gi, "End of Year Celebration"],
+  [/Fête de fin d['’]année/gi, "End of Year Celebration"],
+  [/Obsèques & Hommage/gi, "Funeral & Memorial Tribute"],
+  [/Obsèques et Hommage/gi, "Funeral & Memorial Tribute"],
+  [/Obsèques/gi, "Funeral"],
+  [/Obseques/gi, "Funeral"],
+  [/Messe d['’]action de grâce/gi, "Thanksgiving Mass"],
+  [/Mariage de\s+/gi, "Wedding of "],
+  [/Baptême de\s+/gi, "Christening of "],
+  [/Hommage à\s+/gi, "Tribute to "],
+  [/Hommage a\s+/gi, "Tribute to "],
+  [/Obsèques de\s+/gi, "Funeral of "],
+
+  // Common Event Narrative / Description Phrases
+  [/Rassemblement de tous les descendants/gi, "Gathering of all descendants"],
+  [/Rassemblement de toute la famille/gi, "Gathering of the entire family"],
+  [/Rassemblement de la famille/gi, "Family gathering"],
+  [/Rassemblement familial/gi, "Family gathering"],
+  [/Grande réunion annuelle/gi, "Grand annual reunion"],
+  [/Grande célébration annuelle/gi, "Grand annual celebration"],
+  [/Célébration annuelle/gi, "Annual celebration"],
+  [/Moment de partage, de communion et de réjouissances/gi, "A moment of sharing, fellowship, and celebration"],
+  [/Moment de partage et de convivialité/gi, "A moment of sharing and fellowship"],
+  [/Partage d['’]un grand repas traditionnel/gi, "Sharing of a grand traditional meal"],
+  [/Partage d['’]un repas familial/gi, "Sharing of a family meal"],
+  [/Partage d['’]un repas/gi, "Sharing of a meal"],
+  [/Prières et recueillement en hommage aux ancêtres/gi, "Prayers and remembrance in tribute to the ancestors"],
+  [/Prières et recueillement/gi, "Prayers and remembrance"],
+  [/Prières pour les ancêtres/gi, "Prayers for the ancestors"],
+  [/En hommage aux ancêtres/gi, "In tribute to the ancestors"],
+  [/En hommage au Patriarche/gi, "In tribute to the Patriarch"],
+  [/Pour honorer la mémoire de/gi, "To honor the memory of"],
+  [/En présence de tous les membres de la famille/gi, "In the presence of all family members"],
+  [/En présence de toute la famille/gi, "In the presence of the whole family"],
+  [/autour du Patriarche/gi, "around the Patriarch"],
+  [/autour du patriarche/gi, "around the Patriarch"],
+  [/Discours des doyens et partage de souvenirs/gi, "Speeches from the elders and sharing of memories"],
+  [/Discours et témoignages/gi, "Speeches and testimonies"],
+  [/Bénédiction des familles et des enfants/gi, "Blessing of families and children"],
+  [/Présentation des nouveaux membres et des nouveaux-nés/gi, "Presentation of new members and newborns"],
+  [/Chants, danses et festivités traditionnelles/gi, "Songs, dances, and traditional festivities"],
+  [/dans la joie et l['’]allégresse/gi, "in joy and celebration"],
+  [/à la maison familiale/gi, "at the family residence"],
+  [/au domicile du patriarche/gi, "at the patriarch's residence"],
+  [/au domicile familial/gi, "at the family home"],
 
   // Timeline generated sentence patterns
   [/^Naissance d['’]un enfant\s*:\s*(.*)$/i, "Birth of a child: $1"],
@@ -306,7 +381,22 @@ const PATTERN_REPLACEMENTS: [RegExp, string][] = [
   [/^Décès$/i, "Passed away"],
   [/^Enfants avec\s+(.*)$/i, "Children with $1"],
 
-  // Location string patterns
+  // Location string patterns in sentences / titles
+  [/\s+à\s+Cotonou,\s*Bénin/gi, " in Cotonou, Benin"],
+  [/\s+à\s+Porto-Novo,\s*Bénin/gi, " in Porto-Novo, Benin"],
+  [/\s+à\s+Abomey,\s*Bénin/gi, " in Abomey, Benin"],
+  [/\s+à\s+Cotonou/gi, " in Cotonou"],
+  [/\s+à\s+Porto-Novo/gi, " in Porto-Novo"],
+  [/\s+à\s+Abomey/gi, " in Abomey"],
+  [/\s+à\s+Bohicon/gi, " in Bohicon"],
+  [/\s+à\s+Ouidah/gi, " in Ouidah"],
+  [/\s+à\s+Parakou/gi, " in Parakou"],
+  [/\s+à\s+Logbozounkpa/gi, " in Logbozounkpa"],
+  [/\s+à\s+Paris/gi, " in Paris"],
+  [/\s+à\s+Abidjan/gi, " in Abidjan"],
+  [/\s+au\s+Bénin/gi, " in Benin"],
+  [/\s+en\s+Côte d['’]Ivoire/gi, " in Ivory Coast"],
+  [/\s+en\s+France/gi, " in France"],
   [/,\s*Bénin$/i, ", Benin"],
   [/,\s*Côte d['’]Ivoire$/i, ", Ivory Coast"],
   [/,\s*Sénégal$/i, ", Senegal"],
@@ -314,8 +404,7 @@ const PATTERN_REPLACEMENTS: [RegExp, string][] = [
 ];
 
 /**
- * Translates structured database fields into English when in 'en' mode.
- * Preserves free-form narrative texts intact to prevent broken word-by-word substitutions.
+ * Translates structured database fields, titles, narratives and locations into English when in 'en' mode.
  */
 export function translateDbText(text: string | null | undefined, lang: Language): string {
   if (!text || typeof text !== 'string') return '';
@@ -326,13 +415,16 @@ export function translateDbText(text: string | null | undefined, lang: Language)
     return EXACT_PHRASES[trimmed];
   }
 
+  let result = text;
+  let matched = false;
   for (const [pattern, repl] of PATTERN_REPLACEMENTS) {
-    if (pattern.test(trimmed)) {
-      return trimmed.replace(pattern, repl);
+    if (pattern.test(result)) {
+      result = result.replace(pattern, repl);
+      matched = true;
     }
   }
 
-  return text;
+  return matched ? result : text;
 }
 
 /**
